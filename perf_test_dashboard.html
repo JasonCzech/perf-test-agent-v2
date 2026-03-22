@@ -1,4 +1,17 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perf Test Agent Dashboard</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
 const C={white:"#ffffff",bg:"#f5f7fa",bgCard:"#ffffff",bgMuted:"#f0f3f7",bgHover:"#e8f4fc",border:"#e0e6ed",borderLight:"#eef1f5",attBlue:"#00A8E0",attBlueDark:"#0077a8",attBlueLight:"#e5f6fc",attBlueFaint:"#f0f9fd",textPrimary:"#1a1a2e",textSecondary:"#5a6578",textMuted:"#8c96a6",success:"#0faa6c",successBg:"#edfbf4",successBorder:"#b8ecd4",warning:"#e5920a",warningBg:"#fef7ea",warningBorder:"#f5dca3",error:"#dc3545",errorBg:"#fef0f1",errorBorder:"#f5c1c6",purple:"#6f42c1",purpleBg:"#f3effa",purpleBorder:"#d4c5f0",fontSans:"'Nunito','Omnes',system-ui,sans-serif",fontMono:"'IBM Plex Mono','Menlo',monospace"};
 const PHASES=[{id:"story_analysis",label:"Story Analysis",num:1,desc:"Extract test cases from Jira stories + RAG"},{id:"test_planning",label:"Test Planning",num:2,desc:"Build workload models, scenarios, SLAs"},{id:"env_triage",label:"Env Deploy & Triage",num:3,desc:"Validate PERF configs, establish golden baseline"},{id:"script_data",label:"Scripts & Data",num:4,desc:"Generate VuGen/JMeter scripts, provision data"},{id:"execution",label:"Execution & Monitor",num:5,desc:"Run peak/break/stability tests with live monitoring"},{id:"reporting",label:"Results & Report",num:6,desc:"Analyze results, publish Word/SharePoint"},{id:"postmortem",label:"Postmortem",num:7,desc:"Archive lessons to Snowflake + RAG"}];
 const STATUS={pending:{color:C.textMuted,bg:C.bgMuted,border:C.border,label:"Pending",dot:false},configuring:{color:C.attBlue,bg:C.attBlueLight,border:C.attBlue+"50",label:"Configure",dot:false},running:{color:C.attBlue,bg:C.attBlueLight,border:C.attBlue+"50",label:"Running",dot:true},awaiting_approval:{color:C.purple,bg:C.purpleBg,border:C.purpleBorder,label:"Awaiting",dot:true},completed:{color:C.success,bg:C.successBg,border:C.successBorder,label:"Complete",dot:false}};
@@ -262,7 +275,7 @@ function PhaseDetail({phase,result}){
 }
 
 // Main App
-export default function App(){
+function App(){
   const[ps,setPs]=useState(()=>Object.fromEntries(PHASES.map(p=>[p.id,{status:"pending"}])));
   const[ap,setAp]=useState("story_analysis");const[logs,setLogs]=useState([]);const[tab,setTab]=useState("details");
   const[hc,setHc]=useState({});const[started,setStarted]=useState(false);const[showM,setShowM]=useState(false);
@@ -300,3 +313,10 @@ export default function App(){
     {showM&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.3)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(4px)"}} onClick={()=>setShowM(false)}><div onClick={e=>e.stopPropagation()} style={{background:C.white,borderRadius:16,padding:32,width:460,boxShadow:"0 20px 60px rgba(0,0,0,0.15)"}}><div style={{fontSize:20,fontWeight:800,marginBottom:24}}>Start New Pipeline Run</div>{[{l:"Jira Story Keys",v:"TELECOM-4521, TELECOM-4522"},{l:"Sprint",v:"Sprint 26.3"}].map(f=>(<label key={f.l} style={{display:"block",marginBottom:16}}><span style={{fontSize:12,fontWeight:700,color:C.textSecondary}}>{f.l}</span><input defaultValue={f.v} style={{display:"block",width:"100%",boxSizing:"border-box",marginTop:6,padding:"12px 14px",borderRadius:8,border:`1px solid ${C.border}`,background:C.bgMuted,fontFamily:C.fontMono,fontSize:14,outline:"none"}}/></label>))}<div style={{fontSize:11,color:C.textMuted,padding:"8px 12px",background:C.attBlueFaint,borderRadius:8,marginBottom:16}}>Context IDs and Applications are configured in Phase 1.</div><div style={{display:"flex",gap:10}}><button onClick={startPipeline} style={{flex:1,padding:"13px 0",borderRadius:10,border:"none",background:C.attBlue,color:"white",fontWeight:800,fontSize:15,cursor:"pointer"}}>Launch</button><button onClick={()=>setShowM(false)} style={{padding:"13px 24px",borderRadius:10,border:`1px solid ${C.border}`,background:C.white,color:C.textSecondary,fontWeight:700,fontSize:15,cursor:"pointer"}}>Cancel</button></div></div></div>}
   </div>);
 }
+
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+  </script>
+</body>
+</html>
