@@ -1,0 +1,212 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# PERF Environment Reference Configuration
+# ═══════════════════════════════════════════════════════════════════════════
+# Source of truth for Phase 3 (Env Triage) config validation.
+# The env_config_checker agent compares live configs against this file.
+#
+# Maintenance:
+#   - Update when environment topology changes
+#   - All changes via pull request review
+#   - Keep the Confluence mirror page in sync
+#
+# Format per application:
+#   app_name:         Unique identifier matching the deployment name
+#   app_description:  Human-readable description
+#   tags:             Filtering labels
+#   config_fields:    List of fields to check, each with:
+#     field_name:           Config field identifier
+#     expected_perf_value:  Correct PERF environment value
+#     inspection_tool:      azure_cli | argocd_api | amdocs_api | http_probe | solace_semp | db_query
+#     description:          What this field controls
+#     known_qc_values:      Known QC values to flag
+# ═══════════════════════════════════════════════════════════════════════════
+
+version: "2.0.0"
+last_updated: "2026-03-22T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+
+applications:
+
+  # ── Frontend: OPUS ──────────────────────────────────────────────────
+
+  - app_name: "opus-web"
+    app_description: "OPUS Legacy Retail Application (Web HTTP/HTML)"
+    tags: ["frontend", "opus", "critical"]
+    config_fields:
+      - field_name: "CSI_GATEWAY_URL"
+        expected_perf_value: "https://csi-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "CSI Common Services Gateway endpoint"
+        known_qc_values:
+          - "https://csi-qc3.internal.att.com:8443"
+          - "https://csi-qc2.internal.att.com:8443"
+      - field_name: "SESSION_DB"
+        expected_perf_value: "oracle-perf-scan.att.com:1521/PERF_SESSION"
+        inspection_tool: "azure_cli"
+        description: "Session persistence database"
+        known_qc_values:
+          - "oracle-qc-scan.att.com:1521/QC3_SESSION"
+
+  # ── Frontend: Salesforce/Mulesoft ───────────────────────────────────
+
+  - app_name: "salesforce-mulesoft-proxy"
+    app_description: "Salesforce/Mulesoft SaaS integration proxy"
+    tags: ["frontend", "salesforce", "aks", "critical"]
+    config_fields:
+      - field_name: "MULESOFT_API_URL"
+        expected_perf_value: "https://mulesoft-perf.internal.att.com:8443/api/v2"
+        inspection_tool: "azure_cli"
+        description: "Mulesoft API gateway endpoint"
+        known_qc_values:
+          - "https://mulesoft-qc3.internal.att.com:8443/api/v2"
+      - field_name: "SF_INSTANCE_URL"
+        expected_perf_value: "https://att--perf.sandbox.my.salesforce.com"
+        inspection_tool: "azure_cli"
+        description: "Salesforce sandbox instance"
+        known_qc_values:
+          - "https://att--qc3.sandbox.my.salesforce.com"
+
+  # ── Frontend: IDP ───────────────────────────────────────────────────
+
+  - app_name: "idp-mobile-api"
+    app_description: "IDP Mobile/Direct-to-Consumer Platform"
+    tags: ["frontend", "idp", "aks", "critical"]
+    config_fields:
+      - field_name: "CSI_ENDPOINT"
+        expected_perf_value: "https://csi-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "CSI gateway for backend routing"
+        known_qc_values:
+          - "https://csi-qc3.internal.att.com:8443"
+      - field_name: "IDENTITY_GRAPH_URL"
+        expected_perf_value: "https://identity-graph-perf.internal.att.com:8983/solr"
+        inspection_tool: "azure_cli"
+        description: "Identity Graph SOLr endpoint"
+        known_qc_values:
+          - "https://identity-graph-qc3.internal.att.com:8983/solr"
+
+  # ── Middleware: CSI ─────────────────────────────────────────────────
+
+  - app_name: "csi-gateway"
+    app_description: "CSI Common Services Gateway (REST + SOAP)"
+    tags: ["middleware", "csi", "critical"]
+    config_fields:
+      - field_name: "TLG_ENDPOINT"
+        expected_perf_value: "https://tlg-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "Amdocs TLG backend endpoint"
+        known_qc_values:
+          - "https://tlg-qc3.internal.att.com:9443"
+      - field_name: "BSSE_ENDPOINT"
+        expected_perf_value: "https://bsse-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "Amdocs BSSe billing endpoint"
+        known_qc_values:
+          - "https://bsse-qc3.internal.att.com:9443"
+      - field_name: "OMS_ENDPOINT"
+        expected_perf_value: "https://oms-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "Amdocs OMS order management"
+        known_qc_values:
+          - "https://oms-qc3.internal.att.com:8443"
+      - field_name: "CAS_ENDPOINT"
+        expected_perf_value: "https://cas-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "CAS/iCAS payment service"
+        known_qc_values:
+          - "https://cas-qc3.internal.att.com:8443"
+
+  # ── Middleware: GDDN ────────────────────────────────────────────────
+
+  - app_name: "gddn-messaging"
+    app_description: "GDDN Data Transformation & Solace Message Queuing"
+    tags: ["middleware", "gddn", "solace", "critical"]
+    config_fields:
+      - field_name: "SOLACE_HOST"
+        expected_perf_value: "solace-perf.internal.att.com"
+        inspection_tool: "solace_semp"
+        description: "Solace broker host"
+        known_qc_values:
+          - "solace-qc3.internal.att.com"
+      - field_name: "SOLACE_VPN"
+        expected_perf_value: "perf-vpn"
+        inspection_tool: "solace_semp"
+        description: "Solace message VPN"
+        known_qc_values:
+          - "qc3-vpn"
+      - field_name: "SOLACE_QUEUE_MANAGER"
+        expected_perf_value: "PERFQM01"
+        inspection_tool: "solace_semp"
+        description: "Solace queue manager"
+        known_qc_values:
+          - "QC3QM01"
+          - "QC2QM01"
+
+  # ── Backend: TLG (Amdocs) ──────────────────────────────────────────
+
+  - app_name: "tlg-backend"
+    app_description: "TLG - Amdocs Customer System of Record"
+    tags: ["backend", "amdocs", "tlg", "critical"]
+    config_fields:
+      - field_name: "DB_CONNECTION"
+        expected_perf_value: "oracle-perf-scan.att.com:1521/TLG_PERF"
+        inspection_tool: "amdocs_config_file"
+        description: "TLG Oracle database connection"
+        known_qc_values:
+          - "oracle-qc-scan.att.com:1521/TLG_QC3"
+      - field_name: "CASSANDRA_CONTACT_POINTS"
+        expected_perf_value: "cassandra-perf-01.att.com,cassandra-perf-02.att.com"
+        inspection_tool: "amdocs_config_file"
+        description: "Cassandra cluster for customer data"
+        known_qc_values:
+          - "cassandra-qc-01.att.com,cassandra-qc-02.att.com"
+
+  # ── Azure Application Gateway ──────────────────────────────────────
+
+  - app_name: "perf-app-gateway"
+    app_description: "Azure Application Gateway routing to PERF backend pools"
+    tags: ["azure", "gateway", "critical"]
+    config_fields:
+      - field_name: "backend_pool_oms"
+        expected_perf_value: "oms-perf.internal.att.com"
+        inspection_tool: "azure_cli"
+        description: "OMS backend pool target"
+        known_qc_values:
+          - "oms-qc3.internal.att.com"
+      - field_name: "backend_pool_billing"
+        expected_perf_value: "billing-perf.internal.att.com"
+        inspection_tool: "azure_cli"
+        description: "Billing backend pool target"
+        known_qc_values:
+          - "billing-qc3.internal.att.com"
+      - field_name: "backend_pool_csi"
+        expected_perf_value: "csi-perf.internal.att.com"
+        inspection_tool: "azure_cli"
+        description: "CSI backend pool target"
+        known_qc_values:
+          - "csi-qc3.internal.att.com"
+
+  # ── Periphery: SOLr Graphs ─────────────────────────────────────────
+
+  - app_name: "customer-graph"
+    app_description: "Customer Graph (SOLr)"
+    tags: ["periphery", "solr"]
+    config_fields:
+      - field_name: "SOLR_URL"
+        expected_perf_value: "https://customer-graph-perf.internal.att.com:8983/solr"
+        inspection_tool: "http_probe"
+        description: "Customer Graph SOLr endpoint"
+        known_qc_values:
+          - "https://customer-graph-qc3.internal.att.com:8983/solr"
+
+  - app_name: "order-graph"
+    app_description: "Order Graph (SOLr)"
+    tags: ["periphery", "solr"]
+    config_fields:
+      - field_name: "SOLR_URL"
+        expected_perf_value: "https://order-graph-perf.internal.att.com:8983/solr"
+        inspection_tool: "http_probe"
+        description: "Order Graph SOLr endpoint"
+        known_qc_values:
+          - "https://order-graph-qc3.internal.att.com:8983/solr"
