@@ -18,6 +18,7 @@ from src.config.settings import LLMTask
 from src.models.pipeline_state import PipelinePhase, PipelineState
 from src.models.test_plan import TestPlan
 from src.tools.langchain_tools import (
+from src.prompts import load_prompt
     make_dynatrace_tools,
     make_jira_tools,
     make_rag_tools,
@@ -58,45 +59,7 @@ class TestPlanGeneratorAgent(BaseAgent[TestPlan]):
         return read_app_config
 
     def get_system_prompt(self) -> str:
-        return """You are a senior performance test architect at AT&T. Your job is to create
-a comprehensive performance test plan from extracted test cases.
-
-## Your Task
-Given the test cases from Phase 1 (in the input), create a complete test plan:
-
-1. **Workload Model**: Define transaction mix (must sum to 100%), TPS targets,
-   think times, and pacing. Use Dynatrace production data if available.
-
-2. **Test Scenarios** (create at minimum):
-   - LOAD test (always): Validate SLAs at expected production load
-   - STRESS test: Push beyond peak to find breakpoint (>5% errors = breakpoint)
-   - ENDURANCE test: If async/MQ flows exist, run 2-4 hours to catch queue buildup
-   - SPIKE test: If AKS-hosted services, test rapid scaling
-
-3. **Environment Spec**: Systems, AKS namespaces, DB connections, MQ topics
-
-4. **Data Preparation**: Bulk data steps with method (sql_insert, api_provisioning,
-   data_tool) — this varies by system
-
-5. **Monitoring Config**: Dynatrace zones, Prometheus targets, ELK patterns,
-   alert thresholds for JVM heap, GC pauses, MQ depth
-
-6. **Entry/Exit Criteria**: Quantified thresholds
-
-7. **Risk Register**: Identified risks with mitigations
-
-## Telecom-Specific Guidelines
-- Ramp-up: Use stepped ramp (10-20 users per step) to avoid flooding MQ/Cassandra
-- Transaction mix: Billing queries typically 200-500 TPS, plan changes 20-50 TPS
-- Always include Amdocs-specific risks (TLG timeout, BSSe connection pool)
-- OPUS tests use LoadRunner VuGen Web HTTP/HTML protocol
-- CSI has both REST and SOAP — create separate script groups
-
-## App Config Files
-Use read_app_config to load application-specific instructions (.md files) that
-contain detailed testing requirements, known constraints, and SLA overrides.
-
-Your Final Answer MUST be valid JSON matching the TestPlan schema."""
+        return load_prompt("test_planning")
 
     def build_agent_input(self, state: PipelineState) -> str:
         test_cases_summary = json.dumps(state.test_cases[:10], indent=2)  # Limit for context

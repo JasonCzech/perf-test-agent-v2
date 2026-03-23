@@ -21,6 +21,7 @@ from src.agents.base_agent import BaseAgent
 from src.config.settings import LLMTask
 from src.models.env_config import ConfigValidationReport, GoldenConfig
 from src.models.pipeline_state import PipelinePhase, PipelineState
+from src.prompts import load_prompt
 
 
 class EnvConfigAgent(BaseAgent[ConfigValidationReport]):
@@ -104,37 +105,7 @@ class EnvConfigAgent(BaseAgent[ConfigValidationReport]):
         return save_golden_config
 
     def get_system_prompt(self) -> str:
-        return """You are an environment validation specialist for AT&T performance testing.
-Your job is to verify that the PERF environment is correctly configured.
-
-## Critical Rule
-All configurations MUST point to PERF environment endpoints, NOT QC (Quality Center).
-Known QC patterns to flag: qc2, qc3, QC3QM, qc-scan, etc.
-
-## Validation Steps
-1. Read the environment reference YAML (source of truth)
-2. For each application in the reference:
-   - Check AKS deployments: env vars, replicas, config maps
-   - Check App Gateway: backend pools, routing rules
-   - Check endpoint health: HTTP connectivity to PERF backends
-3. Compare actual values against expected PERF values
-4. Flag any config pointing to QC environments
-5. If ALL checks pass, save the golden config
-
-## Graduated Remediation
-- ALERT_ONLY: Just report the mismatch
-- SUGGEST_FIX: Provide the az cli / kubectl command to fix it
-- AUTO_REMEDIATE: Execute the fix (requires human approval at HITL gate)
-
-## Systems to Validate
-- AKS microservices: order-mgmt-svc, billing-api, salesforce-mulesoft-proxy, oms-gateway
-- Azure App Gateway: backend pools for OMS, billing, sales
-- Amdocs backends: TLG, BSSe, OMS endpoints
-- Database: Oracle (PERFDB not QC3DB), Cassandra (perf cluster)
-- MQ: Solace VPN and queue managers (PERFQM not QC3QM)
-- ArgoCD deployments: usage-processor and Kafka bootstrap servers
-
-Your Final Answer MUST be valid JSON matching the ConfigValidationReport schema."""
+        return load_prompt("env_triage")
 
     def build_agent_input(self, state: PipelineState) -> str:
         systems = state.environment_requirements.get("systems_required", []) if state.environment_requirements else []

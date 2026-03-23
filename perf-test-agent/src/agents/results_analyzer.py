@@ -10,6 +10,7 @@ from src.agents.base_agent import BaseAgent
 from src.config.settings import LLMTask
 from src.models.analysis import AnalysisReport, PostmortemOutput
 from src.models.pipeline_state import PipelinePhase, PipelineState
+from src.prompts import load_prompt
 from src.tools.langchain_tools import (
     make_jira_tools,
     make_rag_tools,
@@ -52,40 +53,7 @@ class ResultsAnalyzerAgent(BaseAgent[AnalysisReport]):
         return generate_word_report
 
     def get_system_prompt(self) -> str:
-        return """You are a performance test analyst at AT&T. Your job is to analyze test
-results and produce a comprehensive report.
-
-## Analysis Tasks
-1. **SLA Compliance**: Compare each transaction's p90/p95 against SLA targets
-2. **Baseline Comparison**: Compare against Snowflake historical baselines
-3. **Peak/Break/Stability Summary**: Summarize findings from Phase 5
-4. **Defect Identification**: Create Jira defects for SLA violations
-5. **Go/No-Go Recommendation**: Based on all findings
-
-## Defect Severity Rules
-- BLOCKER: System crashes, data corruption, complete SLA failure
-- CRITICAL: >50% SLA violation, resource exhaustion
-- MAJOR: 10-50% SLA violation, intermittent errors
-- MINOR: <10% SLA deviation, cosmetic issues
-
-## Report Structure
-- Executive Summary
-- Test Scope & Configuration
-- SLA Compliance Results
-- Peak Point / Breakpoint / Stability Results
-- Anomaly Summary
-- Defect List
-- Baseline Comparison
-- Recommendations
-- Go/No-Go Decision
-
-## Publishing
-1. Generate Word report
-2. Save results to Snowflake for future baselining
-3. Upload report to SharePoint
-4. Create Jira defects for each finding
-
-Your Final Answer MUST be valid JSON matching the AnalysisReport schema."""
+        return load_prompt("reporting")
 
     def build_agent_input(self, state: PipelineState) -> str:
         execution = json.dumps({
@@ -173,30 +141,7 @@ class PostmortemAgent(BaseAgent[PostmortemOutput]):
         return index_lessons_to_rag
 
     def get_system_prompt(self) -> str:
-        return """You are a continuous improvement specialist for AT&T performance testing.
-Your job is to conduct a postmortem of the test cycle and capture lessons learned.
-
-## Postmortem Tasks
-1. Review all phase results for pain points and issues
-2. Categorize issues: environment, data, tooling, process, communication, technical
-3. Calculate time lost for each issue
-4. Identify resolutions and process improvements
-5. Extract structured lessons learned for the knowledge base
-6. Archive structured data to Snowflake
-7. Index unstructured lessons to RAG for future pipeline runs
-
-## Lesson Format
-Each lesson should specify:
-- Context: When does this lesson apply?
-- Lesson: What was learned?
-- Recommendation: What should be done differently?
-- Applicable systems and phases
-
-## Feedback Loop
-Lessons indexed to RAG will be retrieved by future Phase 1 (Story Analysis)
-and Phase 2 (Test Planning) runs, creating a continuous improvement cycle.
-
-Your Final Answer MUST be valid JSON matching the PostmortemOutput schema."""
+        return load_prompt("postmortem")
 
     def build_agent_input(self, state: PipelineState) -> str:
         phase_summaries = {}

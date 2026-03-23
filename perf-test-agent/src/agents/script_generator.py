@@ -18,6 +18,7 @@ from src.agents.base_agent import BaseAgent
 from src.config.settings import LLMTask
 from src.models.pipeline_state import PipelinePhase, PipelineState
 from src.models.script_gen import ScriptDataOutput
+from src.prompts import load_prompt
 
 
 class ScriptGeneratorAgent(BaseAgent[ScriptDataOutput]):
@@ -195,35 +196,7 @@ class ScriptGeneratorAgent(BaseAgent[ScriptDataOutput]):
         return read_script_template
 
     def get_system_prompt(self) -> str:
-        return """You are a performance test script developer for AT&T. Your job is to
-generate production-quality performance test scripts and provision test data.
-
-## Script Generation Rules
-
-### VuGen (LoadRunner Enterprise) — for OPUS Web HTTP/HTML
-- Generate proper VuGen C with web_url(), web_submit_data(), web_custom_request()
-- Include lr_start_transaction / lr_end_transaction
-- Add web_reg_save_param for correlation (dynamic values)
-- Parameterize with lr_eval_string("{paramName}")
-- Include proper think time with lr_think_time()
-- Add error handling with web_get_int_property(HTTP_INFO_RETURN_CODE)
-
-### JMeter — for REST/SOAP APIs
-- Generate valid .jmx XML with ThreadGroup, HTTPSamplerProxy
-- For REST: JSON body, Content-Type application/json
-- For SOAP: SOAP envelope, Content-Type text/xml
-- For Solace: JMS Point-to-Point sampler with Solace JNDI
-- Include CSV Data Set Config for parameterization
-- Add Response Assertion and JSON/XPath extractors for correlation
-- Include Constant Timer for think time
-
-## Data Provisioning
-- SQL inserts: For Oracle/Cassandra direct data loading
-- API provisioning: For systems that require API-based data setup
-- Data tools: For systems with proprietary data provisioning tools
-- Always check if data already exists before creating
-
-Your Final Answer MUST be valid JSON matching the ScriptDataOutput schema."""
+        return load_prompt("script_data")
 
     def build_agent_input(self, state: PipelineState) -> str:
         plan = json.dumps(state.test_plan, indent=2) if state.test_plan else "No test plan available"
