@@ -58,7 +58,20 @@ class EnvironmentReference(BaseModel):
     last_updated: datetime = Field(default_factory=datetime.utcnow)
     updated_by: str = "perf-engineering-team"
     environment_name: str = "PERF"
+    lab_environment: str = "PERF"
+    release_code: str = "current"
+    application_key: str = "global"
+    application_display_name: str = "Global Reference"
+    api_variant: str = "core"
     applications: list[ApplicationConfig]
+
+    def get_all_tags(self) -> list[str]:
+        tags: list[str] = []
+        for app in self.applications:
+            for tag in app.tags:
+                if tag not in tags:
+                    tags.append(tag)
+        return tags
 
 
 class ConfigCheckResult(BaseModel):

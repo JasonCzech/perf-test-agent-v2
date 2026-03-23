@@ -1,0 +1,24 @@
+version: "2.0.0"
+last_updated: "2026-03-22T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+application_key: "tlg-backend"
+application_display_name: "TLG Backend"
+api_variant: "core"
+applications:
+  - app_name: "tlg-backend"
+    app_description: "TLG - Amdocs Customer System of Record"
+    tags: ["backend", "amdocs", "tlg", "critical"]
+    config_fields:
+      - field_name: "DB_CONNECTION"
+        expected_perf_value: "oracle-perf-scan.att.com:1521/TLG_PERF"
+        inspection_tool: "amdocs_config_file"
+        description: "TLG Oracle database connection"
+        known_qc_values:
+          - "oracle-qc-scan.att.com:1521/TLG_QC3"
+      - field_name: "CASSANDRA_CONTACT_POINTS"
+        expected_perf_value: "cassandra-perf-01.att.com,cassandra-perf-02.att.com"
+        inspection_tool: "amdocs_config_file"
+        description: "Cassandra cluster for customer data"
+        known_qc_values:
+          - "cassandra-qc-01.att.com,cassandra-qc-02.att.com"

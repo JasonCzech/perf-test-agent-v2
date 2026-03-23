@@ -12,7 +12,6 @@ Produces a golden config baseline for daily drift checks.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Any
 
 from langchain_core.tools import BaseTool, tool
@@ -22,6 +21,7 @@ from src.config.settings import LLMTask
 from src.models.env_config import ConfigValidationReport, GoldenConfig
 from src.models.pipeline_state import PipelinePhase, PipelineState
 from src.prompts import load_prompt
+from src.utils import env_reference_store
 
 
 class EnvConfigAgent(BaseAgent[ConfigValidationReport]):
@@ -42,12 +42,49 @@ class EnvConfigAgent(BaseAgent[ConfigValidationReport]):
 
     def _make_read_reference_tool(self) -> BaseTool:
         @tool
-        def read_env_reference() -> str:
-            """Read the PERF environment reference YAML (source of truth for expected configs)."""
-            ref_path = Path(__file__).parent.parent.parent / "config" / "perf_environment_reference.yaml"
-            if ref_path.exists():
-                return ref_path.read_text()
-            return "Reference file not found. Create one at config/perf_environment_reference.yaml"
+        def read_env_reference(
+            application_key: str | None = None,
+            environment_name: str = "PERF",
+            api_variant: str = "core",
+        ) -> str:
+            """Read environment references for a given application/API/environment.
+
+            If no application_key is provided (or "all"), all references for the
+            requested environment are concatenated so the agent can validate the
+            entire scope in one pass.
+            """
+
+            scope_key = application_key if application_key and application_key.lower() != "all" else None
+            records = env_reference_store.list_references(
+                application_key=scope_key,
+                environment=environment_name,
+                api_variant=api_variant if scope_key else None,
+            )
+
+            if not records:
+                return (
+                    f"No environment reference registered for application={application_key or 'ALL'} "
+                    f"env={environment_name} variant={api_variant}"
+                )
+
+            documents: list[str] = []
+            for record in records:
+                try:
+                    yaml_content = env_reference_store.read_reference_yaml(record)
+                except FileNotFoundError:
+                    documents.append(
+                        f"# Missing reference file for {record.application_name} ({record.environment}/{record.api_variant})"
+                    )
+                    continue
+
+                header = (
+                    f"# Application: {record.application_name} | Env: {record.environment} | Variant: {record.api_variant}\n"
+                    f"# Last Updated: {record.last_updated.isoformat()} by {record.updated_by}\n"
+                )
+                documents.append(header + yaml_content)
+
+            return "\n\n".join(documents)
+
         return read_env_reference
 
     def _make_check_aks_config_tool(self) -> BaseTool:

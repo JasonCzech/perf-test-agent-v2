@@ -1,0 +1,30 @@
+version: "2.0.0"
+last_updated: "2026-03-22T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+application_key: "perf-app-gateway"
+application_display_name: "Azure Application Gateway"
+api_variant: "core"
+applications:
+  - app_name: "perf-app-gateway"
+    app_description: "Azure Application Gateway routing to PERF backend pools"
+    tags: ["azure", "gateway", "critical"]
+    config_fields:
+      - field_name: "backend_pool_oms"
+        expected_perf_value: "oms-perf.internal.att.com"
+        inspection_tool: "azure_cli"
+        description: "OMS backend pool target"
+        known_qc_values:
+          - "oms-qc3.internal.att.com"
+      - field_name: "backend_pool_billing"
+        expected_perf_value: "billing-perf.internal.att.com"
+        inspection_tool: "azure_cli"
+        description: "Billing backend pool target"
+        known_qc_values:
+          - "billing-qc3.internal.att.com"
+      - field_name: "backend_pool_csi"
+        expected_perf_value: "csi-perf.internal.att.com"
+        inspection_tool: "azure_cli"
+        description: "CSI backend pool target"
+        known_qc_values:
+          - "csi-qc3.internal.att.com"

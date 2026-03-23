@@ -1,0 +1,18 @@
+version: "2.0.0"
+last_updated: "2026-03-22T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+application_key: "order-graph"
+application_display_name: "Order Graph"
+api_variant: "core"
+applications:
+  - app_name: "order-graph"
+    app_description: "Order Graph (SOLr)"
+    tags: ["periphery", "solr"]
+    config_fields:
+      - field_name: "SOLR_URL"
+        expected_perf_value: "https://order-graph-perf.internal.att.com:8983/solr"
+        inspection_tool: "http_probe"
+        description: "Order Graph SOLr endpoint"
+        known_qc_values:
+          - "https://order-graph-qc3.internal.att.com:8983/solr"

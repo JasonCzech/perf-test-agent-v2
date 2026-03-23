@@ -1,0 +1,31 @@
+version: "2.0.0"
+last_updated: "2026-03-22T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+application_key: "gddn-messaging"
+application_display_name: "GDDN Messaging"
+api_variant: "core"
+applications:
+  - app_name: "gddn-messaging"
+    app_description: "GDDN Data Transformation & Solace Message Queuing"
+    tags: ["middleware", "gddn", "solace", "critical"]
+    config_fields:
+      - field_name: "SOLACE_HOST"
+        expected_perf_value: "solace-perf.internal.att.com"
+        inspection_tool: "solace_semp"
+        description: "Solace broker host"
+        known_qc_values:
+          - "solace-qc3.internal.att.com"
+      - field_name: "SOLACE_VPN"
+        expected_perf_value: "perf-vpn"
+        inspection_tool: "solace_semp"
+        description: "Solace message VPN"
+        known_qc_values:
+          - "qc3-vpn"
+      - field_name: "SOLACE_QUEUE_MANAGER"
+        expected_perf_value: "PERFQM01"
+        inspection_tool: "solace_semp"
+        description: "Solace queue manager"
+        known_qc_values:
+          - "QC3QM01"
+          - "QC2QM01"

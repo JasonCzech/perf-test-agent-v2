@@ -1,0 +1,36 @@
+version: "2.0.0"
+last_updated: "2026-03-22T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+application_key: "csi-gateway"
+application_display_name: "CSI Common Services Gateway"
+api_variant: "core"
+applications:
+  - app_name: "csi-gateway"
+    app_description: "CSI Common Services Gateway (REST + SOAP)"
+    tags: ["middleware", "csi", "critical"]
+    config_fields:
+      - field_name: "TLG_ENDPOINT"
+        expected_perf_value: "https://tlg-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "Amdocs TLG backend endpoint"
+        known_qc_values:
+          - "https://tlg-qc3.internal.att.com:9443"
+      - field_name: "BSSE_ENDPOINT"
+        expected_perf_value: "https://bsse-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "Amdocs BSSe billing endpoint"
+        known_qc_values:
+          - "https://bsse-qc3.internal.att.com:9443"
+      - field_name: "OMS_ENDPOINT"
+        expected_perf_value: "https://oms-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "Amdocs OMS order management"
+        known_qc_values:
+          - "https://oms-qc3.internal.att.com:8443"
+      - field_name: "CAS_ENDPOINT"
+        expected_perf_value: "https://cas-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "CAS/iCAS payment service"
+        known_qc_values:
+          - "https://cas-qc3.internal.att.com:8443"
