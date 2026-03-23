@@ -10,16 +10,23 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
+import yaml
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ValidationError
 
 from src.config.settings import get_settings
+from src.config.settings import LLMTask
+from src.integrations.azure_openai import get_llm
+from src.integrations.jira_client import JiraClient
+from src.integrations.rag_retriever import RAGRetriever
 from src.models.pipeline_state import (
     PhaseResult,
     PhaseStatus,
@@ -27,7 +34,9 @@ from src.models.pipeline_state import (
     PipelineState,
 )
 from src.pipeline import PipelineOrchestrator
+from src.prompts import PHASE_PROMPT_FILES, load_prompt
 from src.utils.logging import get_logger
+from src.utils import env_reference_store
 
 log = get_logger(__name__)
 
@@ -66,6 +75,48 @@ class StartPipelineRequest(BaseModel):
     start_phase: Optional[str] = None
     stop_after: Optional[str] = None
     hitl_enabled: bool = True
+    context_ids: list[str] = Field(default_factory=list)
+    selected_app_id: Optional[str] = None
+    selected_app_name: Optional[str] = None
+    selected_app_reference_key: Optional[str] = None
+    generated_summary: Optional[dict[str, Any]] = None
+
+
+class SummaryEvidence(BaseModel):
+    source: str
+    title: str
+    reference: str
+    url: str = ""
+    excerpt: str = ""
+
+
+class SummarySourceCoverage(BaseModel):
+    jira_status: str
+    rag_status: str
+    jira_count: int = 0
+    rag_count: int = 0
+    warnings: list[str] = Field(default_factory=list)
+
+
+class GenerateSummaryRequest(BaseModel):
+    story_keys: list[str] = Field(default_factory=list)
+    sprint_name: Optional[str] = None
+    context_ids: list[str] = Field(default_factory=list)
+    selected_app_id: str = Field(..., min_length=1)
+    selected_app_name: str = Field(..., min_length=1)
+    selected_app_reference_key: Optional[str] = None
+
+
+class GenerateSummaryResponse(BaseModel):
+    generated_at: str
+    selected_app_id: str
+    selected_app_name: str
+    project_goals: list[str] = Field(default_factory=list)
+    selected_app_impacts: list[str] = Field(default_factory=list)
+    cross_system_impacts: list[str] = Field(default_factory=list)
+    recommended_focus: list[str] = Field(default_factory=list)
+    evidence: list[SummaryEvidence] = Field(default_factory=list)
+    source_coverage: SummarySourceCoverage
 
 
 class HITLDecisionRequest(BaseModel):
@@ -79,6 +130,197 @@ class PipelineStatusResponse(BaseModel):
     created_at: str
     phase_results: dict[str, Any]
     is_active: bool
+
+
+class EnvReferenceSummary(BaseModel):
+    application_key: str
+    application_name: str
+    api_variant: str
+    environment: str
+    lab_environment: str
+    release_code: str
+    path: str
+    tags: list[str] = []
+    last_updated: datetime
+    updated_by: str
+
+
+class EnvReferenceDetail(BaseModel):
+    descriptor: EnvReferenceSummary
+    content: str
+
+
+class EnvReferenceListResponse(BaseModel):
+    references: list[EnvReferenceSummary]
+
+
+class UpdateEnvReferenceRequest(BaseModel):
+    content: str = Field(..., min_length=1)
+    api_variant: str = "core"
+    lab_environment: str = "PERF"
+    release_code: str = "current"
+    application_name: Optional[str] = None
+    updated_by: str = "web-ui"
+
+
+class JiraTicket(BaseModel):
+    key: str
+    summary: str
+    status: str
+    issue_type: str
+    assignee: Optional[str] = None
+    updated: str
+    url: str
+    labels: list[str] = []
+
+
+class JiraTicketListResponse(BaseModel):
+    tickets: list[JiraTicket]
+
+
+class CreateJiraTicketRequest(BaseModel):
+    application_key: str = Field(..., min_length=2)
+    summary: str = Field(..., min_length=3)
+    description: str = Field(..., min_length=1)
+    issue_type: str = "Task"
+    project_key: Optional[str] = None
+    labels: list[str] = []
+
+
+class PhasePromptResponse(BaseModel):
+    phase_id: str
+    prompt_file: str
+    role_label: str
+    default_prompt: str
+
+
+PHASE_ROLE_LABELS = {
+    "story_analysis": "StoryAnalyzerAgent",
+    "test_planning": "TestPlanGeneratorAgent",
+    "env_triage": "EnvConfigAgent",
+    "script_data": "ScriptGeneratorAgent",
+    "execution": "ExecutionOrchestratorAgent",
+    "reporting": "ResultsAnalyzerAgent",
+    "postmortem": "PostmortemAgent",
+}
+
+
+def _record_to_summary(
+    record: env_reference_store.EnvironmentReferenceRecord,
+) -> EnvReferenceSummary:
+    return EnvReferenceSummary(
+        application_key=record.application_key,
+        application_name=record.application_name,
+        api_variant=record.api_variant,
+        environment=record.environment,
+        lab_environment=record.lab_environment,
+        release_code=record.release_code,
+        path=record.path,
+        tags=record.tags,
+        last_updated=record.last_updated,
+        updated_by=record.updated_by,
+    )
+
+
+def _application_label(application_key: str) -> str:
+    return f"app:{application_key}".lower()
+
+
+def _issue_to_ticket(issue: dict[str, Any], settings) -> JiraTicket:
+    fields = issue.get("fields", {})
+    assignee = fields.get("assignee") or {}
+    status = fields.get("status") or {}
+    issue_type = fields.get("issuetype") or {}
+    base_url = settings.jira_url.rstrip("/")
+    return JiraTicket(
+        key=issue.get("key", ""),
+        summary=fields.get("summary", ""),
+        status=status.get("name", "Unknown"),
+        issue_type=issue_type.get("name", ""),
+        assignee=assignee.get("displayName"),
+        updated=fields.get("updated") or datetime.utcnow().isoformat(),
+        url=f"{base_url}/browse/{issue.get('key', '')}",
+        labels=fields.get("labels") or [],
+    )
+
+
+def _truncate(value: str, limit: int) -> str:
+    text = (value or "").strip()
+    if len(text) <= limit:
+        return text
+    return f"{text[: limit - 3]}..."
+
+
+def _safe_story_key(value: str) -> str:
+    return value.strip().upper()
+
+
+def _safe_context_id(value: str) -> str:
+    return value.strip().upper()
+
+
+def _escape_jira_text(value: str) -> str:
+    return value.replace('"', '\\"')
+
+
+def _normalize_list(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    normalized: list[str] = []
+    for item in values:
+        next_item = item.strip()
+        if not next_item or next_item in seen:
+            continue
+        seen.add(next_item)
+        normalized.append(next_item)
+    return normalized
+
+
+def _extract_json_object(raw: str) -> str:
+    match = re.search(r"\{[\s\S]*\}", raw)
+    if not match:
+        raise ValueError("No JSON object found in model response")
+    return match.group(0)
+
+
+def _fallback_summary(
+    req: GenerateSummaryRequest,
+    jira_evidence: list[SummaryEvidence],
+    rag_evidence: list[SummaryEvidence],
+) -> GenerateSummaryResponse:
+    project_goals = [
+        f"Validate performance readiness for {req.selected_app_name} within sprint scope {req.sprint_name or '-'}.",
+        "Preserve SLA compliance and release confidence for impacted downstream systems.",
+    ]
+    selected_app_impacts = [
+        f"{req.selected_app_name} is in direct test focus and should be prioritized for load, stress, and stability validation.",
+        "Capture end-to-end transaction latency contribution from this application during scenario modeling.",
+    ]
+    cross_system_impacts = [
+        "Review middleware/backend dependencies referenced in Jira and wiki context to prevent bottlenecks at integration boundaries.",
+        "Track shared infrastructure capacity and connection pool behavior during high-throughput scenarios.",
+    ]
+    recommended_focus = [
+        "Focus first on high-volume user journeys connected to selected app transactions.",
+        "Map each critical flow to a measurable SLA target and failure threshold.",
+    ]
+    evidence = (jira_evidence + rag_evidence)[:5]
+    return GenerateSummaryResponse(
+        generated_at=datetime.utcnow().isoformat(),
+        selected_app_id=req.selected_app_id,
+        selected_app_name=req.selected_app_name,
+        project_goals=project_goals,
+        selected_app_impacts=selected_app_impacts,
+        cross_system_impacts=cross_system_impacts,
+        recommended_focus=recommended_focus,
+        evidence=evidence,
+        source_coverage=SummarySourceCoverage(
+            jira_status="ok" if jira_evidence else "empty",
+            rag_status="ok" if rag_evidence else "empty",
+            jira_count=len(jira_evidence),
+            rag_count=len(rag_evidence),
+            warnings=["Summary generated via deterministic fallback due to LLM response issue."],
+        ),
+    )
 
 
 # ── WebSocket Broadcast ──────────────────────────────────────────────
@@ -219,12 +461,68 @@ async def list_runs():
             state_file = d / "pipeline_state.json"
             if state_file.exists():
                 state = PipelineState.model_validate_json(state_file.read_text())
+                phase_results = state.phase_results or {}
+                completed_phases = sum(
+                    1
+                    for phase in PipelinePhase
+                    if phase_results.get(phase.value)
+                    and phase_results[phase.value].status == PhaseStatus.COMPLETED
+                )
+                failed_phase = next(
+                    (
+                        phase.value
+                        for phase in PipelinePhase
+                        if phase_results.get(phase.value)
+                        and phase_results[phase.value].status == PhaseStatus.FAILED
+                    ),
+                    None,
+                )
+                awaiting_approval_phase = next(
+                    (
+                        phase.value
+                        for phase in PipelinePhase
+                        if phase_results.get(phase.value)
+                        and phase_results[phase.value].status == PhaseStatus.AWAITING_APPROVAL
+                    ),
+                    None,
+                )
+                reporting_result = phase_results.get(PipelinePhase.REPORTING.value)
+                verdict = "-"
+                if reporting_result and reporting_result.summary:
+                    summary_upper = reporting_result.summary.upper()
+                    if "CONDITIONAL GO" in summary_upper:
+                        verdict = "CONDITIONAL"
+                    elif "NO-GO" in summary_upper:
+                        verdict = "NO-GO"
+                    elif "GO" in summary_upper:
+                        verdict = "GO"
+
+                duration_seconds = 0.0
+                for result in phase_results.values():
+                    try:
+                        duration_seconds += float(result.duration_seconds or 0.0)
+                    except Exception:
+                        continue
+
+                overall_status = "running"
+                if failed_phase:
+                    overall_status = "failed"
+                elif completed_phases == len(PipelinePhase):
+                    overall_status = "completed"
+
                 runs.append({
                     "run_id": state.run_id,
                     "current_phase": state.current_phase.value,
                     "created_at": state.created_at.isoformat(),
                     "story_keys": state.jira_story_keys,
                     "is_active": state.run_id in hitl_events,
+                    "completed_phases": completed_phases,
+                    "total_phases": len(PipelinePhase),
+                    "failed_phase": failed_phase,
+                    "awaiting_approval_phase": awaiting_approval_phase,
+                    "overall_status": overall_status,
+                    "verdict": verdict,
+                    "duration_seconds": round(duration_seconds, 1),
                 })
     return {"runs": runs}
 
@@ -239,6 +537,352 @@ async def get_phase_details(run_id: str, phase_name: str):
         raise HTTPException(404, f"Phase output not found for {phase_name}")
 
     return json.loads(output_file.read_text())
+
+
+@app.get("/api/prompts/{phase_id}", response_model=PhasePromptResponse)
+async def get_phase_prompt(phase_id: str):
+    if phase_id not in PHASE_PROMPT_FILES:
+        raise HTTPException(
+            404,
+            f"Unknown phase_id '{phase_id}'. Valid: {list(PHASE_PROMPT_FILES.keys())}",
+        )
+
+    try:
+        default_prompt = load_prompt(phase_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+    return PhasePromptResponse(
+        phase_id=phase_id,
+        prompt_file=PHASE_PROMPT_FILES[phase_id],
+        role_label=PHASE_ROLE_LABELS.get(phase_id, phase_id),
+        default_prompt=default_prompt,
+    )
+
+
+# ── Environment Reference Endpoints ─────────────────────────────────
+
+@app.get("/api/env/configs", response_model=EnvReferenceListResponse)
+async def list_env_configs(
+    application_key: Optional[str] = None,
+    environment: Optional[str] = None,
+    lab_environment: Optional[str] = None,
+    release_code: Optional[str] = None,
+    api_variant: Optional[str] = None,
+):
+    records = env_reference_store.list_references(
+        application_key=application_key,
+        environment=environment,
+        lab_environment=lab_environment,
+        release_code=release_code,
+        api_variant=api_variant,
+    )
+    summaries = [_record_to_summary(r) for r in records]
+    return EnvReferenceListResponse(references=summaries)
+
+
+@app.get("/api/env/configs/{application_key}/{environment}", response_model=EnvReferenceDetail)
+async def get_env_config(
+    application_key: str,
+    environment: str,
+    api_variant: str = "core",
+    lab_environment: str = "PERF",
+    release_code: str = "current",
+):
+    try:
+        record = env_reference_store.get_reference_record(
+            application_key,
+            environment,
+            lab_environment,
+            release_code,
+            api_variant,
+        )
+        content = env_reference_store.read_reference_yaml(record)
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(404, f"Reference file missing for {application_key}/{environment}") from exc
+
+    return EnvReferenceDetail(descriptor=_record_to_summary(record), content=content)
+
+
+@app.put("/api/env/configs/{application_key}/{environment}", response_model=EnvReferenceDetail)
+async def update_env_config(application_key: str, environment: str, req: UpdateEnvReferenceRequest):
+    api_variant = req.api_variant or "core"
+    lab_environment = req.lab_environment or "PERF"
+    release_code = req.release_code or "current"
+
+    try:
+        env_reference_store.save_reference(
+            application_key=application_key,
+            environment=environment,
+            lab_environment=lab_environment,
+            release_code=release_code,
+            api_variant=api_variant,
+            yaml_content=req.content,
+            updated_by=req.updated_by,
+            application_name=req.application_name,
+        )
+        record = env_reference_store.get_reference_record(
+            application_key,
+            environment,
+            lab_environment,
+            release_code,
+            api_variant,
+        )
+        content = env_reference_store.read_reference_yaml(record)
+    except (ValidationError, yaml.YAMLError) as exc:
+        raise HTTPException(400, f"Invalid environment reference: {exc}") from exc
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except Exception as exc:  # pragma: no cover - unexpected failure path
+        log.error("env_reference_update_failed", error=str(exc))
+        raise HTTPException(500, "Unable to save environment reference") from exc
+
+    return EnvReferenceDetail(descriptor=_record_to_summary(record), content=content)
+
+
+# ── Jira Ticket Endpoints ────────────────────────────────────────────
+
+@app.get("/api/jira/tickets", response_model=JiraTicketListResponse)
+async def list_jira_tickets(
+    application_key: Optional[str] = None,
+    team_scope: bool = False,
+    status: Optional[str] = None,
+    issue_type: Optional[str] = None,
+    max_results: int = 25,
+):
+    if not team_scope and not application_key:
+        raise HTTPException(400, "application_key is required when team_scope is false")
+
+    max_results = max(1, min(max_results, 100))
+    if team_scope:
+        jql_parts = ['labels = "support"']
+    else:
+        label = _application_label(application_key or "")
+        jql_parts = [f'labels = "{label}"']
+    if issue_type:
+        jql_parts.append(f'issuetype = "{issue_type}"')
+    if status:
+        jql_parts.append(f'status = "{status}"')
+    jql = " AND ".join(jql_parts) + " ORDER BY updated DESC"
+
+    client = JiraClient()
+    settings = get_settings()
+    try:
+        issues = await client.get_stories_by_jql(jql, max_results=max_results)
+    except Exception as exc:  # pragma: no cover - Jira failures propagated to UI
+        raise HTTPException(502, f"Failed to fetch Jira tickets: {exc}") from exc
+    finally:
+        await client.close()
+
+    tickets = [_issue_to_ticket(issue, settings) for issue in issues]
+    return JiraTicketListResponse(tickets=tickets)
+
+
+@app.post("/api/jira/tickets", response_model=JiraTicket)
+async def create_jira_ticket(req: CreateJiraTicketRequest):
+    if not req.application_key:
+        raise HTTPException(400, "application_key is required")
+
+    label = _application_label(req.application_key)
+    label_set = {label, "support"}
+    label_set.update(l.strip() for l in (req.labels or []) if l.strip())
+    labels = sorted(label_set)
+
+    client = JiraClient()
+    settings = get_settings()
+    try:
+        key = await client.create_story(
+            summary=req.summary,
+            description=req.description,
+            story_type=req.issue_type,
+            labels=labels,
+            project_key=req.project_key,
+        )
+        issue = await client.get_story(key)
+    except Exception as exc:  # pragma: no cover - surface Jira errors
+        raise HTTPException(502, f"Failed to create Jira ticket: {exc}") from exc
+    finally:
+        await client.close()
+
+    return _issue_to_ticket(issue, settings)
+
+
+@app.post("/api/context/summary", response_model=GenerateSummaryResponse)
+async def generate_context_summary(req: GenerateSummaryRequest):
+    story_keys = _normalize_list([_safe_story_key(k) for k in req.story_keys])
+    context_ids = _normalize_list([_safe_context_id(cid) for cid in req.context_ids])
+
+    if not context_ids:
+        raise HTTPException(400, "At least one searched PID/E1 context ID is required")
+    if not req.selected_app_name.strip():
+        raise HTTPException(400, "selected_app_name is required")
+
+    settings = get_settings()
+    coverage = SummarySourceCoverage(jira_status="skipped", rag_status="skipped")
+    jira_evidence: list[SummaryEvidence] = []
+    rag_evidence: list[SummaryEvidence] = []
+
+    # Jira retrieval path
+    jira_client: Optional[JiraClient] = None
+    try:
+        if settings.jira_url and settings.jira_username and settings.jira_api_token:
+            jira_client = JiraClient(settings)
+            seen_keys: set[str] = set()
+
+            for key in story_keys[:10]:
+                try:
+                    issue = await jira_client.get_story(key)
+                    fields = issue.get("fields", {})
+                    issue_key = issue.get("key", key)
+                    if issue_key in seen_keys:
+                        continue
+                    seen_keys.add(issue_key)
+                    jira_evidence.append(SummaryEvidence(
+                        source="jira",
+                        title=fields.get("summary", issue_key),
+                        reference=issue_key,
+                        url=f"{settings.jira_url.rstrip('/')}/browse/{issue_key}",
+                        excerpt=_truncate(fields.get("description") or fields.get("summary", ""), 280),
+                    ))
+                except Exception as exc:
+                    coverage.warnings.append(f"Jira story lookup failed for {key}: {exc}")
+
+            for context_id in context_ids[:8]:
+                escaped = _escape_jira_text(context_id)
+                jql = (
+                    f'project = {settings.jira_project_key} '
+                    f'AND text ~ "\\"{escaped}\\"" '
+                    "ORDER BY updated DESC"
+                )
+                try:
+                    issues = await jira_client.get_stories_by_jql(jql, max_results=5)
+                    for issue in issues:
+                        issue_key = issue.get("key")
+                        if not issue_key or issue_key in seen_keys:
+                            continue
+                        seen_keys.add(issue_key)
+                        fields = issue.get("fields", {})
+                        jira_evidence.append(SummaryEvidence(
+                            source="jira",
+                            title=fields.get("summary", issue_key),
+                            reference=issue_key,
+                            url=f"{settings.jira_url.rstrip('/')}/browse/{issue_key}",
+                            excerpt=_truncate(fields.get("description") or fields.get("summary", ""), 280),
+                        ))
+                except Exception as exc:
+                    coverage.warnings.append(f"Jira search failed for {context_id}: {exc}")
+
+            coverage.jira_status = "ok" if jira_evidence else "empty"
+            coverage.jira_count = len(jira_evidence)
+        else:
+            coverage.jira_status = "skipped"
+            coverage.warnings.append("Jira credentials are not configured; skipping Jira retrieval.")
+    except Exception as exc:
+        coverage.jira_status = "error"
+        coverage.warnings.append(f"Jira retrieval unavailable: {exc}")
+    finally:
+        if jira_client:
+            await jira_client.close()
+
+    # RAG retrieval path
+    rag_client: Optional[RAGRetriever] = None
+    try:
+        if settings.azure_search_endpoint and settings.azure_search_key:
+            rag_client = RAGRetriever(settings)
+            query_parts = [
+                req.selected_app_name,
+                req.selected_app_reference_key or "",
+                " ".join(context_ids),
+                " ".join(story_keys),
+                "performance testing project goals impact",
+            ]
+            rag_query = " ".join(part for part in query_parts if part).strip()
+            docs = await rag_client.search(rag_query, top=8)
+            for doc in docs:
+                rag_evidence.append(SummaryEvidence(
+                    source=f"rag:{doc.source}",
+                    title=doc.title or doc.doc_id,
+                    reference=doc.doc_id,
+                    url=doc.url,
+                    excerpt=_truncate(doc.content, 280),
+                ))
+            coverage.rag_status = "ok" if rag_evidence else "empty"
+            coverage.rag_count = len(rag_evidence)
+        else:
+            coverage.rag_status = "skipped"
+            coverage.warnings.append("Azure Search is not configured; skipping wiki/RAG retrieval.")
+    except Exception as exc:
+        coverage.rag_status = "error"
+        coverage.warnings.append(f"RAG retrieval unavailable: {exc}")
+    finally:
+        if rag_client:
+            await rag_client.close()
+
+    if not jira_evidence and not rag_evidence:
+        raise HTTPException(
+            422,
+            "No matching Jira or wiki context was found for the searched IDs. Refine IDs and retry.",
+        )
+
+    evidence = (jira_evidence + rag_evidence)[:8]
+    evidence_payload = [e.model_dump() for e in evidence]
+    prompt = (
+        "You are an AT&T performance test planning assistant. "
+        "Generate concise JSON only with keys: project_goals, selected_app_impacts, cross_system_impacts, recommended_focus. "
+        "Each key must contain 2-5 bullet-style strings. "
+        "Prioritize selected app impact while including cross-system dependencies.\n\n"
+        f"Selected app: {req.selected_app_name} ({req.selected_app_id})\n"
+        f"Story keys: {story_keys}\n"
+        f"Context IDs: {context_ids}\n"
+        f"Evidence: {json.dumps(evidence_payload, ensure_ascii=True)}"
+    )
+
+    try:
+        llm = get_llm(LLMTask.COMPLEX_REASONING, settings=settings, temperature=0.1)
+        llm_result = await llm.ainvoke(prompt)
+        llm_text = getattr(llm_result, "content", "") if llm_result is not None else ""
+        if isinstance(llm_text, list):
+            llm_text = "\n".join(str(item) for item in llm_text)
+        json_text = _extract_json_object(str(llm_text))
+        parsed = json.loads(json_text)
+        response = GenerateSummaryResponse(
+            generated_at=datetime.utcnow().isoformat(),
+            selected_app_id=req.selected_app_id,
+            selected_app_name=req.selected_app_name,
+            project_goals=_normalize_list(parsed.get("project_goals") or []),
+            selected_app_impacts=_normalize_list(parsed.get("selected_app_impacts") or []),
+            cross_system_impacts=_normalize_list(parsed.get("cross_system_impacts") or []),
+            recommended_focus=_normalize_list(parsed.get("recommended_focus") or []),
+            evidence=evidence,
+            source_coverage=coverage,
+        )
+        if not response.project_goals:
+            response.project_goals = [
+                f"Validate release readiness for {req.selected_app_name} with context from Jira and enterprise docs."
+            ]
+        if not response.selected_app_impacts:
+            response.selected_app_impacts = [
+                f"Prioritize latency, throughput, and failure behavior for {req.selected_app_name}."
+            ]
+        if not response.cross_system_impacts:
+            response.cross_system_impacts = [
+                "Track dependency and integration risks across upstream/downstream systems."
+            ]
+        if not response.recommended_focus:
+            response.recommended_focus = [
+                "Translate findings into measurable SLAs and scenario coverage before launch."
+            ]
+        return response
+    except Exception as exc:
+        log.warning("summary_llm_fallback", error=str(exc))
+        fallback = _fallback_summary(req, jira_evidence, rag_evidence)
+        fallback.source_coverage = coverage
+        fallback.source_coverage.warnings.append(f"LLM summary fallback used: {exc}")
+        return fallback
 
 
 # ── WebSocket ─────────────────────────────────────────────────────────

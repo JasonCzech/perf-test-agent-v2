@@ -68,9 +68,9 @@ class JiraClient:
         return await self._search_jql(jql)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=10))
-    async def get_stories_by_jql(self, jql: str) -> list[dict[str, Any]]:
+    async def get_stories_by_jql(self, jql: str, max_results: int = 100) -> list[dict[str, Any]]:
         """Fetch stories using a custom JQL query."""
-        return await self._search_jql(jql)
+        return await self._search_jql(jql, max_results=max_results)
 
     async def _search_jql(self, jql: str, max_results: int = 100) -> list[dict[str, Any]]:
         """Execute a JQL search and return all matching issues."""
@@ -111,10 +111,11 @@ class JiraClient:
         components: Optional[list[str]] = None,
         parent_key: Optional[str] = None,
         custom_fields: Optional[dict[str, Any]] = None,
+        project_key: Optional[str] = None,
     ) -> str:
         """Create a new Jira story/issue. Returns the issue key."""
         fields: dict[str, Any] = {
-            "project": {"key": self.settings.jira_project_key},
+            "project": {"key": project_key or self.settings.jira_project_key},
             "summary": summary,
             "description": description,
             "issuetype": {"name": story_type},

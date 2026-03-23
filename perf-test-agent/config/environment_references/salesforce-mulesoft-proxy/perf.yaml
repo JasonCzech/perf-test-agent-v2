@@ -1,0 +1,24 @@
+version: "2.0.0"
+last_updated: "2026-03-22T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+application_key: "salesforce-mulesoft-proxy"
+application_display_name: "Salesforce / Mulesoft Proxy"
+api_variant: "core"
+applications:
+  - app_name: "salesforce-mulesoft-proxy"
+    app_description: "Salesforce/Mulesoft SaaS integration proxy"
+    tags: ["frontend", "salesforce", "aks", "critical"]
+    config_fields:
+      - field_name: "MULESOFT_API_URL"
+        expected_perf_value: "https://mulesoft-perf.internal.att.com:8443/api/v2"
+        inspection_tool: "azure_cli"
+        description: "Mulesoft API gateway endpoint"
+        known_qc_values:
+          - "https://mulesoft-qc3.internal.att.com:8443/api/v2"
+      - field_name: "SF_INSTANCE_URL"
+        expected_perf_value: "https://att--perf.sandbox.my.salesforce.com"
+        inspection_tool: "azure_cli"
+        description: "Salesforce sandbox instance"
+        known_qc_values:
+          - "https://att--qc3.sandbox.my.salesforce.com"
