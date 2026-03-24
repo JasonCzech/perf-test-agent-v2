@@ -1,0 +1,41 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "identity-graph"
+application_display_name: "Identity Graph (SOLr)"
+api_variant: "core"
+applications:
+  - app_name: "identity-graph"
+    app_description: "Identity Graph — SOLr-backed identity resolution and lookup service"
+    tags: ["periphery", "solr", "identity", "critical"]
+    config_fields:
+      - field_name: "IDENTITY_GRAPH_BASE_URL"
+        expected_perf_value: "https://identity-graph-perf.internal.att.com:8080"
+        inspection_tool: "http_probe"
+        description: "Identity Graph REST API base URL"
+        known_qc_values:
+          - "https://identity-graph-qc3.internal.att.com:8080"
+          - "https://identity-graph-qc2.internal.att.com:8080"
+      - field_name: "IDENTITY_GRAPH_SOLR_URL"
+        expected_perf_value: "https://identity-graph-perf.internal.att.com:8983/solr"
+        inspection_tool: "http_probe"
+        description: "Identity Graph SOLr collection endpoint"
+        known_qc_values:
+          - "https://identity-graph-qc3.internal.att.com:8983/solr"
+      - field_name: "IDENTITY_GRAPH_SOLR_COLLECTION"
+        expected_perf_value: "identity_perf"
+        inspection_tool: "http_probe"
+        description: "SOLr collection name for identity data"
+        known_qc_values:
+          - "identity_qc3"
+          - "identity_qc2"
+      - field_name: "IDENTITY_GRAPH_REPLICA_COUNT"
+        expected_perf_value: "3"
+        inspection_tool: "kubernetes_api"
+        description: "AKS replica count for Identity Graph pods"
+        known_qc_values:
+          - "1"
+          - "2"

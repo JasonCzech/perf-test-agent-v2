@@ -1,0 +1,45 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "csi-oam"
+application_display_name: "CSI OAM (Operations, Administration & Maintenance)"
+api_variant: "oam"
+applications:
+  - app_name: "csi-oam"
+    app_description: "CSI Common Services Gateway — OAM API variant (ops and admin flows)"
+    tags: ["middleware", "csi", "oam"]
+    config_fields:
+      - field_name: "CSI_OAM_BASE_URL"
+        expected_perf_value: "https://csi-oam-perf.internal.att.com:9444"
+        inspection_tool: "azure_cli"
+        description: "CSI OAM REST API base URL"
+        known_qc_values:
+          - "https://csi-oam-qc3.internal.att.com:9444"
+          - "https://csi-oam-qc2.internal.att.com:9444"
+      - field_name: "CSI_OAM_HEALTH_ENDPOINT"
+        expected_perf_value: "https://csi-oam-perf.internal.att.com:9444/csi/oam/health"
+        inspection_tool: "http_probe"
+        description: "CSI OAM health check endpoint"
+        known_qc_values:
+          - "https://csi-oam-qc3.internal.att.com:9444/csi/oam/health"
+      - field_name: "CSI_OAM_TLG_ENDPOINT"
+        expected_perf_value: "https://tlg-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "TLG endpoint for OAM operations"
+        known_qc_values:
+          - "https://tlg-qc3.internal.att.com:9443"
+      - field_name: "CSI_OAM_BSSE_ENDPOINT"
+        expected_perf_value: "https://bsse-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "BSSe endpoint for OAM billing operations"
+        known_qc_values:
+          - "https://bsse-qc3.internal.att.com:9443"
+      - field_name: "CSI_OAM_REPLICA_COUNT"
+        expected_perf_value: "2"
+        inspection_tool: "kubernetes_api"
+        description: "AKS replica count for CSI OAM pods"
+        known_qc_values:
+          - "1"

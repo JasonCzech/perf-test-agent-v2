@@ -1,0 +1,53 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "egs"
+application_display_name: "EGS (Enterprise Gateway Services)"
+api_variant: "core"
+applications:
+  - app_name: "egs"
+    app_description: "EGS Enterprise Gateway Services — API gateway layer for external partner and B2B integrations"
+    tags: ["middleware", "egs", "gateway", "b2b", "critical"]
+    config_fields:
+      - field_name: "EGS_BASE_URL"
+        expected_perf_value: "https://egs-perf.internal.att.com:8443"
+        inspection_tool: "http_probe"
+        description: "EGS REST API base URL"
+        known_qc_values:
+          - "https://egs-qc3.internal.att.com:8443"
+          - "https://egs-qc2.internal.att.com:8443"
+      - field_name: "EGS_HEALTH_ENDPOINT"
+        expected_perf_value: "https://egs-perf.internal.att.com:8443/egs/health"
+        inspection_tool: "http_probe"
+        description: "EGS health check endpoint"
+        known_qc_values:
+          - "https://egs-qc3.internal.att.com:8443/egs/health"
+      - field_name: "EGS_CSI_ENDPOINT"
+        expected_perf_value: "https://csi-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "CSI Gateway endpoint used by EGS for internal service routing"
+        known_qc_values:
+          - "https://csi-qc3.internal.att.com:9443"
+      - field_name: "EGS_NEO_ENDPOINT"
+        expected_perf_value: "https://neo-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "NEO endpoint for order orchestration via EGS"
+        known_qc_values:
+          - "https://neo-qc3.internal.att.com:8443"
+      - field_name: "EGS_RATE_LIMIT_RPS"
+        expected_perf_value: "500"
+        inspection_tool: "http_probe"
+        description: "EGS enforced rate limit (requests/sec) — must match perf SLA targets"
+        known_qc_values:
+          - "100"
+          - "50"
+      - field_name: "EGS_REPLICA_COUNT"
+        expected_perf_value: "3"
+        inspection_tool: "kubernetes_api"
+        description: "AKS replica count for EGS pods"
+        known_qc_values:
+          - "1"
+          - "2"

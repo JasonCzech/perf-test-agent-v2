@@ -1,0 +1,52 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "solr-db"
+application_display_name: "SOLr DB Cluster"
+api_variant: "core"
+applications:
+  - app_name: "solr-db"
+    app_description: "Apache SOLr shared cluster backing Customer Graph, Order Graph, and Identity Graph"
+    tags: ["data", "solr", "search", "periphery"]
+    config_fields:
+      - field_name: "SOLR_BASE_URL"
+        expected_perf_value: "https://solr-perf.internal.att.com:8983"
+        inspection_tool: "http_probe"
+        description: "SOLr admin/REST base URL"
+        known_qc_values:
+          - "https://solr-qc3.internal.att.com:8983"
+          - "https://solr-qc2.internal.att.com:8983"
+      - field_name: "SOLR_ZK_HOST"
+        expected_perf_value: "solr-zk-perf-01.att.com:2181,solr-zk-perf-02.att.com:2181,solr-zk-perf-03.att.com:2181"
+        inspection_tool: "http_probe"
+        description: "ZooKeeper ensemble for SOLr cluster coordination"
+        known_qc_values:
+          - "solr-zk-qc-01.att.com:2181,solr-zk-qc-02.att.com:2181"
+      - field_name: "SOLR_CUSTOMER_GRAPH_COLLECTION"
+        expected_perf_value: "customer_graph_perf"
+        inspection_tool: "http_probe"
+        description: "SOLr collection for Customer Graph data"
+        known_qc_values:
+          - "customer_graph_qc3"
+      - field_name: "SOLR_ORDER_GRAPH_COLLECTION"
+        expected_perf_value: "order_graph_perf"
+        inspection_tool: "http_probe"
+        description: "SOLr collection for Order Graph data"
+        known_qc_values:
+          - "order_graph_qc3"
+      - field_name: "SOLR_IDENTITY_GRAPH_COLLECTION"
+        expected_perf_value: "identity_perf"
+        inspection_tool: "http_probe"
+        description: "SOLr collection for Identity Graph data"
+        known_qc_values:
+          - "identity_qc3"
+      - field_name: "SOLR_HEAP_SIZE"
+        expected_perf_value: "16g"
+        inspection_tool: "http_probe"
+        description: "SOLr JVM heap size — must be set for perf load"
+        known_qc_values:
+          - "8g"
+          - "4g"

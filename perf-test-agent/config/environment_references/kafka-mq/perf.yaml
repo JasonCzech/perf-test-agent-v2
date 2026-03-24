@@ -1,0 +1,58 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "kafka-mq"
+application_display_name: "Kafka MQ Cluster"
+api_variant: "core"
+applications:
+  - app_name: "kafka-mq"
+    app_description: "Apache Kafka cluster used by NEO, BOBPM, FOBPM, EDD, and EGS for async event streaming"
+    tags: ["messaging", "kafka", "middleware", "critical"]
+    config_fields:
+      - field_name: "KAFKA_BOOTSTRAP_SERVERS"
+        expected_perf_value: "kafka-perf-01.att.com:9092,kafka-perf-02.att.com:9092,kafka-perf-03.att.com:9092"
+        inspection_tool: "http_probe"
+        description: "Kafka bootstrap server list for PERF cluster"
+        known_qc_values:
+          - "kafka-qc-01.att.com:9092,kafka-qc-02.att.com:9092"
+      - field_name: "KAFKA_SCHEMA_REGISTRY_URL"
+        expected_perf_value: "https://kafka-schema-perf.internal.att.com:8081"
+        inspection_tool: "http_probe"
+        description: "Confluent Schema Registry URL"
+        known_qc_values:
+          - "https://kafka-schema-qc3.internal.att.com:8081"
+      - field_name: "KAFKA_TOPIC_ORDER_EVENTS"
+        expected_perf_value: "perf.order.events"
+        inspection_tool: "http_probe"
+        description: "Kafka topic for order lifecycle events"
+        known_qc_values:
+          - "qc3.order.events"
+          - "qc2.order.events"
+      - field_name: "KAFKA_TOPIC_FULFILLMENT_EVENTS"
+        expected_perf_value: "perf.fulfillment.events"
+        inspection_tool: "http_probe"
+        description: "Kafka topic for fulfillment lifecycle events"
+        known_qc_values:
+          - "qc3.fulfillment.events"
+      - field_name: "KAFKA_TOPIC_BILLING_EVENTS"
+        expected_perf_value: "perf.billing.events"
+        inspection_tool: "http_probe"
+        description: "Kafka topic for billing and BSSe events"
+        known_qc_values:
+          - "qc3.billing.events"
+      - field_name: "KAFKA_REPLICATION_FACTOR"
+        expected_perf_value: "3"
+        inspection_tool: "http_probe"
+        description: "Default topic replication factor"
+        known_qc_values:
+          - "1"
+          - "2"
+      - field_name: "KAFKA_MIN_INSYNC_REPLICAS"
+        expected_perf_value: "2"
+        inspection_tool: "http_probe"
+        description: "Minimum in-sync replicas for durability"
+        known_qc_values:
+          - "1"
