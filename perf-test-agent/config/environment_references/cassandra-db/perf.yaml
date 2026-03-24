@@ -1,0 +1,52 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "cassandra-db"
+application_display_name: "Cassandra DB Cluster"
+api_variant: "core"
+applications:
+  - app_name: "cassandra-db"
+    app_description: "Apache Cassandra cluster shared by TLG, BSSe, and other Amdocs services for high-throughput data"
+    tags: ["data", "cassandra", "backend"]
+    config_fields:
+      - field_name: "CASSANDRA_CONTACT_POINTS"
+        expected_perf_value: "cassandra-perf-01.att.com,cassandra-perf-02.att.com,cassandra-perf-03.att.com"
+        inspection_tool: "db_query"
+        description: "Cassandra seed/contact points for PERF cluster"
+        known_qc_values:
+          - "cassandra-qc-01.att.com,cassandra-qc-02.att.com"
+      - field_name: "CASSANDRA_PORT"
+        expected_perf_value: "9042"
+        inspection_tool: "db_query"
+        description: "Cassandra native transport port"
+        known_qc_values: []
+      - field_name: "CASSANDRA_KEYSPACE_TLG"
+        expected_perf_value: "tlg_perf"
+        inspection_tool: "db_query"
+        description: "TLG Cassandra keyspace"
+        known_qc_values:
+          - "tlg_qc3"
+          - "tlg_qc2"
+      - field_name: "CASSANDRA_KEYSPACE_BSSE"
+        expected_perf_value: "bsse_perf"
+        inspection_tool: "db_query"
+        description: "BSSe Cassandra keyspace"
+        known_qc_values:
+          - "bsse_qc3"
+          - "bsse_qc2"
+      - field_name: "CASSANDRA_REPLICATION_FACTOR"
+        expected_perf_value: "3"
+        inspection_tool: "db_query"
+        description: "Cassandra replication factor — must be 3 for PERF resilience"
+        known_qc_values:
+          - "1"
+          - "2"
+      - field_name: "CASSANDRA_CONSISTENCY_LEVEL"
+        expected_perf_value: "LOCAL_QUORUM"
+        inspection_tool: "db_query"
+        description: "Default read/write consistency level"
+        known_qc_values:
+          - "ONE"

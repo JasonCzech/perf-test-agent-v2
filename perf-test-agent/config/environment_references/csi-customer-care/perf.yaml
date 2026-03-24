@@ -1,0 +1,46 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "csi-customer-care"
+application_display_name: "CSI Customer Care"
+api_variant: "customer-care"
+applications:
+  - app_name: "csi-customer-care"
+    app_description: "CSI Common Services Gateway — Customer Care API variant (agent-facing flows)"
+    tags: ["middleware", "csi", "customer-care", "critical"]
+    config_fields:
+      - field_name: "CSI_CC_BASE_URL"
+        expected_perf_value: "https://csi-cc-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "CSI Customer Care REST API base URL"
+        known_qc_values:
+          - "https://csi-cc-qc3.internal.att.com:9443"
+          - "https://csi-cc-qc2.internal.att.com:9443"
+      - field_name: "CSI_CC_HEALTH_ENDPOINT"
+        expected_perf_value: "https://csi-cc-perf.internal.att.com:9443/csi/cc/health"
+        inspection_tool: "http_probe"
+        description: "CSI Customer Care health check endpoint"
+        known_qc_values:
+          - "https://csi-cc-qc3.internal.att.com:9443/csi/cc/health"
+      - field_name: "CSI_CC_IDENTITY_GRAPH_ENDPOINT"
+        expected_perf_value: "https://identity-graph-perf.internal.att.com:8080"
+        inspection_tool: "azure_cli"
+        description: "Identity Graph endpoint for customer lookup"
+        known_qc_values:
+          - "https://identity-graph-qc3.internal.att.com:8080"
+      - field_name: "CSI_CC_TLG_ENDPOINT"
+        expected_perf_value: "https://tlg-perf.internal.att.com:9443"
+        inspection_tool: "azure_cli"
+        description: "TLG backend endpoint for account data"
+        known_qc_values:
+          - "https://tlg-qc3.internal.att.com:9443"
+      - field_name: "CSI_CC_REPLICA_COUNT"
+        expected_perf_value: "3"
+        inspection_tool: "kubernetes_api"
+        description: "AKS replica count for CSI Customer Care pods"
+        known_qc_values:
+          - "1"
+          - "2"

@@ -1,0 +1,46 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "neo"
+application_display_name: "NEO (Network Experience Orchestrator)"
+api_variant: "core"
+applications:
+  - app_name: "neo"
+    app_description: "NEO Network Experience Orchestrator — order orchestration and provisioning"
+    tags: ["middleware", "neo", "orchestration", "critical"]
+    config_fields:
+      - field_name: "NEO_BASE_URL"
+        expected_perf_value: "https://neo-perf.internal.att.com:8443"
+        inspection_tool: "http_probe"
+        description: "NEO REST API base URL"
+        known_qc_values:
+          - "https://neo-qc3.internal.att.com:8443"
+          - "https://neo-qc2.internal.att.com:8443"
+      - field_name: "NEO_HEALTH_ENDPOINT"
+        expected_perf_value: "https://neo-perf.internal.att.com:8443/neo/health"
+        inspection_tool: "http_probe"
+        description: "NEO health check endpoint"
+        known_qc_values:
+          - "https://neo-qc3.internal.att.com:8443/neo/health"
+      - field_name: "NEO_DB_CONNECTION"
+        expected_perf_value: "oracle-perf-scan.att.com:1521/NEO_PERF"
+        inspection_tool: "db_query"
+        description: "NEO Oracle database connection string"
+        known_qc_values:
+          - "oracle-qc-scan.att.com:1521/NEO_QC3"
+      - field_name: "NEO_KAFKA_BOOTSTRAP"
+        expected_perf_value: "kafka-perf-01.att.com:9092,kafka-perf-02.att.com:9092"
+        inspection_tool: "http_probe"
+        description: "Kafka bootstrap servers for NEO event streaming"
+        known_qc_values:
+          - "kafka-qc-01.att.com:9092,kafka-qc-02.att.com:9092"
+      - field_name: "NEO_REPLICA_COUNT"
+        expected_perf_value: "3"
+        inspection_tool: "kubernetes_api"
+        description: "AKS replica count for NEO pods"
+        known_qc_values:
+          - "1"
+          - "2"

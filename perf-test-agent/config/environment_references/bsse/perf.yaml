@@ -1,0 +1,51 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "bsse"
+application_display_name: "BSSe (Amdocs Business Support System Enhanced)"
+api_variant: "core"
+applications:
+  - app_name: "bsse"
+    app_description: "BSSe — Amdocs billing and account management system"
+    tags: ["backend", "amdocs", "bsse", "billing", "critical"]
+    config_fields:
+      - field_name: "BSSE_BASE_URL"
+        expected_perf_value: "https://bsse-perf.internal.att.com:9443"
+        inspection_tool: "amdocs_api"
+        description: "BSSe REST API base URL"
+        known_qc_values:
+          - "https://bsse-qc3.internal.att.com:9443"
+          - "https://bsse-qc2.internal.att.com:9443"
+      - field_name: "BSSE_HEALTH_ENDPOINT"
+        expected_perf_value: "https://bsse-perf.internal.att.com:9443/bsse/actuator/health"
+        inspection_tool: "http_probe"
+        description: "BSSe health check endpoint"
+        known_qc_values:
+          - "https://bsse-qc3.internal.att.com:9443/bsse/actuator/health"
+      - field_name: "BSSE_DB_CONNECTION"
+        expected_perf_value: "oracle-perf-scan.att.com:1521/BSSE_PERF"
+        inspection_tool: "amdocs_config_file"
+        description: "BSSe Oracle database connection string"
+        known_qc_values:
+          - "oracle-qc-scan.att.com:1521/BSSE_QC3"
+      - field_name: "BSSE_CASSANDRA_CONTACT_POINTS"
+        expected_perf_value: "cassandra-perf-01.att.com,cassandra-perf-02.att.com"
+        inspection_tool: "amdocs_config_file"
+        description: "Cassandra cluster for BSSe session/cache data"
+        known_qc_values:
+          - "cassandra-qc-01.att.com,cassandra-qc-02.att.com"
+      - field_name: "BSSE_IBM_MQ_HOST"
+        expected_perf_value: "ibmmq-perf.internal.att.com"
+        inspection_tool: "amdocs_config_file"
+        description: "IBM MQ broker host for BSSe billing events"
+        known_qc_values:
+          - "ibmmq-qc3.internal.att.com"
+      - field_name: "BSSE_IBM_MQ_CHANNEL"
+        expected_perf_value: "PERF.BSSE.CHANNEL"
+        inspection_tool: "amdocs_config_file"
+        description: "IBM MQ channel name"
+        known_qc_values:
+          - "QC3.BSSE.CHANNEL"
