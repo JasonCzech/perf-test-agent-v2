@@ -28,6 +28,77 @@ from src.tools.langchain_tools import (
 )
 
 
+def _artifacts_to_prompt_section(user_artifacts: dict[str, Any] | None) -> str:
+    if not isinstance(user_artifacts, dict):
+        return ""
+
+    mode = str(user_artifacts.get("mode") or "augment").strip().lower() or "augment"
+    free_text = str(user_artifacts.get("free_text") or "").strip()
+
+    jira_links: list[str] = []
+    raw_links = user_artifacts.get("jira_links")
+    if isinstance(raw_links, list):
+        jira_links = [str(link).strip() for link in raw_links if str(link).strip()]
+
+    docs: list[dict[str, str]] = []
+    raw_docs = user_artifacts.get("doc_blocks")
+    if isinstance(raw_docs, list):
+        for doc in raw_docs:
+            if not isinstance(doc, dict):
+                continue
+            title = str(doc.get("title") or "").strip()
+            content = str(doc.get("content") or "").strip()
+            if title or content:
+                docs.append({"title": title, "content": content})
+
+    file_placeholders: list[dict[str, str]] = []
+    raw_files = user_artifacts.get("file_placeholders")
+    if isinstance(raw_files, list):
+        for item in raw_files:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name") or "").strip()
+            notes = str(item.get("notes") or "").strip()
+            if name or notes:
+                file_placeholders.append({"name": name, "notes": notes})
+
+    if not free_text and not jira_links and not docs and not file_placeholders:
+        return ""
+
+    lines: list[str] = [
+        "",
+        "Additional user-provided artifacts (augment mode):",
+        f"- Mode: {mode}",
+    ]
+
+    if free_text:
+        lines.append("- Free text notes:")
+        lines.append(free_text)
+
+    if jira_links:
+        lines.append("- Jira links to include:")
+        lines.extend([f"  - {link}" for link in jira_links])
+
+    if docs:
+        lines.append("- Document blocks:")
+        for idx, doc in enumerate(docs, start=1):
+            title = doc["title"] or f"Document {idx}"
+            content = doc["content"] or "(no content provided)"
+            lines.append(f"  - {title}: {content}")
+
+    if file_placeholders:
+        lines.append("- File placeholders (content pending):")
+        for item in file_placeholders:
+            name = item["name"] or "Unnamed file"
+            notes = item["notes"] or "No notes"
+            lines.append(f"  - {name}: {notes}")
+
+    lines.append(
+        "Use these artifacts as supplemental context only and merge them with Jira/RAG findings when extracting test cases."
+    )
+    return "\n".join(lines)
+
+
 class StoryAnalyzerAgent(BaseAgent[StoryAnalysisOutput]):
     """Phase 1 agent: Jira stories -> structured test cases."""
 
@@ -49,6 +120,7 @@ class StoryAnalyzerAgent(BaseAgent[StoryAnalysisOutput]):
     def build_agent_input(self, state: PipelineState) -> str:
         stories = state.jira_story_keys
         sprint = state.sprint_name
+        artifacts_section = _artifacts_to_prompt_section(state.user_artifacts)
 
         if stories:
             return (
@@ -57,15 +129,17 @@ class StoryAnalyzerAgent(BaseAgent[StoryAnalysisOutput]):
                 f"For each story, fetch the details, search the enterprise knowledge base "
                 f"for related documentation, check for historical baselines, and identify "
                 f"all transaction flows that need performance testing."
+                f"{artifacts_section}"
             )
         elif sprint:
             return (
                 f"Fetch all stories from sprint '{sprint}' and analyze them for "
                 f"performance test case extraction. For each story, search the enterprise "
                 f"knowledge base for related documentation and identify transaction flows."
+                f"{artifacts_section}"
             )
         else:
-            return "No stories or sprint specified. Please provide input."
+            return f"No stories or sprint specified. Please provide input.{artifacts_section}"
 
     def parse_output(self, agent_result: dict[str, Any]) -> StoryAnalysisOutput:
         raw = agent_result.get("output", "")

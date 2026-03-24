@@ -18,7 +18,15 @@ const { useState, useEffect, useRef, useCallback, useMemo } = React;
 const C={white:"#ffffff",bg:"#f5f7fa",bgCard:"#ffffff",bgMuted:"#f0f3f7",bgHover:"#e8f4fc",border:"#e0e6ed",borderLight:"#eef1f5",attBlue:"#00A8E0",attBlueDark:"#0077a8",attBlueLight:"#e5f6fc",attBlueFaint:"#f0f9fd",textPrimary:"#1a1a2e",textSecondary:"#5a6578",textMuted:"#8c96a6",success:"#0faa6c",successBg:"#edfbf4",successBorder:"#b8ecd4",warning:"#e5920a",warningBg:"#fef7ea",warningBorder:"#f5dca3",error:"#dc3545",errorBg:"#fef0f1",errorBorder:"#f5c1c6",purple:"#6f42c1",purpleBg:"#f3effa",purpleBorder:"#d4c5f0",fontSans:"'Nunito','Omnes',system-ui,sans-serif",fontMono:"'IBM Plex Mono','Menlo',monospace"};
 const PHASES=[{id:"story_analysis",label:"Story Analysis",num:1},{id:"test_planning",label:"Test Planning",num:2},{id:"env_triage",label:"Env Triage",num:3},{id:"script_data",label:"Scripts & Data",num:4},{id:"execution",label:"Execution",num:5},{id:"reporting",label:"Reporting",num:6},{id:"postmortem",label:"Postmortem",num:7}];
 const PHASE_DESCS={story_analysis:"Extract test cases from Jira stories + RAG",test_planning:"Build workload models, scenarios, SLAs",env_triage:"Validate PERF configs, establish golden baseline",script_data:"Generate VuGen/JMeter scripts, provision data",execution:"Run peak/break/stability tests with live monitoring",reporting:"Analyze results, publish Word/SharePoint",postmortem:"Archive lessons to Snowflake + RAG"};
-const STATUS={pending:{color:C.textMuted,bg:C.bgMuted,border:C.border,label:"Pending",dot:false},running:{color:C.attBlue,bg:C.attBlueLight,border:C.attBlue+"50",label:"Running",dot:true},awaiting_approval:{color:C.purple,bg:C.purpleBg,border:C.purpleBorder,label:"Awaiting",dot:true},completed:{color:C.success,bg:C.successBg,border:C.successBorder,label:"Complete",dot:false}};
+const STATUS={
+  pending:{color:C.textMuted,bg:C.bgMuted,border:C.border,label:"Pending",dot:false},
+  prompt_review:{color:C.attBlueDark,bg:C.attBlueFaint,border:C.attBlue+"40",label:"Prompt Review",dot:false},
+  executing:{color:C.attBlue,bg:C.attBlueLight,border:C.attBlue+"50",label:"Executing",dot:true},
+  results_ready:{color:C.purple,bg:C.purpleBg,border:C.purpleBorder,label:"Results Ready",dot:true},
+  completed:{color:C.success,bg:C.successBg,border:C.successBorder,label:"Complete",dot:false},
+  running:{color:C.attBlue,bg:C.attBlueLight,border:C.attBlue+"50",label:"Executing",dot:true},
+  awaiting_approval:{color:C.purple,bg:C.purpleBg,border:C.purpleBorder,label:"Results Ready",dot:true},
+};
 const APPS=[
   {id:"opus",referenceKey:"opus-web",name:"OPUS",desc:"Legacy Retail",tier:"Frontend",protocol:"Web HTTP/HTML",icon:"O"},
   {id:"salesforce",referenceKey:"salesforce-mulesoft-proxy",name:"Salesforce/Mulesoft",desc:"SaaS Proxy",tier:"Frontend",protocol:"REST",icon:"SF"},
@@ -42,6 +50,7 @@ const NAV_LINKS=[
 ];
 const AR="→",DA="—",BU="•",EL="…",UP="↑";
 const envRefKey=(ref)=>`${ref.application_key}|${ref.environment}|${ref.lab_environment||"PERF"}|${ref.release_code||"current"}|${ref.api_variant}`;
+const currentBillingReleaseLabel=()=>{const now=new Date();const yy=String(now.getFullYear()).slice(-2);const mm=String(now.getMonth()+1).padStart(2,"0");return `${yy}.${mm} Release`;};
 
 // Past test run history for the landing page table
 const PAST_RUNS=[
@@ -104,8 +113,10 @@ function AgentPromptViewer({phaseId}){const[open,setOpen]=useState(false);const 
 function LandingPage({onLaunch,activeSection,onNavigate}){
   const[contextIds,setContextIds]=useState([]);const[selectedApps,setSelectedApps]=useState([]);
   const[iv,setIv]=useState("");const[it,setIt]=useState("PID");const ref=useRef(null);
-  const[storyKeys,setStoryKeys]=useState("TELECOM-4521, TELECOM-4522");const[sprint,setSprint]=useState("Sprint 26.3");
+  const[storyKeys,setStoryKeys]=useState("GDDN-233252, BOBPM-325632");const[scheduleType,setScheduleType]=useState("sprint");const[scheduleValue,setScheduleValue]=useState("Sprint 26.3");
   const[summaryLoading,setSummaryLoading]=useState(false);const[summaryError,setSummaryError]=useState("");const[generatedSummary,setGeneratedSummary]=useState(null);const[demoSummary,setDemoSummary]=useState(null);
+  const[artifactFreeText,setArtifactFreeText]=useState("");const[artifactJiraLinksText,setArtifactJiraLinksText]=useState("");
+  const[artifactDocBlocks,setArtifactDocBlocks]=useState([{title:"",content:""}]);const[artifactFilePlaceholders,setArtifactFilePlaceholders]=useState([{name:"",notes:""}]);
 
   const[envRefs,setEnvRefs]=useState([]);const[envRefsLoading,setEnvRefsLoading]=useState(false);const[envRefsError,setEnvRefsError]=useState("");
   const[selectedLabEnvironment,setSelectedLabEnvironment]=useState("all");const[selectedReleaseCode,setSelectedReleaseCode]=useState("all");
@@ -129,7 +140,7 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
   useEffect(()=>{let mounted=true;const load=async()=>{setEnvRefsLoading(true);try{const res=await fetch("/api/env/configs");if(!res.ok)throw new Error("Unable to load environment references");const data=await res.json();if(!mounted)return;setEnvRefs((data&&Array.isArray(data.references)?data.references:[]));setEnvRefsError("");}catch(err){if(mounted)setEnvRefsError(err?.message||"Unable to load environment references");}finally{if(mounted)setEnvRefsLoading(false);}};load();return()=>{mounted=false;};},[]);
   useEffect(()=>{let mounted=true;const load=async()=>{setHistoryLoading(true);try{const res=await fetch("/api/pipeline/runs");if(!res.ok)throw new Error("Unable to load run history");const data=await res.json();if(!mounted)return;setHistoryRuns(Array.isArray(data?.runs)?data.runs:[]);setHistoryError("");}catch(err){if(mounted){setHistoryRuns([]);setHistoryError(err?.message||"Unable to load run history");}}finally{if(mounted)setHistoryLoading(false);}};load();return()=>{mounted=false;};},[]);
   useEffect(()=>{let mounted=true;const load=async()=>{setTicketLoading(true);setTicketError("");try{const query=new URLSearchParams({team_scope:"true",max_results:"100"});if(ticketStatusFilter!=="all")query.set("status",ticketStatusFilter);if(ticketTypeFilter!=="all")query.set("issue_type",ticketTypeFilter);const res=await fetch(`/api/jira/tickets?${query.toString()}`);if(!res.ok)throw new Error("Unable to load tickets");const data=await res.json();if(!mounted)return;setTickets(Array.isArray(data?.tickets)?data.tickets:[]);}catch(err){if(mounted){setTickets([]);setTicketError(err?.message||"Unable to load tickets");}}finally{if(mounted)setTicketLoading(false);}};load();return()=>{mounted=false;};},[ticketReloadNonce,ticketStatusFilter,ticketTypeFilter]);
-  useEffect(()=>{setGeneratedSummary(null);setDemoSummary(null);setSummaryError("");},[storyKeys,sprint,selectedApps.join("|"),contextIds.map(c=>`${c.id}:${c.status}`).join("|")]);
+  useEffect(()=>{setGeneratedSummary(null);setDemoSummary(null);setSummaryError("");},[storyKeys,scheduleType,scheduleValue,selectedApps.join("|"),contextIds.map(c=>`${c.id}:${c.status}`).join("|")]);
 
   useEffect(()=>{if(ticketForm.applicationId)return;if(selectedApps.length===0)return;setTicketForm(prev=>({...prev,applicationId:selectedApps[0]}));},[selectedApps,ticketForm.applicationId]);
 
@@ -151,6 +162,16 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
   const toggleApp=(id)=>setSelectedApps(prev=>prev.includes(id)?[]:[id]);
   const canLaunch=contextIds.length>0&&selectedApps.length>0&&storyKeys.trim();
   const searchedContextIds=useMemo(()=>contextIds.filter(c=>c.status==="indexed").map(c=>c.id),[contextIds]);
+  const parsedArtifactJiraLinks=useMemo(()=>artifactJiraLinksText.split(/\r?\n|,/).map(v=>v.trim()).filter(Boolean),[artifactJiraLinksText]);
+  const parsedArtifactDocBlocks=useMemo(()=>artifactDocBlocks.map(doc=>({title:(doc.title||"").trim(),content:(doc.content||"").trim()})).filter(doc=>doc.title||doc.content),[artifactDocBlocks]);
+  const parsedArtifactFiles=useMemo(()=>artifactFilePlaceholders.map(item=>({name:(item.name||"").trim(),notes:(item.notes||"").trim()})).filter(item=>item.name||item.notes),[artifactFilePlaceholders]);
+  const userArtifacts=useMemo(()=>{const freeText=artifactFreeText.trim();if(!freeText&&parsedArtifactJiraLinks.length===0&&parsedArtifactDocBlocks.length===0&&parsedArtifactFiles.length===0)return null;return {mode:"augment",free_text:freeText,jira_links:parsedArtifactJiraLinks,doc_blocks:parsedArtifactDocBlocks,file_placeholders:parsedArtifactFiles};},[artifactFreeText,parsedArtifactJiraLinks,parsedArtifactDocBlocks,parsedArtifactFiles]);
+  const addDocBlock=()=>setArtifactDocBlocks(prev=>[...prev,{title:"",content:""}]);
+  const updateDocBlock=(idx,field,value)=>setArtifactDocBlocks(prev=>prev.map((doc,i)=>i===idx?{...doc,[field]:value}:doc));
+  const removeDocBlock=(idx)=>setArtifactDocBlocks(prev=>prev.length===1?[{title:"",content:""}]:prev.filter((_,i)=>i!==idx));
+  const addFilePlaceholder=()=>setArtifactFilePlaceholders(prev=>[...prev,{name:"",notes:""}]);
+  const updateFilePlaceholder=(idx,field,value)=>setArtifactFilePlaceholders(prev=>prev.map((item,i)=>i===idx?{...item,[field]:value}:item));
+  const removeFilePlaceholder=(idx)=>setArtifactFilePlaceholders(prev=>prev.length===1?[{name:"",notes:""}]:prev.filter((_,i)=>i!==idx));
   const canGenerateSummary=searchedContextIds.length>0&&selectedApps.length===1&&storyKeys.trim()&&!summaryLoading;
   const summaryPreview=generatedSummary||demoSummary;
   const isDemoSummary=!generatedSummary&&!!demoSummary;
@@ -185,7 +206,7 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
     if(keys.length===0){setSummaryError("Add at least one Jira story key before generating summary.");return;}
     setSummaryLoading(true);
     setSummaryError("");
-    const payload={story_keys:keys,sprint_name:sprint,context_ids:searchedContextIds,selected_app_id:selectedApp.id,selected_app_name:selectedApp.name,selected_app_reference_key:selectedApp.referenceKey};
+    const payload={story_keys:keys,sprint_name:scheduleValue,context_ids:searchedContextIds,selected_app_id:selectedApp.id,selected_app_name:selectedApp.name,selected_app_reference_key:selectedApp.referenceKey};
     try{
       const urls=["/api/context/summary"];
       if(window?.location?.protocol==="file:"||window?.location?.port===""){
@@ -293,9 +314,24 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
     return (<div style={{maxWidth:1100,margin:"0 auto",padding:"32px 24px",display:"flex",flexDirection:"column",gap:22}}>
       <div><div style={{fontSize:28,fontWeight:800,color:C.textPrimary,marginBottom:4}}>New Pipeline Run</div><div style={{fontSize:14,color:C.textSecondary}}>Guided setup for stories, context IDs, and target application under test.</div></div>
       <Card style={{border:`2px solid ${C.attBlue}30`,boxShadow:`0 4px 20px ${C.attBlue}08`}}>
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:14,fontWeight:800,marginBottom:2}}>Application Under Test <span style={{color:C.error,fontSize:12}}>*</span></div>
+          <div style={{fontSize:12,color:C.textSecondary,marginBottom:12}}>Select one system for direct testing scope.</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{APPS.map(app=>{const sel=selectedApps.includes(app.id);const tcc=tc[app.tier]||C.textMuted;return (<div key={app.id} onClick={()=>toggleApp(app.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",background:sel?C.attBlueFaint:C.white,border:`2px solid ${sel?C.attBlue:C.border}`,transition:"all 0.15s"}}><div style={{width:32,height:32,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,background:sel?C.attBlue:C.bgMuted,color:sel?"white":C.textMuted}}>{app.icon}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:700,color:sel?C.textPrimary:C.textSecondary}}>{app.name}</div><div style={{display:"flex",gap:4,marginTop:2}}><span style={{padding:"1px 5px",borderRadius:3,fontSize:9,fontWeight:700,background:tcc+"14",color:tcc}}>{app.tier}</span><span style={{padding:"1px 5px",borderRadius:3,fontSize:9,background:C.bgMuted,color:C.textMuted}}>{app.protocol}</span></div></div><div style={{width:20,height:20,borderRadius:6,border:`2px solid ${sel?C.attBlue:C.border}`,background:sel?C.attBlue:"white",display:"flex",alignItems:"center",justifyContent:"center"}}>{sel&&<span style={{color:"white",fontSize:12,fontWeight:800}}>{"✓"}</span>}</div></div>);})}</div>
+        </div>
+
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
           <div><div style={{fontSize:12,fontWeight:700,color:C.textSecondary,marginBottom:6}}>Jira Story Keys <span style={{color:C.error}}>*</span></div><input value={storyKeys} onChange={e=>setStoryKeys(e.target.value)} placeholder="TELECOM-1234, TELECOM-1235" style={{width:"100%",boxSizing:"border-box",padding:"10px 14px",borderRadius:8,border:`1px solid ${C.border}`,background:C.bgMuted,fontFamily:C.fontMono,fontSize:13,outline:"none"}} onFocus={e=>e.target.style.borderColor=C.attBlue} onBlur={e=>e.target.style.borderColor=C.border}/></div>
-          <div><div style={{fontSize:12,fontWeight:700,color:C.textSecondary,marginBottom:6}}>Sprint</div><input value={sprint} onChange={e=>setSprint(e.target.value)} placeholder="Sprint 26.3" style={{width:"100%",boxSizing:"border-box",padding:"10px 14px",borderRadius:8,border:`1px solid ${C.border}`,background:C.bgMuted,fontFamily:C.fontMono,fontSize:13,outline:"none"}} onFocus={e=>e.target.style.borderColor=C.attBlue} onBlur={e=>e.target.style.borderColor=C.border}/></div>
+          <div>
+            <div style={{fontSize:12,fontWeight:700,color:C.textSecondary,marginBottom:6}}>Schedule</div>
+            <div style={{display:"grid",gridTemplateColumns:"auto 1fr",gap:8,alignItems:"center"}}>
+              <div style={{display:"flex",borderRadius:8,overflow:"hidden",border:`1px solid ${C.border}`}}>
+                <button onClick={()=>setScheduleType("sprint")} style={{padding:"8px 10px",border:"none",fontSize:11,fontWeight:800,cursor:"pointer",background:scheduleType==="sprint"?C.attBlue:C.white,color:scheduleType==="sprint"?"white":C.textMuted}}>Sprint</button>
+                <button onClick={()=>{setScheduleType("billing_release");setScheduleValue(currentBillingReleaseLabel());}} style={{padding:"8px 10px",border:"none",fontSize:11,fontWeight:800,cursor:"pointer",background:scheduleType==="billing_release"?C.attBlue:C.white,color:scheduleType==="billing_release"?"white":C.textMuted}}>Billing Release</button>
+              </div>
+              <input value={scheduleValue} onChange={e=>setScheduleValue(e.target.value)} placeholder={scheduleType==="sprint"?"Sprint 26.3":currentBillingReleaseLabel()} style={{width:"100%",boxSizing:"border-box",padding:"10px 14px",borderRadius:8,border:`1px solid ${C.border}`,background:C.bgMuted,fontFamily:C.fontMono,fontSize:13,outline:"none"}} onFocus={e=>e.target.style.borderColor=C.attBlue} onBlur={e=>e.target.style.borderColor=C.border}/>
+            </div>
+          </div>
         </div>
 
         <div style={{marginBottom:20,padding:16,borderRadius:10,background:C.attBlueFaint,border:`1px solid ${C.attBlue}25`}}>
@@ -305,10 +341,28 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
           <div style={{display:"flex",gap:8,alignItems:"center"}}><div style={{display:"flex",borderRadius:8,overflow:"hidden",border:`1px solid ${C.border}`,flexShrink:0}}>{["PID","E1"].map(t=><button key={t} onClick={()=>setIt(t)} style={{padding:"8px 14px",border:"none",fontSize:12,fontWeight:700,fontFamily:C.fontMono,cursor:"pointer",background:it===t?(t==="PID"?C.attBlue:C.purple):C.white,color:it===t?"white":C.textMuted}}>{t}</button>)}</div><input ref={ref} value={iv} onChange={e=>setIv(e.target.value)} onKeyDown={kd} placeholder={it==="PID"?"PID-2026-0481":"E1-88432"} style={{flex:1,padding:"8px 14px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,fontFamily:C.fontMono,fontSize:13,fontWeight:600,outline:"none"}} onFocus={e=>e.target.style.borderColor=C.attBlue} onBlur={e=>e.target.style.borderColor=C.border}/><button onClick={add} disabled={!iv.trim()} style={{padding:"8px 18px",borderRadius:8,border:"none",background:iv.trim()?C.attBlue:C.bgMuted,color:iv.trim()?"white":C.textMuted,fontWeight:700,fontSize:13,cursor:iv.trim()?"pointer":"default",flexShrink:0}}>+ Add</button></div>
         </div>
 
-        <div style={{marginBottom:20}}>
-          <div style={{fontSize:14,fontWeight:800,marginBottom:2}}>Application Under Test <span style={{color:C.error,fontSize:12}}>*</span></div>
-          <div style={{fontSize:12,color:C.textSecondary,marginBottom:12}}>Select one system for direct testing scope.</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{APPS.map(app=>{const sel=selectedApps.includes(app.id);const tcc=tc[app.tier]||C.textMuted;return (<div key={app.id} onClick={()=>toggleApp(app.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",background:sel?C.attBlueFaint:C.white,border:`2px solid ${sel?C.attBlue:C.border}`,transition:"all 0.15s"}}><div style={{width:32,height:32,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,background:sel?C.attBlue:C.bgMuted,color:sel?"white":C.textMuted}}>{app.icon}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:700,color:sel?C.textPrimary:C.textSecondary}}>{app.name}</div><div style={{display:"flex",gap:4,marginTop:2}}><span style={{padding:"1px 5px",borderRadius:3,fontSize:9,fontWeight:700,background:tcc+"14",color:tcc}}>{app.tier}</span><span style={{padding:"1px 5px",borderRadius:3,fontSize:9,background:C.bgMuted,color:C.textMuted}}>{app.protocol}</span></div></div><div style={{width:20,height:20,borderRadius:6,border:`2px solid ${sel?C.attBlue:C.border}`,background:sel?C.attBlue:"white",display:"flex",alignItems:"center",justifyContent:"center"}}>{sel&&<span style={{color:"white",fontSize:12,fontWeight:800}}>{"✓"}</span>}</div></div>);})}</div>
+        <div style={{marginBottom:20,padding:14,borderRadius:10,border:`1px solid ${C.border}`,background:C.white}}>
+          <div style={{fontSize:14,fontWeight:800,color:C.textPrimary,marginBottom:2}}>Optional Context Artifacts</div>
+          <div style={{fontSize:12,color:C.textSecondary,marginBottom:10}}>Augment Phase 1 with manual inputs (notes, links, documents, and pending file placeholders).</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr",gap:10}}>
+            <div>
+              <div style={{fontSize:11,fontWeight:800,color:C.textSecondary,letterSpacing:"0.04em",textTransform:"uppercase",marginBottom:4}}>Free Text Notes</div>
+              <textarea value={artifactFreeText} onChange={e=>setArtifactFreeText(e.target.value)} placeholder="Add context, assumptions, or constraints for Story Analysis." style={{width:"100%",minHeight:68,padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,background:C.bgMuted}}/>
+            </div>
+            <div>
+              <div style={{fontSize:11,fontWeight:800,color:C.textSecondary,letterSpacing:"0.04em",textTransform:"uppercase",marginBottom:4}}>Jira Links</div>
+              <textarea value={artifactJiraLinksText} onChange={e=>setArtifactJiraLinksText(e.target.value)} placeholder="One URL per line or comma-separated" style={{width:"100%",minHeight:56,padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,background:C.bgMuted}}/>
+            </div>
+            <div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><div style={{fontSize:11,fontWeight:800,color:C.textSecondary,letterSpacing:"0.04em",textTransform:"uppercase"}}>Document Blocks</div><button type="button" onClick={addDocBlock} style={{padding:"4px 8px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,fontSize:11,fontWeight:700,cursor:"pointer"}}>+ Add Doc</button></div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>{artifactDocBlocks.map((doc,idx)=><div key={`doc-${idx}`} style={{padding:8,borderRadius:8,border:`1px solid ${C.borderLight}`,background:C.bgMuted}}><div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:6,marginBottom:6}}><input value={doc.title} onChange={e=>updateDocBlock(idx,"title",e.target.value)} placeholder="Document title" style={{padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,background:C.white}}/><button type="button" onClick={()=>removeDocBlock(idx)} style={{padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,fontSize:11,cursor:"pointer"}}>Remove</button></div><textarea value={doc.content} onChange={e=>updateDocBlock(idx,"content",e.target.value)} placeholder="Document excerpt/content" style={{width:"100%",minHeight:54,padding:"7px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,background:C.white}}/></div>)}</div>
+            </div>
+            <div>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><div style={{fontSize:11,fontWeight:800,color:C.textSecondary,letterSpacing:"0.04em",textTransform:"uppercase"}}>File Placeholders</div><button type="button" onClick={addFilePlaceholder} style={{padding:"4px 8px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,fontSize:11,fontWeight:700,cursor:"pointer"}}>+ Add File</button></div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>{artifactFilePlaceholders.map((item,idx)=><div key={`file-${idx}`} style={{padding:8,borderRadius:8,border:`1px solid ${C.borderLight}`,background:C.bgMuted}}><div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:6,marginBottom:6}}><input value={item.name} onChange={e=>updateFilePlaceholder(idx,"name",e.target.value)} placeholder="Filename or path placeholder" style={{padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,background:C.white}}/><button type="button" onClick={()=>removeFilePlaceholder(idx)} style={{padding:"6px 8px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,fontSize:11,cursor:"pointer"}}>Remove</button></div><textarea value={item.notes} onChange={e=>updateFilePlaceholder(idx,"notes",e.target.value)} placeholder="What should this file contain?" style={{width:"100%",minHeight:46,padding:"7px 8px",borderRadius:6,border:`1px solid ${C.border}`,fontSize:12,background:C.white}}/></div>)}</div>
+            </div>
+            <div style={{fontSize:11,color:C.textMuted}}>Mode: augment (artifacts supplement Jira and RAG; they do not replace them).</div>
+          </div>
         </div>
 
         <div style={{marginBottom:20,padding:14,borderRadius:10,border:`1px solid ${C.border}`,background:C.white}}>
@@ -343,7 +397,7 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
           </div>}
         </div>
 
-        <button onClick={()=>onLaunch({storyKeys,sprint,contextIds,selectedApps,generatedSummary})} disabled={!canLaunch} style={{width:"100%",padding:"16px 0",borderRadius:10,border:"none",background:canLaunch?C.attBlue:C.bgMuted,color:canLaunch?"white":C.textMuted,fontWeight:800,fontSize:16,cursor:canLaunch?"pointer":"default",boxShadow:canLaunch?`0 4px 12px ${C.attBlue}30`:"none",transition:"all 0.2s"}}>{canLaunch?`Launch Pipeline (${contextIds.length} ID${contextIds.length!==1?"s":""}, ${selectedApps.length} app selected)`:contextIds.length===0?"Add at least one Context ID":"Select one Application"}</button>
+        <button onClick={()=>onLaunch({storyKeys,scheduleType,scheduleValue,contextIds,selectedApps,generatedSummary,userArtifacts})} disabled={!canLaunch} style={{width:"100%",padding:"16px 0",borderRadius:10,border:"none",background:canLaunch?C.attBlue:C.bgMuted,color:canLaunch?"white":C.textMuted,fontWeight:800,fontSize:16,cursor:canLaunch?"pointer":"default",boxShadow:canLaunch?`0 4px 12px ${C.attBlue}30`:"none",transition:"all 0.2s"}}>{canLaunch?`Launch Pipeline (${contextIds.length} ID${contextIds.length!==1?"s":""}, ${selectedApps.length} app selected)`:contextIds.length===0?"Add at least one Context ID":"Select one Application"}</button>
       </Card>
     </div>);
   }
@@ -473,7 +527,7 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
 // ═══════════════════════════════════════════════════════════════
 function PhaseDetail({phase,result}){
   if(!result||result.status==="pending") return null;
-  if(result.status==="running") return (<div style={{padding:48,textAlign:"center",color:C.attBlue}}><span style={{animation:"pulse 1.5s infinite",display:"inline-block"}}>Agent is working...</span></div>);
+  if(result.status==="running"||result.status==="executing") return (<div style={{padding:48,textAlign:"center",color:C.attBlue}}><span style={{animation:"pulse 1.5s infinite",display:"inline-block"}}>Agent is working...</span></div>);
   const d=result.details;const rc={HIGH:C.error,MEDIUM:C.warning,LOW:C.success};const tc={LOAD:C.attBlue,STRESS:C.error,ENDURANCE:C.warning,SPIKE:C.purple};const mx=["#00A8E0","#0077a8","#0faa6c","#e5920a","#dc3545","#6f42c1"];
   return (<div style={{display:"flex",flexDirection:"column",gap:20}}>
     {result.hitl_context&&<div style={{background:C.bgMuted,borderRadius:10,padding:"12px 16px",border:`1px solid ${C.border}`}}><div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span style={{color:C.success}}>{"✓"}</span><span style={{fontSize:12,fontWeight:700}}>Context Passed to Next Phase</span></div><div style={{fontSize:12,color:C.textSecondary,lineHeight:1.6}}>{result.hitl_context}</div></div>}
@@ -488,6 +542,50 @@ function PhaseDetail({phase,result}){
   </div>);
 }
 
+function AgentReasoning({result}){
+  if(!result||result.status==="pending") return (<Card style={{padding:16}}><div style={{fontSize:13,color:C.textSecondary}}>Reasoning trace will appear after this phase executes. In demo mode, simulated reasoning steps are shown.</div></Card>);
+  if(result.status==="running"||result.status==="executing") return (<Card style={{padding:16}}><div style={{fontSize:13,color:C.attBlue}}>Reasoning trace is being collected during execution...</div></Card>);
+
+  const trace=Array.isArray(result.reasoning_trace)?result.reasoning_trace:[];
+  const summary=result.tool_calls_summary&&typeof result.tool_calls_summary==="object"?result.tool_calls_summary:{};
+  const summaryRows=Object.entries(summary);
+  const [expanded,setExpanded]=useState(false);
+  const visibleTrace=expanded?trace:trace.slice(0,3);
+  const hiddenCount=Math.max(trace.length-visibleTrace.length,0);
+
+  if(trace.length===0){
+    return (<Card style={{padding:16}}><div style={{fontSize:13,color:C.textSecondary}}>No reasoning trace was captured for this phase run.</div></Card>);
+  }
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      <Card style={{padding:12,background:C.bgMuted,border:`1px solid ${C.border}`}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:8}}>
+          <div style={{fontSize:11,fontWeight:800,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.05em"}}>Tool Calls Summary</div>
+          {trace.length>3&&<button onClick={()=>setExpanded(v=>!v)} style={{padding:"4px 10px",borderRadius:6,border:`1px solid ${C.border}`,background:C.white,color:C.textSecondary,fontSize:11,fontWeight:700,cursor:"pointer"}}>{expanded?"Compact":"Expanded"}</button>}
+        </div>
+        {summaryRows.length===0&&<div style={{fontSize:12,color:C.textSecondary}}>No tool calls recorded.</div>}
+        {summaryRows.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:8}}>{summaryRows.map(([name,count])=>(<span key={name} style={{padding:"3px 8px",borderRadius:6,fontSize:11,fontFamily:C.fontMono,background:C.white,border:`1px solid ${C.border}`,color:C.textSecondary}}>{name}: {count}</span>))}</div>}
+        {!expanded&&trace.length>3&&<div style={{fontSize:11,color:C.textMuted,marginTop:8}}>Showing first 3 of {trace.length} steps.</div>}
+      </Card>
+      {visibleTrace.map((step,idx)=>(
+        <Card key={`${step.step||idx}-${step.action||"action"}`} style={{padding:14,border:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+            <div style={{fontSize:12,fontWeight:800,color:C.textPrimary}}>Step {step.step||idx+1}</div>
+            <span style={{padding:"2px 8px",borderRadius:6,fontSize:11,fontFamily:C.fontMono,background:C.attBlueLight,color:C.attBlueDark}}>{step.action||"unknown_tool"}</span>
+          </div>
+          {step.thought_summary&&<div style={{fontSize:12,color:C.textSecondary,marginBottom:8,lineHeight:1.6}}>{step.thought_summary}</div>}
+          <div style={{fontSize:11,fontWeight:700,color:C.textMuted,marginBottom:4}}>Action Input</div>
+          <pre style={{background:C.bgMuted,border:`1px solid ${C.border}`,borderRadius:8,padding:10,fontFamily:C.fontMono,fontSize:11,lineHeight:1.5,whiteSpace:"pre-wrap",margin:"0 0 8px 0",maxHeight:140,overflowY:"auto"}}>{typeof step.action_input==="string"?step.action_input:JSON.stringify(step.action_input||{},null,2)}</pre>
+          <div style={{fontSize:11,fontWeight:700,color:C.textMuted,marginBottom:4}}>Observation Summary</div>
+          <div style={{fontSize:12,color:C.textSecondary,lineHeight:1.6}}>{step.observation_summary||"-"}</div>
+        </Card>
+      ))}
+      {!expanded&&hiddenCount>0&&<Card style={{padding:12,background:C.bgMuted,border:`1px dashed ${C.border}`}}><div style={{fontSize:12,color:C.textSecondary}}>+{hiddenCount} additional reasoning steps hidden. Switch to Expanded to view all.</div></Card>}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════════════
@@ -497,15 +595,248 @@ function App(){
   const[sidebarOpen,setSidebarOpen]=useState(true);
   const[ps,setPs]=useState(()=>Object.fromEntries(PHASES.map(p=>[p.id,{status:"pending"}])));
   const[ap,setAp]=useState("story_analysis");const[logs,setLogs]=useState([]);const[tab,setTab]=useState("details");
-  const[hc,setHc]=useState({});const[runConfig,setRunConfig]=useState(null);
+  const[preCtx,setPreCtx]=useState({});const[postCtx,setPostCtx]=useState({});const[phasePromptEdits,setPhasePromptEdits]=useState(()=>Object.fromEntries(PHASES.map(p=>[p.id,AGENT_PROMPTS[p.id]?.prompt||""])));const[runConfig,setRunConfig]=useState(null);
+  const[activeRunId,setActiveRunId]=useState("");const[isServerRun,setIsServerRun]=useState(false);
   const tr=useRef([]);
   const ts=()=>{const d=new Date();return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}:${String(d.getSeconds()).padStart(2,"0")}`;};
-  const runP=useCallback((pid)=>{const sim=PHASE_SIMS[pid];if(!sim)return;setPs(p=>({...p,[pid]:{status:"running"}}));setAp(pid);setTab("logs");tr.current.forEach(clearTimeout);tr.current=[];sim.logs.forEach(l=>{const t=setTimeout(()=>{setLogs(pr=>[...pr,{ts:ts(),lv:l.lv,m:l.m}]);},l.delay);tr.current.push(t);});const t2=setTimeout(()=>{setPs(p=>({...p,[pid]:{status:"awaiting_approval",...sim.result}}));setLogs(pr=>[...pr,{ts:ts(),lv:"HITL",m:"Phase "+PHASES.find(pp=>pp.id===pid)?.num+" awaiting approval..."}]);setTab("details");},sim.duration);tr.current.push(t2);},[]);
-  const approve=useCallback((pid)=>{const ctx=hc[pid]||"";setPs(p=>({...p,[pid]:{...p[pid],status:"completed",hitl_context:ctx}}));setLogs(pr=>{const o=[...pr,{ts:ts(),lv:"HITL",m:"Phase "+PHASES.find(pp=>pp.id===pid)?.num+" approved"}];if(ctx)o.push({ts:ts(),lv:"HITL",m:"Context: "+ctx.slice(0,80)+(ctx.length>80?"...":"")});return o;});const idx=PHASES.findIndex(p=>p.id===pid);if(idx<PHASES.length-1)setTimeout(()=>runP(PHASES[idx+1].id),500);},[hc,runP]);
-  const handleLaunch=useCallback((config)=>{setRunConfig(config);setPage("pipeline");const ids=config.contextIds.map(c=>c.id).join(", ");const apps=config.selectedApps.map(id=>APPS.find(a=>a.id===id)?.name).join(", ");const summaryLog=(config.generatedSummary&&config.generatedSummary.selected_app_name)?`Summary ready for ${config.generatedSummary.selected_app_name}`:"No generated summary attached";setLogs([{ts:ts(),lv:"INFO",m:"Pipeline initiated "+DA+" run-"+Date.now().toString(36)},{ts:ts(),lv:"INFO",m:"Stories: "+config.storyKeys+" | "+config.sprint},{ts:ts(),lv:"INFO",m:"Context IDs: "+ids},{ts:ts(),lv:"INFO",m:"Applications: "+apps},{ts:ts(),lv:"INFO",m:summaryLog}]);setTimeout(()=>runP("story_analysis"),300);},[runP]);
+
+  const buildDemoReasoning=useCallback((pid,promptText,contextText)=>{
+    const phaseName=PHASES.find(p=>p.id===pid)?.label||"Current Phase";
+    const sim=PHASE_SIMS[pid];
+    const toolLogs=(sim?.logs||[]).filter(l=>l.lv==="TOOL");
+    const traceSource=toolLogs.length?toolLogs.slice(0,6):[{m:"demo_reasoning()"}];
+    const toolSummary={};
+    const reasoningTrace=traceSource.map((log,idx)=>{
+      const raw=String(log?.m||"");
+      const actionMatch=raw.match(/([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/);
+      const action=(actionMatch&&actionMatch[1])||"demo_step";
+      toolSummary[action]=(toolSummary[action]||0)+1;
+      return {
+        step:idx+1,
+        action,
+        thought_summary:`Demo reasoning for ${phaseName}: evaluating ${action}${contextText?" with provided context":""}.`,
+        action_input:{mode:"demo",phase:phaseName,prompt_chars:(promptText||"").length,context_preview:(contextText||"").slice(0,80)},
+        observation_summary:`Simulated observation for ${action} based on ${phaseName} phase context.`,
+      };
+    });
+    return {reasoning_trace:reasoningTrace,tool_calls_summary:toolSummary};
+  },[]);
+
+  const normalizePhaseStatus=(status)=>{
+    if(status==="approved") return "completed";
+    if(status==="awaiting_approval") return "results_ready";
+    if(status==="rejected") return "results_ready";
+    if(status==="failed") return "results_ready";
+    return status||"pending";
+  };
+
+  const syncRunStatus=useCallback(async(runId)=>{
+    const statusRes=await fetch(`/api/pipeline/${runId}/status`);
+    if(!statusRes.ok) throw new Error("Unable to sync run status");
+    const statusData=await statusRes.json();
+    const nextPs=Object.fromEntries(PHASES.map(phase=>{
+      const raw=statusData?.phase_results?.[phase.id];
+      const mapped=normalizePhaseStatus(raw?.status||"pending");
+      return [phase.id,{status:mapped,summary:raw?.summary||"",details:raw?.artifacts||{},errors:raw?.errors||[],reasoning_trace:Array.isArray(raw?.reasoning_trace)?raw.reasoning_trace:[],tool_calls_summary:raw?.tool_calls_summary||{}}];
+    }));
+    setPs(nextPs);
+    if(statusData?.current_phase){
+      setAp(statusData.current_phase);
+    }
+    return statusData;
+  },[]);
+
+  const runP=useCallback(async(pid)=>{
+    if(isServerRun&&activeRunId){
+      try{
+        setPs(p=>({...p,[pid]:{...p[pid],status:"executing"}}));
+        setAp(pid);
+        setTab("logs");
+        const promptEdit=(phasePromptEdits[pid]||"").trim();
+        const currentPreCtx=(preCtx[pid]||"").trim();
+        setLogs(prev=>[...prev,{ts:ts(),lv:"HITL",m:`Executing Phase ${PHASES.find(pp=>pp.id===pid)?.num} on backend...`}]);
+        const res=await fetch(`/api/pipeline/${activeRunId}/phase/${pid}/execute`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt_override:promptEdit,pre_execution_context:currentPreCtx})});
+        const data=await res.json().catch(()=>null);
+        if(!res.ok) throw new Error(data?.detail||`Execute failed (${res.status})`);
+        await syncRunStatus(activeRunId);
+        setLogs(prev=>[...prev,{ts:ts(),lv:"HITL",m:`Phase ${PHASES.find(pp=>pp.id===pid)?.num} results ready for HITL review.`}]);
+        setTab("details");
+        return;
+      }catch(err){
+        setLogs(prev=>[...prev,{ts:ts(),lv:"WARN",m:`Backend execute failed: ${err?.message||"unknown"}.`}]);
+      }
+    }
+
+    const sim=PHASE_SIMS[pid];
+    if(!sim)return;
+    const promptEdit=(phasePromptEdits[pid]||"").trim();
+    const currentPreCtx=(preCtx[pid]||"").trim();
+    setPs(p=>({...p,[pid]:{...p[pid],status:"executing"}}));
+    setAp(pid);
+    setTab("logs");
+    tr.current.forEach(clearTimeout);
+    tr.current=[];
+    setLogs(prev=>[
+      ...prev,
+      {ts:ts(),lv:"HITL",m:`Phase ${PHASES.find(pp=>pp.id===pid)?.num} prompt locked for current run execution.`},
+      {ts:ts(),lv:"HITL",m:`Prompt length: ${promptEdit.length} chars${currentPreCtx?` | Context: ${currentPreCtx.slice(0,60)}${currentPreCtx.length>60?"...":""}`:""}`},
+    ]);
+    sim.logs.forEach(l=>{const t=setTimeout(()=>{setLogs(pr=>[...pr,{ts:ts(),lv:l.lv,m:l.m}]);},l.delay);tr.current.push(t);});
+    const t2=setTimeout(()=>{
+      const demoReasoning=buildDemoReasoning(pid,promptEdit,currentPreCtx);
+      setPs(p=>({...p,[pid]:{...p[pid],status:"results_ready",...sim.result,...demoReasoning,prompt_snapshot:promptEdit,pre_execution_context:currentPreCtx}}));
+      setLogs(pr=>[...pr,{ts:ts(),lv:"HITL",m:"Phase "+PHASES.find(pp=>pp.id===pid)?.num+" results ready for HITL review."}]);
+      setTab("details");
+    },sim.duration);
+    tr.current.push(t2);
+  },[activeRunId,buildDemoReasoning,isServerRun,phasePromptEdits,preCtx,syncRunStatus]);
+
+  const approve=useCallback(async(pid)=>{
+    if(isServerRun&&activeRunId){
+      const notes=(postCtx[pid]||"").trim();
+      try{
+        const promptEdit=(phasePromptEdits[pid]||"").trim();
+        const currentPreCtx=(preCtx[pid]||"").trim();
+        const res=await fetch(`/api/pipeline/${activeRunId}/phase/${pid}/approve`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({notes,prompt_override:promptEdit,pre_execution_context:currentPreCtx})});
+        const data=await res.json().catch(()=>null);
+        if(!res.ok) throw new Error(data?.detail||`Approve failed (${res.status})`);
+        const synced=await syncRunStatus(activeRunId);
+        setTab("details");
+        setLogs(pr=>{const o=[...pr,{ts:ts(),lv:"HITL",m:"Phase "+PHASES.find(pp=>pp.id===pid)?.num+" approved."}];if(notes)o.push({ts:ts(),lv:"HITL",m:"Post-result notes: "+notes.slice(0,80)+(notes.length>80?"...":"")});if(synced?.current_phase&&synced.current_phase!==pid)o.push({ts:ts(),lv:"INFO",m:`Moved to Phase ${PHASES.find(pp=>pp.id===synced.current_phase)?.num||"-"} landing page. Review/edit prompt before execution.`});return o;});
+        return;
+      }catch(err){
+        setLogs(prev=>[...prev,{ts:ts(),lv:"WARN",m:`Backend approve failed: ${err?.message||"unknown"}.`}]);
+      }
+    }
+
+    const notes=(postCtx[pid]||"").trim();
+    setPs(p=>({...p,[pid]:{...p[pid],status:"completed",hitl_context:notes}}));
+    setLogs(pr=>{const o=[...pr,{ts:ts(),lv:"HITL",m:"Phase "+PHASES.find(pp=>pp.id===pid)?.num+" approved."}];if(notes)o.push({ts:ts(),lv:"HITL",m:"Post-result notes: "+notes.slice(0,80)+(notes.length>80?"...":"")});return o;});
+    const idx=PHASES.findIndex(p=>p.id===pid);
+    const next=PHASES[idx+1];
+    if(next){
+      setPs(p=>({...p,[next.id]:{...p[next.id],status:"prompt_review"}}));
+      setAp(next.id);
+      setTab("details");
+      setLogs(pr=>[...pr,{ts:ts(),lv:"INFO",m:`Moved to Phase ${next.num} landing page. Review/edit prompt before execution.`}]);
+    }else{
+      setLogs(pr=>[...pr,{ts:ts(),lv:"INFO",m:"All phases approved. Pipeline review complete."}]);
+    }
+  },[activeRunId,isServerRun,phasePromptEdits,postCtx,preCtx,syncRunStatus]);
+
+  const modifyPhase=useCallback(async(pid)=>{
+    if(isServerRun&&activeRunId){
+      const notes=(postCtx[pid]||"").trim();
+      const promptEdit=(phasePromptEdits[pid]||"").trim();
+      const currentPreCtx=(preCtx[pid]||"").trim();
+      try{
+        setLogs(pr=>[...pr,{ts:ts(),lv:"HITL",m:`Modify selected for Phase ${PHASES.find(pp=>pp.id===pid)?.num}. Re-running current phase...`}]);
+        const res=await fetch(`/api/pipeline/${activeRunId}/phase/${pid}/modify`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({notes,prompt_override:promptEdit,pre_execution_context:currentPreCtx,rerun:true})});
+        const data=await res.json().catch(()=>null);
+        if(!res.ok) throw new Error(data?.detail||`Modify failed (${res.status})`);
+        await syncRunStatus(activeRunId);
+        return;
+      }catch(err){
+        setLogs(prev=>[...prev,{ts:ts(),lv:"WARN",m:`Backend modify failed: ${err?.message||"unknown"}.`}]);
+      }
+    }
+    setLogs(pr=>[...pr,{ts:ts(),lv:"HITL",m:`Modify selected for Phase ${PHASES.find(pp=>pp.id===pid)?.num}. Re-running current phase...`}]);runP(pid);
+  },[activeRunId,isServerRun,phasePromptEdits,postCtx,preCtx,runP,syncRunStatus]);
+  const handleLaunch=useCallback(async(config)=>{
+    setRunConfig(config);
+    setPage("pipeline");
+    const ids=config.contextIds.map(c=>c.id).join(", ");
+    const apps=config.selectedApps.map(id=>APPS.find(a=>a.id===id)?.name).join(", ");
+    const selectedApp=APPS.find(a=>a.id===config.selectedApps[0]);
+    const summaryLog=(config.generatedSummary&&config.generatedSummary.selected_app_name)?`Summary ready for ${config.generatedSummary.selected_app_name}`:"No generated summary attached";
+    const artifactCounts=config.userArtifacts?`Artifacts: notes=${config.userArtifacts.free_text?1:0}, jira_links=${(config.userArtifacts.jira_links||[]).length}, docs=${(config.userArtifacts.doc_blocks||[]).length}, file_placeholders=${(config.userArtifacts.file_placeholders||[]).length}`:"Artifacts: none";
+
+    setLogs([
+      {ts:ts(),lv:"INFO",m:"Pipeline launch requested"},
+      {ts:ts(),lv:"INFO",m:"Stories: "+config.storyKeys+" | "+(config.scheduleType==="billing_release"?"Billing Release":"Sprint")+": "+(config.scheduleValue||"-")},
+      {ts:ts(),lv:"INFO",m:"Context IDs: "+ids},
+      {ts:ts(),lv:"INFO",m:"Applications: "+apps},
+      {ts:ts(),lv:"INFO",m:summaryLog},
+      {ts:ts(),lv:"INFO",m:artifactCounts},
+      {ts:ts(),lv:"INFO",m:"Calling backend start endpoint..."},
+    ]);
+
+    const storyKeys=(config.storyKeys||"").split(",").map(v=>v.trim()).filter(Boolean);
+    const contextIds=(config.contextIds||[]).map(c=>c.id).filter(Boolean);
+    const payload={
+      story_keys:storyKeys,
+      sprint_name:config.scheduleValue||null,
+      hitl_enabled:true,
+      context_ids:contextIds,
+      selected_app_id:selectedApp?.id||null,
+      selected_app_name:selectedApp?.name||null,
+      selected_app_reference_key:selectedApp?.referenceKey||null,
+      generated_summary:config.generatedSummary||null,
+      user_artifacts:config.userArtifacts||null,
+    };
+
+    try{
+      const urls=["/api/pipeline/start"];
+      if(window?.location?.protocol==="file:"||window?.location?.port===""){
+        urls.push("http://localhost:8000/api/pipeline/start");
+      }
+
+      let started=false;
+      let lastErr="";
+      for(const url of urls){
+        try{
+          const res=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+          const data=await res.json().catch(()=>null);
+          if(!res.ok){
+            lastErr=data?.detail||`Start API failed (${res.status})`;
+            continue;
+          }
+          const runId=data?.run_id||"";
+          if(runId){
+            setActiveRunId(runId);
+            setIsServerRun(true);
+            try{
+              await syncRunStatus(runId);
+            }catch(_e){
+              // Keep run launch successful even if immediate status hydration fails.
+            }
+          }
+          started=true;
+          setLogs(prev=>[
+            ...prev,
+            {ts:ts(),lv:"INFO",m:`Backend accepted pipeline start request${runId?` (run: ${runId})`:""}.`},
+            {ts:ts(),lv:"INFO",m:"Redirecting to Test History for live run monitoring..."},
+          ]);
+          setLandingSection("test-history");
+          setPage("landing");
+          break;
+        }catch(err){
+          lastErr=err?.message||"Network error while calling start API";
+        }
+      }
+
+      if(!started){
+        throw new Error(lastErr||"Unable to start backend pipeline");
+      }
+    }catch(err){
+      setIsServerRun(false);
+      setActiveRunId("");
+      setLogs(prev=>[
+        ...prev,
+        {ts:ts(),lv:"WARN",m:`Backend unavailable (${err?.message||"unknown error"}). Using local simulation fallback.`},
+      ]);
+      setPs(Object.fromEntries(PHASES.map(p=>[p.id,{status:p.id==="story_analysis"?"prompt_review":"pending"}])));
+      setPhasePromptEdits(Object.fromEntries(PHASES.map(p=>[p.id,AGENT_PROMPTS[p.id]?.prompt||""])));
+      setPreCtx({});
+      setPostCtx({});
+      setAp("story_analysis");
+      setTab("details");
+      setLogs(prev=>[...prev,{ts:ts(),lv:"INFO",m:"Phase 1 is ready for prompt review. Execute when ready."}]);
+    }
+  },[runP,syncRunStatus]);
   const handleSidebarNav=useCallback((section)=>{setLandingSection(section);setPage("landing");},[]);
 
-  const po=PHASES.find(p=>p.id===ap);const rs=ps[ap];const cc=Object.values(ps).filter(r=>r.status==="completed").length;const np=PHASES.find(p=>p.num===(po?.num||0)+1);
+  const po=PHASES.find(p=>p.id===ap);const rs=ps[ap];const cc=Object.values(ps).filter(r=>r.status==="completed").length;
 
   return (<div style={{minHeight:"100vh",background:C.bg,fontFamily:C.fontSans}}>
     <style>{`@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;600;700&display=swap');@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}::-webkit-scrollbar{width:7px}::-webkit-scrollbar-track{background:${C.bgMuted}}::-webkit-scrollbar-thumb{background:${C.border};border-radius:4px}*{box-sizing:border-box;margin:0;padding:0}`}</style>
@@ -524,19 +855,24 @@ function App(){
 
     {page==="pipeline"&&<>
     <div style={{display:"flex",alignItems:"center",padding:"14px 28px",background:C.white,borderBottom:`1px solid ${C.border}`,gap:6}}>{PHASES.map((p,i)=>{const s=ps[p.id]?.status||"pending";const sm=STATUS[s]||STATUS.pending;return (<div key={p.id} style={{display:"flex",alignItems:"center",flex:1,gap:6}}><div onClick={()=>setAp(p.id)} style={{width:30,height:30,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,cursor:"pointer",background:s==="completed"?C.success:s==="pending"?C.bgMuted:sm.bg,color:s==="completed"?"white":s==="pending"?C.textMuted:sm.color,border:ap===p.id?`2px solid ${sm.color}`:"2px solid transparent",boxShadow:ap===p.id?`0 0 0 3px ${sm.color}20`:"none"}}>{s==="completed"?"✓":p.num}</div>{i<6&&<div style={{flex:1,height:3,borderRadius:2,background:s==="completed"?C.success:C.border}}/>}</div>);})}</div>
-    <div style={{display:"grid",gridTemplateColumns:"260px 1fr",height:"calc(100vh - 120px)",overflow:"hidden"}}><div style={{background:C.white,borderRight:`1px solid ${C.border}`,padding:"18px 12px",overflowY:"auto"}}><div style={{padding:"0 8px",marginBottom:12}}><div style={{fontSize:11,fontWeight:800,color:C.textMuted,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Pipeline</div>{runConfig&&<><div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>{runConfig.storyKeys.split(",").map(k=>(<span key={k} style={{padding:"3px 8px",borderRadius:6,fontSize:10,fontFamily:C.fontMono,fontWeight:700,background:C.attBlueLight,color:C.attBlueDark}}>{k.trim()}</span>))}</div><div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>{runConfig.sprint}</div><div style={{fontSize:10,color:C.textMuted}}>{runConfig.contextIds.length} IDs | {runConfig.selectedApps.length} apps</div></>}</div>
-    {PHASES.map(p=>{const s=ps[p.id]?.status||"pending";const sm=STATUS[s]||STATUS.pending;const isA=ap===p.id;return (<div key={p.id} onClick={()=>setAp(p.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px",borderRadius:10,cursor:"pointer",background:isA?C.bgHover:"transparent",borderLeft:`3px solid ${isA?sm.color:"transparent"}`,marginBottom:2}}><div style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,background:s==="completed"?C.success+"14":s==="running"?C.attBlueLight:C.bgMuted,color:s==="completed"?C.success:s==="running"?C.attBlue:s==="awaiting_approval"?C.purple:C.textMuted,border:`1px solid ${s==="pending"?C.border:sm.color+"35"}`}}>{s==="completed"?"✓":p.num}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:isA?700:600,color:isA?C.textPrimary:C.textSecondary,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.label}</div></div><Badge status={s}/></div>);})}</div>
+    <div style={{display:"grid",gridTemplateColumns:"260px 1fr",height:"calc(100vh - 120px)",overflow:"hidden"}}><div style={{background:C.white,borderRight:`1px solid ${C.border}`,padding:"18px 12px",overflowY:"auto"}}><div style={{padding:"0 8px",marginBottom:12}}><div style={{fontSize:11,fontWeight:800,color:C.textMuted,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Pipeline</div>{runConfig&&<><div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:6}}>{runConfig.storyKeys.split(",").map(k=>(<span key={k} style={{padding:"3px 8px",borderRadius:6,fontSize:10,fontFamily:C.fontMono,fontWeight:700,background:C.attBlueLight,color:C.attBlueDark}}>{k.trim()}</span>))}</div><div style={{fontSize:11,color:C.textMuted,marginBottom:4}}>{(runConfig.scheduleType==="billing_release"?"Billing Release":"Sprint")+": "+(runConfig.scheduleValue||"-")}</div><div style={{fontSize:10,color:C.textMuted}}>{runConfig.contextIds.length} IDs | {runConfig.selectedApps.length} apps</div></>}</div>
+    {PHASES.map(p=>{const s=ps[p.id]?.status||"pending";const sm=STATUS[s]||STATUS.pending;const isA=ap===p.id;return (<div key={p.id} onClick={()=>setAp(p.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 12px",borderRadius:10,cursor:"pointer",background:isA?C.bgHover:"transparent",borderLeft:`3px solid ${isA?sm.color:"transparent"}`,marginBottom:2}}><div style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:800,background:s==="completed"?C.success+"14":s==="executing"?C.attBlueLight:s==="results_ready"?C.purpleBg:s==="prompt_review"?C.attBlueFaint:C.bgMuted,color:s==="completed"?C.success:s==="executing"?C.attBlue:s==="results_ready"?C.purple:s==="prompt_review"?C.attBlueDark:C.textMuted,border:`1px solid ${s==="pending"?C.border:sm.color+"35"}`}}>{s==="completed"?"✓":p.num}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:isA?700:600,color:isA?C.textPrimary:C.textSecondary,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{p.label}</div></div><Badge status={s}/></div>);})}</div>
     <div style={{overflowY:"auto",padding:24,display:"flex",flexDirection:"column",gap:20}}>
       {po&&(<><div><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}><span style={{fontSize:12,fontWeight:800,color:C.textMuted}}>PHASE {po.num}</span><Badge status={rs?.status||"pending"}/></div><div style={{fontSize:22,fontWeight:800}}>{po.label}</div><div style={{fontSize:13,color:C.textSecondary,marginTop:2}}>{PHASE_DESCS[po.id]}</div></div>
-        {rs?.status==="awaiting_approval"&&(<Card style={{background:`linear-gradient(135deg,${C.purpleBg} 0%,#f0e8ff 100%)`,border:`2px solid ${C.purpleBorder}`}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}><div style={{width:40,height:40,borderRadius:10,background:C.purple+"18",border:`2px solid ${C.purple}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:C.purple}}>{"⏸"}</div><div><div style={{fontSize:16,fontWeight:800}}>Approval Required</div><div style={{fontSize:13,color:C.purple,fontWeight:600}}>Phase {po.num}: {po.label}</div></div></div>
-          <pre style={{background:C.white,borderRadius:8,padding:16,fontFamily:C.fontMono,fontSize:12,lineHeight:1.7,whiteSpace:"pre-wrap",margin:"0 0 16px 0",border:`1px solid ${C.purpleBorder}`,maxHeight:200,overflowY:"auto"}}>{rs.summary}</pre>
-          <AgentPromptViewer phaseId={po.id}/>
-          {np&&<div style={{background:C.white,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,margin:"16px 0"}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:12,color:C.attBlue}}>{"✎"}</span><div><div style={{fontSize:12,fontWeight:700}}>Additional Context for Phase {po.num+1} ({np.label})</div><div style={{fontSize:10,color:C.textMuted}}>Review the agent prompt above, then optionally steer the next phase</div></div></div><textarea value={hc[po.id]||""} onChange={e=>setHc(p=>({...p,[po.id]:e.target.value}))} placeholder={'e.g., "Focus on TLG flows" or "Extend endurance to 4hr"'} style={{width:"100%",boxSizing:"border-box",minHeight:64,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.bgMuted,fontFamily:C.fontSans,fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none"}} onFocus={e=>e.target.style.borderColor=C.attBlue} onBlur={e=>e.target.style.borderColor=C.border}/></div>}
-          <button onClick={()=>approve(po.id)} style={{width:"100%",padding:"14px 0",borderRadius:8,border:"none",background:C.success,color:"white",fontWeight:800,fontSize:15,cursor:"pointer"}} onMouseEnter={e=>e.target.style.filter="brightness(1.1)"} onMouseLeave={e=>e.target.style.filter="none"}>{"✓ Approve & Continue"}</button>
+        {(rs?.status==="prompt_review"||rs?.status==="executing"||rs?.status==="results_ready")&&(<Card style={{background:`linear-gradient(135deg,${C.purpleBg} 0%,#f0e8ff 100%)`,border:`2px solid ${C.purpleBorder}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}><div style={{width:40,height:40,borderRadius:10,background:C.purple+"18",border:`2px solid ${C.purple}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:C.purple}}>{rs?.status==="prompt_review"?"✎":rs?.status==="executing"?"▶":"⏸"}</div><div><div style={{fontSize:16,fontWeight:800}}>{rs?.status==="prompt_review"?"Prompt Review":"HITL Review"}</div><div style={{fontSize:13,color:C.purple,fontWeight:600}}>Phase {po.num}: {po.label}</div></div></div>
+          <div style={{background:C.white,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:12}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:12,color:C.attBlue}}>{"✎"}</span><div><div style={{fontSize:12,fontWeight:700}}>{`${po.label} Agent Prompt (current run only)`}</div><div style={{fontSize:10,color:C.textMuted}}>Edits here apply only to this test run and do not modify default prompt files.</div></div></div><textarea value={phasePromptEdits[po.id]||""} onChange={e=>setPhasePromptEdits(p=>({...p,[po.id]:e.target.value}))} disabled={rs?.status==="executing"} placeholder="Edit prompt for this phase" style={{width:"100%",boxSizing:"border-box",minHeight:140,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:rs?.status==="executing"?C.bgMuted:C.white,fontFamily:C.fontMono,fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none"}}/></div>
+          <div style={{background:C.white,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:12}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:12,color:C.attBlue}}>{"✎"}</span><div><div style={{fontSize:12,fontWeight:700}}>{`Additional Context for ${po.label}`}</div><div style={{fontSize:10,color:C.textMuted}}>{`Review ${po.label} prompt and add context before executing this phase.`}</div></div></div><textarea value={preCtx[po.id]||""} onChange={e=>setPreCtx(p=>({...p,[po.id]:e.target.value}))} disabled={rs?.status==="executing"} placeholder={'e.g., "Focus on TLG flows" or "Prioritize billing latency SLAs"'} style={{width:"100%",boxSizing:"border-box",minHeight:64,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:rs?.status==="executing"?C.bgMuted:C.bgMuted,fontFamily:C.fontSans,fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none"}}/></div>
+          {rs?.status!=="prompt_review"&&<pre style={{background:C.white,borderRadius:8,padding:16,fontFamily:C.fontMono,fontSize:12,lineHeight:1.7,whiteSpace:"pre-wrap",margin:"0 0 12px 0",border:`1px solid ${C.purpleBorder}`,maxHeight:200,overflowY:"auto"}}>{rs?.summary||"Phase is executing..."}</pre>}
+          {rs?.status==="results_ready"&&<div style={{background:C.white,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:12}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:12,color:C.attBlue}}>{"📝"}</span><div><div style={{fontSize:12,fontWeight:700}}>Post-Result Notes</div><div style={{fontSize:10,color:C.textMuted}}>Optional notes captured with approval for this current phase.</div></div></div><textarea value={postCtx[po.id]||""} onChange={e=>setPostCtx(p=>({...p,[po.id]:e.target.value}))} placeholder={'e.g., "Approved with caution on queue depth anomalies"'} style={{width:"100%",boxSizing:"border-box",minHeight:64,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.bgMuted,fontFamily:C.fontSans,fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none"}}/></div>}
+          <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+            {rs?.status==="prompt_review"&&<button onClick={()=>runP(po.id)} style={{flex:1,padding:"12px 0",borderRadius:8,border:"none",background:C.attBlue,color:"white",fontWeight:800,fontSize:14,cursor:"pointer"}}>{`▶ Execute ${po.label}`}</button>}
+            {rs?.status==="executing"&&<button disabled style={{flex:1,padding:"12px 0",borderRadius:8,border:"none",background:C.bgMuted,color:C.textMuted,fontWeight:800,fontSize:14,cursor:"default"}}>{"Executing..."}</button>}
+            {rs?.status==="results_ready"&&<><button onClick={()=>modifyPhase(po.id)} style={{flex:1,padding:"12px 0",borderRadius:8,border:`1px solid ${C.warningBorder}`,background:C.warningBg,color:C.warning,fontWeight:800,fontSize:14,cursor:"pointer"}}>{"↻ Modify & Re-run"}</button><button onClick={()=>approve(po.id)} style={{flex:1,padding:"12px 0",borderRadius:8,border:"none",background:C.success,color:"white",fontWeight:800,fontSize:14,cursor:"pointer"}}>{"✓ Approve & Continue"}</button></>}
+          </div>
         </Card>)}
-        <div style={{display:"flex",alignItems:"center",gap:4,background:C.bgMuted,borderRadius:10,padding:4,alignSelf:"flex-start"}}>{[{k:"details",l:"Phase Details"},{k:"logs",l:"Pipeline Log"}].map(t=>(<button key={t.k} onClick={()=>setTab(t.k)} style={{padding:"8px 20px",borderRadius:8,border:"none",fontSize:13,fontWeight:700,cursor:"pointer",background:tab===t.k?C.white:"transparent",color:tab===t.k?C.textPrimary:C.textMuted,boxShadow:tab===t.k?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{t.l}</button>))}</div>
-        <div style={{animation:"fadeIn 0.2s ease"}}>{tab==="details"&&<PhaseDetail phase={po} result={rs}/>}{tab==="logs"&&<LogTerminal logs={logs}/>}</div>
+        <div style={{display:"flex",alignItems:"center",gap:4,background:C.bgMuted,borderRadius:10,padding:4,alignSelf:"flex-start"}}>{[{k:"details",l:"Phase Details"},{k:"logs",l:"Pipeline Log"},{k:"reasoning",l:"Agent Reasoning"}].map(t=>(<button key={t.k} onClick={()=>setTab(t.k)} style={{padding:"8px 20px",borderRadius:8,border:"none",fontSize:13,fontWeight:700,cursor:"pointer",background:tab===t.k?C.white:"transparent",color:tab===t.k?C.textPrimary:C.textMuted,boxShadow:tab===t.k?"0 1px 3px rgba(0,0,0,0.08)":"none"}}>{t.l}</button>))}</div>
+        <div style={{animation:"fadeIn 0.2s ease"}}>{tab==="details"&&<PhaseDetail phase={po} result={rs}/>}{tab==="logs"&&<LogTerminal logs={logs}/>} {tab==="reasoning"&&<AgentReasoning result={rs}/>}</div>
       </>)}
     </div></div></>}
     </div>
