@@ -28,7 +28,9 @@ class PipelinePhase(str, Enum):
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
+    PROMPT_REVIEW = "prompt_review"
     RUNNING = "running"
+    RESULTS_READY = "results_ready"
     AWAITING_APPROVAL = "awaiting_approval"
     APPROVED = "approved"
     REJECTED = "rejected"
@@ -113,6 +115,8 @@ class PhaseResult(BaseModel):
     summary: str = ""
     approved_by: Optional[str] = None
     approval_notes: str = ""
+    reasoning_trace: list[dict[str, Any]] = []
+    tool_calls_summary: dict[str, int] = {}
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -133,6 +137,15 @@ class PipelineState(BaseModel):
     # ── Source ────────────────────────────────────────────────────────
     jira_story_keys: list[str] = Field(default_factory=list)
     sprint_name: Optional[str] = None
+    context_ids: list[str] = Field(default_factory=list)
+    selected_app_id: Optional[str] = None
+    selected_app_name: Optional[str] = None
+    selected_app_reference_key: Optional[str] = None
+    generated_summary: Optional[dict[str, Any]] = None
+    user_artifacts: Optional[dict[str, Any]] = None
+    phase_prompt_overrides: dict[str, str] = {}
+    phase_pre_execution_context: dict[str, str] = {}
+    phase_post_execution_notes: dict[str, str] = {}
     source_documents: list[str] = []  # RAG document references
 
     # ── Phase Results ─────────────────────────────────────────────────

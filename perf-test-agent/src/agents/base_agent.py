@@ -11,6 +11,7 @@ All phase agents inherit from BaseAgent, which provides:
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -58,6 +59,17 @@ class BaseAgent(ABC, Generic[T]):
         self._llm: Optional[AzureChatOpenAI] = None
         self._agent_executor: Optional[AgentExecutor] = None
 
+    _SENSITIVE_KEYS = (
+        "password",
+        "secret",
+        "token",
+        "api_key",
+        "apikey",
+        "authorization",
+        "cookie",
+        "session",
+    )
+
     # ── LLM ───────────────────────────────────────────────────────────
 
     @property
@@ -90,14 +102,16 @@ class BaseAgent(ABC, Generic[T]):
 
     # ── ReAct Agent ───────────────────────────────────────────────────
 
-    def _build_agent_executor(self) -> AgentExecutor:
+    def _build_agent_executor(self, system_prompt_override: Optional[str] = None) -> AgentExecutor:
         """Build the LangChain ReAct agent with tools."""
         tools = self.get_tools()
         tool_names = [t.name for t in tools]
 
         # Standard ReAct prompt template
+        base_system_prompt = system_prompt_override or self.get_system_prompt()
+
         react_prompt = PromptTemplate.from_template(
-            self.get_system_prompt() + """
+            base_system_prompt + """
 
 You have access to the following tools:
 {tools}
@@ -165,11 +179,28 @@ Thought: {{agent_scratchpad}}"""
             # Build the input from pipeline state
             agent_input = self.build_agent_input(state)
 
-            # Run the ReAct loop
-            result = await self._execute_agent(agent_input)
+            # Optional run-scoped context for current phase only.
+            phase_context = (state.phase_pre_execution_context or {}).get(self.phase.value, "").strip()
+            if phase_context:
+                agent_input = (
+                    f"{agent_input}\n\n"
+                    "HITL pre-execution context for current phase:\n"
+                    f"{phase_context}"
+                )
+
+            phase_prompt_override = (state.phase_prompt_overrides or {}).get(self.phase.value, "").strip()
+
+            # Run the ReAct loop with run-scoped prompt override when present.
+            if phase_prompt_override:
+                override_executor = self._build_agent_executor(system_prompt_override=phase_prompt_override)
+                result = await self._execute_agent(agent_input, executor=override_executor)
+            else:
+                result = await self._execute_agent(agent_input)
 
             # Parse structured output
             output = self.parse_output(result)
+
+            reasoning_trace, tool_calls_summary = self._extract_reasoning_trace(result)
 
             # Update pipeline state with phase output
             state = self.update_state(state, output)
@@ -183,6 +214,11 @@ Thought: {{agent_scratchpad}}"""
                 phase_result.completed_at - phase_result.started_at
             ).total_seconds()
             phase_result.summary = self.summarize_output(output)
+            phase_result.artifacts["effective_prompt"] = phase_prompt_override or self.get_system_prompt()
+            if phase_context:
+                phase_result.artifacts["pre_execution_context"] = phase_context
+            phase_result.reasoning_trace = reasoning_trace
+            phase_result.tool_calls_summary = tool_calls_summary
 
             self.log.info(
                 "phase_completed",
@@ -200,9 +236,14 @@ Thought: {{agent_scratchpad}}"""
         return state
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=30))
-    async def _execute_agent(self, agent_input: str) -> dict[str, Any]:
+    async def _execute_agent(
+        self,
+        agent_input: str,
+        executor: Optional[AgentExecutor] = None,
+    ) -> dict[str, Any]:
         """Execute the ReAct agent with retry logic."""
-        return await self.agent_executor.ainvoke({"input": agent_input})
+        run_executor = executor or self.agent_executor
+        return await run_executor.ainvoke({"input": agent_input})
 
     # ── Abstract Methods for Subclasses ───────────────────────────────
 
@@ -234,6 +275,100 @@ Thought: {{agent_scratchpad}}"""
             output_path = self.run_dir / "output.json"
             output_path.write_text(output.model_dump_json(indent=2))
             self.log.info("artifacts_saved", path=str(output_path))
+
+    @staticmethod
+    def _compact_text(value: str, limit: int = 220) -> str:
+        compact = " ".join(str(value or "").split())
+        if len(compact) <= limit:
+            return compact
+        return f"{compact[: limit - 3]}..."
+
+    def _sanitize_key_value(self, key: str, value: Any) -> Any:
+        lowered = key.lower()
+        if any(tag in lowered for tag in self._SENSITIVE_KEYS):
+            return "[redacted]"
+        return self._sanitize_value(value)
+
+    def _sanitize_value(self, value: Any, depth: int = 0) -> Any:
+        if depth > 3:
+            return "[truncated]"
+
+        if isinstance(value, dict):
+            sanitized: dict[str, Any] = {}
+            for idx, (k, v) in enumerate(value.items()):
+                if idx >= 20:
+                    sanitized["_truncated_keys"] = "[truncated]"
+                    break
+                sanitized[str(k)] = self._sanitize_key_value(str(k), v)
+            return sanitized
+
+        if isinstance(value, list):
+            if len(value) > 12:
+                return [self._sanitize_value(v, depth + 1) for v in value[:12]] + ["[truncated]"]
+            return [self._sanitize_value(v, depth + 1) for v in value]
+
+        if isinstance(value, str):
+            return self._compact_text(value)
+
+        if isinstance(value, (int, float, bool)) or value is None:
+            return value
+
+        return self._compact_text(str(value))
+
+    def _parse_tool_input(self, tool_input: Any) -> Any:
+        if isinstance(tool_input, str):
+            parsed = tool_input
+            try:
+                parsed = json.loads(tool_input)
+            except Exception:
+                parsed = tool_input
+            return self._sanitize_value(parsed)
+        return self._sanitize_value(tool_input)
+
+    def _extract_thought_summary(self, action_log: str) -> str:
+        if not action_log:
+            return ""
+        match = re.search(r"Thought:\s*(.*?)(?:\nAction:|$)", action_log, re.DOTALL)
+        if not match:
+            return ""
+        return self._compact_text(match.group(1), limit=180)
+
+    def _extract_reasoning_trace(
+        self,
+        agent_result: dict[str, Any],
+    ) -> tuple[list[dict[str, Any]], dict[str, int]]:
+        raw_steps = agent_result.get("intermediate_steps") if isinstance(agent_result, dict) else None
+        if not isinstance(raw_steps, list) or not raw_steps:
+            return [], {}
+
+        reasoning_trace: list[dict[str, Any]] = []
+        tool_calls_summary: dict[str, int] = {}
+
+        for idx, step in enumerate(raw_steps, start=1):
+            if not isinstance(step, (list, tuple)) or len(step) < 2:
+                continue
+
+            action = step[0]
+            observation = step[1]
+            action_name = getattr(action, "tool", "unknown_tool") or "unknown_tool"
+            tool_calls_summary[action_name] = tool_calls_summary.get(action_name, 0) + 1
+
+            action_input = self._parse_tool_input(getattr(action, "tool_input", {}))
+            thought_summary = self._extract_thought_summary(getattr(action, "log", ""))
+            observation_summary = self._compact_text(str(observation), limit=260)
+
+            item: dict[str, Any] = {
+                "step": idx,
+                "action": action_name,
+                "action_input": action_input,
+                "observation_summary": observation_summary,
+            }
+            if thought_summary:
+                item["thought_summary"] = thought_summary
+
+            reasoning_trace.append(item)
+
+        return reasoning_trace, tool_calls_summary
 
     def _parse_json_output(self, raw: str, model: Type[T]) -> T:
         """Parse JSON from agent output, handling common LLM formatting issues."""

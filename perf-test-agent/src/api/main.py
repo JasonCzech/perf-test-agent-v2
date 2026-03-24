@@ -80,6 +80,7 @@ class StartPipelineRequest(BaseModel):
     selected_app_name: Optional[str] = None
     selected_app_reference_key: Optional[str] = None
     generated_summary: Optional[dict[str, Any]] = None
+    user_artifacts: Optional[dict[str, Any]] = None
 
 
 class SummaryEvidence(BaseModel):
@@ -121,6 +122,40 @@ class GenerateSummaryResponse(BaseModel):
 
 class HITLDecisionRequest(BaseModel):
     approved: bool
+    notes: str = ""
+
+
+class PhasePromptPayloadResponse(BaseModel):
+    run_id: str
+    phase: str
+    default_prompt: str
+    prompt_override: str = ""
+    pre_execution_context: str = ""
+    effective_prompt: str
+
+
+class PhasePromptUpdateRequest(BaseModel):
+    prompt_override: Optional[str] = None
+    pre_execution_context: Optional[str] = None
+
+
+class PhaseExecuteRequest(BaseModel):
+    prompt_override: Optional[str] = None
+    pre_execution_context: Optional[str] = None
+
+
+class PhaseActionRequest(BaseModel):
+    notes: str = ""
+    prompt_override: Optional[str] = None
+    pre_execution_context: Optional[str] = None
+    rerun: bool = True
+
+
+class PhaseStepResponse(BaseModel):
+    run_id: str
+    phase: str
+    status: str
+    current_phase: str
     notes: str = ""
 
 
@@ -323,6 +358,47 @@ def _fallback_summary(
     )
 
 
+def _is_run_active(state: PipelineState) -> bool:
+    terminal = {PhaseStatus.COMPLETED}
+    current = state.phase_results.get(state.current_phase.value)
+    if not current:
+        return True
+    if state.current_phase == PipelinePhase.POSTMORTEM and current.status in terminal:
+        return False
+    return current.status not in terminal
+
+
+def _load_run_state(run_id: str) -> PipelineState:
+    state = active_states.get(run_id)
+    if state:
+        return state
+
+    state_path = Path(get_settings().pipeline_run_dir) / run_id / "pipeline_state.json"
+    if not state_path.exists():
+        raise HTTPException(404, f"Run {run_id} not found")
+
+    state = PipelineState.model_validate_json(state_path.read_text())
+    active_states[run_id] = state
+    return state
+
+
+def _ensure_orchestrator(run_id: str) -> PipelineOrchestrator:
+    existing = active_runs.get(run_id)
+    if existing:
+        return existing
+
+    orchestrator = PipelineOrchestrator(get_settings())
+    active_runs[run_id] = orchestrator
+    return orchestrator
+
+
+def _coerce_phase(phase_name: str) -> PipelinePhase:
+    try:
+        return PipelinePhase(phase_name)
+    except ValueError as exc:
+        raise HTTPException(400, f"Unknown phase '{phase_name}'") from exc
+
+
 # ── WebSocket Broadcast ──────────────────────────────────────────────
 
 async def broadcast(event: str, data: dict[str, Any]) -> None:
@@ -386,68 +462,253 @@ async def hitl_callback(
 
 @app.post("/api/pipeline/start", response_model=dict)
 async def start_pipeline(req: StartPipelineRequest):
-    """Start a new pipeline run."""
+    """Initialize a new pipeline run in prompt-review state."""
     settings = get_settings()
     settings.hitl_enabled = req.hitl_enabled
 
     orchestrator = PipelineOrchestrator(settings)
-    orchestrator.register_hitl_callback(hitl_callback)
+    try:
+        start = PipelinePhase(req.start_phase) if req.start_phase else None
+        stop = PipelinePhase(req.stop_after) if req.stop_after else None
+    except ValueError as exc:
+        raise HTTPException(400, f"Invalid phase in request: {exc}") from exc
 
-    # Run pipeline in background
-    async def run_pipeline():
-        try:
-            start = PipelinePhase(req.start_phase) if req.start_phase else None
-            stop = PipelinePhase(req.stop_after) if req.stop_after else None
+    state = await orchestrator.initialize_run(
+        story_keys=req.story_keys,
+        sprint_name=req.sprint_name,
+        context_ids=req.context_ids,
+        selected_app_id=req.selected_app_id,
+        selected_app_name=req.selected_app_name,
+        selected_app_reference_key=req.selected_app_reference_key,
+        generated_summary=req.generated_summary,
+        user_artifacts=req.user_artifacts,
+        start_phase=start,
+        stop_after=stop,
+    )
 
-            state = await orchestrator.run(
-                story_keys=req.story_keys,
-                sprint_name=req.sprint_name,
-                start_phase=start,
-                stop_after=stop,
-            )
-            active_states[state.run_id] = state
-            await broadcast("pipeline_complete", {"run_id": state.run_id})
-        except Exception as e:
-            log.error("pipeline_error", error=str(e))
-            await broadcast("pipeline_error", {"error": str(e)})
+    active_runs[state.run_id] = orchestrator
+    active_states[state.run_id] = state
 
-    task = asyncio.create_task(run_pipeline())
+    current_result = state.phase_results.get(state.current_phase.value)
+    await broadcast(
+        "pipeline_initialized",
+        {
+            "run_id": state.run_id,
+            "phase": state.current_phase.value,
+            "status": current_result.status.value if current_result else PhaseStatus.PROMPT_REVIEW.value,
+        },
+    )
 
-    # Return immediately with a placeholder run_id
-    # The actual run_id will come via WebSocket once the pipeline initializes
-    return {"status": "started", "message": "Pipeline starting..."}
+    return {
+        "status": "started",
+        "run_id": state.run_id,
+        "current_phase": state.current_phase.value,
+        "current_phase_status": current_result.status.value if current_result else PhaseStatus.PROMPT_REVIEW.value,
+    }
+
+
+@app.get("/api/pipeline/{run_id}/phase/{phase_name}/prompt", response_model=PhasePromptPayloadResponse)
+async def get_phase_prompt_payload(run_id: str, phase_name: str):
+    state = _load_run_state(run_id)
+    phase = _coerce_phase(phase_name)
+
+    if phase.value not in PHASE_PROMPT_FILES:
+        raise HTTPException(404, f"No prompt file configured for phase '{phase.value}'")
+
+    default_prompt = load_prompt(phase.value)
+    prompt_override = (state.phase_prompt_overrides or {}).get(phase.value, "")
+    pre_execution_context = (state.phase_pre_execution_context or {}).get(phase.value, "")
+    effective_prompt = prompt_override.strip() or default_prompt
+
+    return PhasePromptPayloadResponse(
+        run_id=run_id,
+        phase=phase.value,
+        default_prompt=default_prompt,
+        prompt_override=prompt_override,
+        pre_execution_context=pre_execution_context,
+        effective_prompt=effective_prompt,
+    )
+
+
+@app.put("/api/pipeline/{run_id}/phase/{phase_name}/prompt", response_model=PhasePromptPayloadResponse)
+async def update_phase_prompt_payload(run_id: str, phase_name: str, req: PhasePromptUpdateRequest):
+    state = _load_run_state(run_id)
+    phase = _coerce_phase(phase_name)
+
+    if phase.value not in PHASE_PROMPT_FILES:
+        raise HTTPException(404, f"No prompt file configured for phase '{phase.value}'")
+
+    if req.prompt_override is not None:
+        state.phase_prompt_overrides[phase.value] = req.prompt_override
+    if req.pre_execution_context is not None:
+        state.phase_pre_execution_context[phase.value] = req.pre_execution_context
+
+    state.save(get_settings().pipeline_run_dir)
+    active_states[run_id] = state
+
+    default_prompt = load_prompt(phase.value)
+    prompt_override = (state.phase_prompt_overrides or {}).get(phase.value, "")
+    pre_execution_context = (state.phase_pre_execution_context or {}).get(phase.value, "")
+
+    return PhasePromptPayloadResponse(
+        run_id=run_id,
+        phase=phase.value,
+        default_prompt=default_prompt,
+        prompt_override=prompt_override,
+        pre_execution_context=pre_execution_context,
+        effective_prompt=prompt_override.strip() or default_prompt,
+    )
+
+
+@app.post("/api/pipeline/{run_id}/phase/{phase_name}/execute", response_model=PhaseStepResponse)
+async def execute_phase_step(run_id: str, phase_name: str, req: PhaseExecuteRequest):
+    state = _load_run_state(run_id)
+    phase = _coerce_phase(phase_name)
+    orchestrator = _ensure_orchestrator(run_id)
+
+    if phase != state.current_phase:
+        raise HTTPException(409, f"Current phase is {state.current_phase.value}; cannot execute {phase.value}")
+
+    if req.prompt_override is not None:
+        state.phase_prompt_overrides[phase.value] = req.prompt_override
+    if req.pre_execution_context is not None:
+        state.phase_pre_execution_context[phase.value] = req.pre_execution_context
+
+    try:
+        phase_result = await orchestrator.execute_phase(state, phase)
+    except Exception as exc:
+        raise HTTPException(500, f"Phase execution failed: {exc}") from exc
+
+    active_states[run_id] = state
+    await broadcast(
+        "phase_executed",
+        {
+            "run_id": run_id,
+            "phase": phase.value,
+            "status": phase_result.status.value,
+        },
+    )
+
+    return PhaseStepResponse(
+        run_id=run_id,
+        phase=phase.value,
+        status=phase_result.status.value,
+        current_phase=state.current_phase.value,
+        notes="",
+    )
+
+
+@app.post("/api/pipeline/{run_id}/phase/{phase_name}/approve", response_model=PhaseStepResponse)
+async def approve_phase_step(run_id: str, phase_name: str, req: PhaseActionRequest):
+    state = _load_run_state(run_id)
+    phase = _coerce_phase(phase_name)
+    orchestrator = _ensure_orchestrator(run_id)
+
+    if req.prompt_override is not None:
+        state.phase_prompt_overrides[phase.value] = req.prompt_override
+    if req.pre_execution_context is not None:
+        state.phase_pre_execution_context[phase.value] = req.pre_execution_context
+
+    state = await orchestrator.approve_phase(state, phase, approved=True, notes=req.notes)
+    active_states[run_id] = state
+
+    current_result = state.phase_results.get(state.current_phase.value)
+    status = current_result.status.value if current_result else PhaseStatus.PENDING.value
+
+    await broadcast(
+        "phase_approved",
+        {
+            "run_id": run_id,
+            "phase": phase.value,
+            "next_phase": state.current_phase.value,
+            "next_status": status,
+        },
+    )
+
+    return PhaseStepResponse(
+        run_id=run_id,
+        phase=phase.value,
+        status=status,
+        current_phase=state.current_phase.value,
+        notes=req.notes,
+    )
+
+
+@app.post("/api/pipeline/{run_id}/phase/{phase_name}/modify", response_model=PhaseStepResponse)
+async def modify_phase_step(run_id: str, phase_name: str, req: PhaseActionRequest):
+    state = _load_run_state(run_id)
+    phase = _coerce_phase(phase_name)
+    orchestrator = _ensure_orchestrator(run_id)
+
+    if req.prompt_override is not None:
+        state.phase_prompt_overrides[phase.value] = req.prompt_override
+    if req.pre_execution_context is not None:
+        state.phase_pre_execution_context[phase.value] = req.pre_execution_context
+    if req.notes:
+        state.phase_post_execution_notes[phase.value] = req.notes
+
+    state = await orchestrator.mark_phase_for_modify(state, phase)
+
+    existing = state.phase_results.get(phase.value)
+    response_status = existing.status.value if existing else PhaseStatus.PROMPT_REVIEW.value
+    if req.rerun:
+        phase_result = await orchestrator.execute_phase(state, phase)
+        response_status = phase_result.status.value
+
+    active_states[run_id] = state
+    await broadcast(
+        "phase_modified",
+        {
+            "run_id": run_id,
+            "phase": phase.value,
+            "status": response_status,
+        },
+    )
+
+    return PhaseStepResponse(
+        run_id=run_id,
+        phase=phase.value,
+        status=response_status,
+        current_phase=state.current_phase.value,
+        notes=req.notes,
+    )
 
 
 @app.post("/api/pipeline/{run_id}/approve")
 async def approve_phase(run_id: str, req: HITLDecisionRequest):
-    """Approve or reject the current HITL gate."""
-    if run_id not in hitl_events:
-        raise HTTPException(404, f"No active HITL gate for run {run_id}")
+    """Backward-compatible approval endpoint."""
+    if run_id in hitl_events:
+        hitl_decisions[run_id] = (req.approved, req.notes)
+        hitl_events[run_id].set()
+        return {"status": "decision_recorded", "approved": req.approved}
 
-    hitl_decisions[run_id] = (req.approved, req.notes)
-    hitl_events[run_id].set()
-
-    return {"status": "decision_recorded", "approved": req.approved}
+    state = _load_run_state(run_id)
+    orchestrator = _ensure_orchestrator(run_id)
+    state = await orchestrator.approve_phase(
+        state,
+        state.current_phase,
+        approved=req.approved,
+        notes=req.notes,
+    )
+    active_states[run_id] = state
+    return {
+        "status": "decision_recorded",
+        "approved": req.approved,
+        "current_phase": state.current_phase.value,
+    }
 
 
 @app.get("/api/pipeline/{run_id}/status", response_model=PipelineStatusResponse)
 async def get_pipeline_status(run_id: str):
     """Get the current status of a pipeline run."""
-    state = active_states.get(run_id)
-    if not state:
-        # Try loading from disk
-        state_path = Path(get_settings().pipeline_run_dir) / run_id / "pipeline_state.json"
-        if state_path.exists():
-            state = PipelineState.model_validate_json(state_path.read_text())
-        else:
-            raise HTTPException(404, f"Run {run_id} not found")
+    state = _load_run_state(run_id)
 
     return PipelineStatusResponse(
         run_id=state.run_id,
         current_phase=state.current_phase.value,
         created_at=state.created_at.isoformat(),
         phase_results={k: v.model_dump() for k, v in state.phase_results.items()},
-        is_active=run_id in hitl_events,
+        is_active=_is_run_active(state),
     )
 
 
@@ -482,7 +743,12 @@ async def list_runs():
                         phase.value
                         for phase in PipelinePhase
                         if phase_results.get(phase.value)
-                        and phase_results[phase.value].status == PhaseStatus.AWAITING_APPROVAL
+                        and phase_results[phase.value].status
+                        in {
+                            PhaseStatus.AWAITING_APPROVAL,
+                            PhaseStatus.RESULTS_READY,
+                            PhaseStatus.PROMPT_REVIEW,
+                        }
                     ),
                     None,
                 )
@@ -515,7 +781,7 @@ async def list_runs():
                     "current_phase": state.current_phase.value,
                     "created_at": state.created_at.isoformat(),
                     "story_keys": state.jira_story_keys,
-                    "is_active": state.run_id in hitl_events,
+                    "is_active": _is_run_active(state),
                     "completed_phases": completed_phases,
                     "total_phases": len(PipelinePhase),
                     "failed_phase": failed_phase,

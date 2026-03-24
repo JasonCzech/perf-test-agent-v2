@@ -108,10 +108,185 @@ class PipelineOrchestrator:
 
     # ── Pipeline Execution ────────────────────────────────────────────
 
+    @staticmethod
+    def _next_phase(current_phase: PipelinePhase) -> Optional[PipelinePhase]:
+        try:
+            idx = PHASE_ORDER.index(current_phase)
+        except ValueError:
+            return None
+        if idx >= len(PHASE_ORDER) - 1:
+            return None
+        return PHASE_ORDER[idx + 1]
+
+    async def initialize_run(
+        self,
+        story_keys: Optional[list[str]] = None,
+        sprint_name: Optional[str] = None,
+        context_ids: Optional[list[str]] = None,
+        selected_app_id: Optional[str] = None,
+        selected_app_name: Optional[str] = None,
+        selected_app_reference_key: Optional[str] = None,
+        generated_summary: Optional[dict[str, Any]] = None,
+        user_artifacts: Optional[dict[str, Any]] = None,
+        start_phase: Optional[PipelinePhase] = None,
+    ) -> PipelineState:
+        """Initialize a run in prompt-review state without executing a phase."""
+        run_id = f"run-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}"
+        initial_phase = start_phase or PipelinePhase.STORY_ANALYSIS
+
+        state = PipelineState(
+            run_id=run_id,
+            jira_story_keys=story_keys or [],
+            sprint_name=sprint_name,
+            context_ids=context_ids or [],
+            selected_app_id=selected_app_id,
+            selected_app_name=selected_app_name,
+            selected_app_reference_key=selected_app_reference_key,
+            generated_summary=generated_summary,
+            user_artifacts=user_artifacts,
+            current_phase=initial_phase,
+        )
+
+        state.set_phase_result(
+            PhaseResult(
+                phase=initial_phase,
+                status=PhaseStatus.PROMPT_REVIEW,
+                summary="Ready for prompt review and execution.",
+            )
+        )
+        self._save_state(state)
+        log.info("pipeline_initialized", run_id=run_id, current_phase=initial_phase.value)
+        return state
+
+    async def execute_phase(
+        self,
+        state: PipelineState,
+        phase: Optional[PipelinePhase] = None,
+        prompt_override: Optional[str] = None,
+        pre_execution_context: Optional[str] = None,
+    ) -> PipelineState:
+        """Execute a single phase without auto-advancing to the next phase."""
+        phase_to_run = phase or state.current_phase
+        state.current_phase = phase_to_run
+
+        if prompt_override is not None:
+            next_prompt = prompt_override.strip()
+            if next_prompt:
+                state.phase_prompt_overrides[phase_to_run.value] = next_prompt
+            else:
+                state.phase_prompt_overrides.pop(phase_to_run.value, None)
+
+        if pre_execution_context is not None:
+            next_context = pre_execution_context.strip()
+            if next_context:
+                state.phase_pre_execution_context[phase_to_run.value] = next_context
+            else:
+                state.phase_pre_execution_context.pop(phase_to_run.value, None)
+
+        phase_result = state.get_phase_result(phase_to_run)
+        if phase_result is None:
+            phase_result = PhaseResult(
+                phase=phase_to_run,
+                status=PhaseStatus.PROMPT_REVIEW,
+                summary="Ready for prompt review and execution.",
+            )
+            state.set_phase_result(phase_result)
+
+        phase_result.status = PhaseStatus.RUNNING
+        phase_result.started_at = datetime.utcnow()
+        state.set_phase_result(phase_result)
+        self._save_state(state)
+
+        agent = self._get_agent(phase_to_run)
+        state = await agent.run(state)
+
+        completed_result = state.get_phase_result(phase_to_run)
+        if completed_result and completed_result.status == PhaseStatus.AWAITING_APPROVAL:
+            completed_result.status = PhaseStatus.RESULTS_READY
+            state.set_phase_result(completed_result)
+
+        self._save_state(state)
+        log.info("phase_execution_complete", run_id=state.run_id, phase=phase_to_run.value)
+        return state
+
+    def approve_phase(
+        self,
+        state: PipelineState,
+        phase: Optional[PipelinePhase] = None,
+        approved: bool = True,
+        notes: str = "",
+        advance: bool = True,
+    ) -> PipelineState:
+        """Approve/reject current phase and optionally advance to next phase prompt-review."""
+        phase_to_update = phase or state.current_phase
+        phase_result = state.get_phase_result(phase_to_update)
+        if not phase_result:
+            raise ValueError(f"No phase result found for {phase_to_update.value}")
+
+        clean_notes = notes.strip()
+        state.phase_post_execution_notes[phase_to_update.value] = clean_notes
+
+        if approved:
+            phase_result.status = PhaseStatus.COMPLETED
+            phase_result.completed_at = datetime.utcnow()
+            phase_result.approval_notes = clean_notes
+            state.set_phase_result(phase_result)
+
+            if advance:
+                next_phase = self._next_phase(phase_to_update)
+                if next_phase:
+                    state.current_phase = next_phase
+                    next_result = state.get_phase_result(next_phase)
+                    if not next_result:
+                        next_result = PhaseResult(
+                            phase=next_phase,
+                            status=PhaseStatus.PROMPT_REVIEW,
+                            summary="Ready for prompt review and execution.",
+                        )
+                    else:
+                        next_result.status = PhaseStatus.PROMPT_REVIEW
+                    state.set_phase_result(next_result)
+        else:
+            phase_result.status = PhaseStatus.REJECTED
+            phase_result.approval_notes = clean_notes
+            state.set_phase_result(phase_result)
+
+        self._save_state(state)
+        return state
+
+    def mark_phase_for_modify(
+        self,
+        state: PipelineState,
+        phase: Optional[PipelinePhase] = None,
+        notes: str = "",
+    ) -> PipelineState:
+        """Move a phase back to prompt review for edit/re-run."""
+        phase_to_modify = phase or state.current_phase
+        phase_result = state.get_phase_result(phase_to_modify)
+        if not phase_result:
+            phase_result = PhaseResult(
+                phase=phase_to_modify,
+                status=PhaseStatus.PROMPT_REVIEW,
+                summary="Ready for prompt review and execution.",
+            )
+        else:
+            phase_result.status = PhaseStatus.PROMPT_REVIEW
+            phase_result.approval_notes = notes.strip()
+        state.current_phase = phase_to_modify
+        state.set_phase_result(phase_result)
+        self._save_state(state)
+        return state
+
     async def run(
         self,
         story_keys: Optional[list[str]] = None,
         sprint_name: Optional[str] = None,
+        context_ids: Optional[list[str]] = None,
+        selected_app_id: Optional[str] = None,
+        selected_app_name: Optional[str] = None,
+        selected_app_reference_key: Optional[str] = None,
+        generated_summary: Optional[dict[str, Any]] = None,
+        user_artifacts: Optional[dict[str, Any]] = None,
         start_phase: Optional[PipelinePhase] = None,
         stop_after: Optional[PipelinePhase] = None,
     ) -> PipelineState:
@@ -123,19 +298,19 @@ class PipelineOrchestrator:
             start_phase: Phase to start from (default: STORY_ANALYSIS).
             stop_after: Phase to stop after (default: run all).
         """
-        run_id = f"run-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:6]}"
-
-        state = PipelineState(
-            run_id=run_id,
-            jira_story_keys=story_keys or [],
+        state = await self.initialize_run(
+            story_keys=story_keys,
             sprint_name=sprint_name,
+            context_ids=context_ids,
+            selected_app_id=selected_app_id,
+            selected_app_name=selected_app_name,
+            selected_app_reference_key=selected_app_reference_key,
+            generated_summary=generated_summary,
+            user_artifacts=user_artifacts,
+            start_phase=start_phase,
         )
 
-        # Ensure run directory exists
-        run_dir = Path(self.settings.pipeline_run_dir) / run_id
-        run_dir.mkdir(parents=True, exist_ok=True)
-
-        log.info("pipeline_starting", run_id=run_id, stories=story_keys, sprint=sprint_name)
+        log.info("pipeline_starting", run_id=state.run_id, stories=story_keys, sprint=sprint_name)
 
         state = await self._execute_phases(state, start_phase, stop_after)
 
