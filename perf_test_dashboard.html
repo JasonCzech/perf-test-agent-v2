@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -46,7 +45,7 @@ const NAV_LINKS=[
   {id:"new-test",label:"New Test"},
   {id:"env-configurations",label:"Environment Configurations"},
   {id:"test-history",label:"Test History"},
-  {id:"open-tickets",label:"Open Tickets"},
+  {id:"open-tickets",label:"Tickets/Defects"},
 ];
 const AR="→",DA="—",BU="•",EL="…",UP="↑";
 const envRefKey=(ref)=>`${ref.application_key}|${ref.environment}|${ref.lab_environment||"PERF"}|${ref.release_code||"current"}|${ref.api_variant}`;
@@ -62,6 +61,13 @@ const PAST_RUNS=[
   {id:"run-20260208-f",date:"2026-02-08",sprint:"Sprint 26.0",stories:["TELECOM-4398"],apps:["OPUS","CSI"],phase:7,status:"completed",verdict:"GO",duration:"2h 22m"},
   {id:"run-20260131-g",date:"2026-01-31",sprint:"Sprint 25.4",stories:["TELECOM-4380","TELECOM-4381"],apps:["CSI","CAS/iCAS","TLG"],phase:7,status:"completed",verdict:"CONDITIONAL",duration:"5h 05m"},
   {id:"run-20260124-h",date:"2026-01-24",sprint:"Sprint 25.4",stories:["TELECOM-4365"],apps:["OPUS","CSI","TLG"],phase:3,status:"failed",verdict:DA,duration:"1h 15m"},
+];
+
+const DEMO_TICKETS=[
+  {key:"SUP-12001",summary:"TLG connection pool saturation during stress test",status:"In Progress",issue_type:"Bug",reporter:"Jason Czech",assignee:"Platform Team",created:"2026-03-18T09:20:00Z",updated:"2026-03-22T14:15:00Z",url:"https://itrack.web.att.com/browse/SUP-12001",labels:["support","app:tlg-backend"]},
+  {key:"SUP-12017",summary:"CSI gateway timeout spike above SLA",status:"To Do",issue_type:"Incident",reporter:"Kara Nguyen",assignee:"Middleware Team",created:"2026-03-20T11:05:00Z",updated:"2026-03-23T08:40:00Z",url:"https://itrack.web.att.com/browse/SUP-12017",labels:["support","app:csi-gateway"]},
+  {key:"SUP-12022",summary:"OPUS checkout transaction latency regression",status:"Done",issue_type:"Task",reporter:"Jason Czech",assignee:"Retail Performance Team",created:"2026-03-21T13:30:00Z",updated:"2026-03-24T10:05:00Z",url:"https://itrack.web.att.com/browse/SUP-12022",labels:["support","app:opus-web"]},
+  {key:"SUP-12031",summary:"Solace queue depth alert threshold tuning",status:"Blocked",issue_type:"Story",reporter:"Mina Patel",assignee:"Messaging Ops",created:"2026-03-23T07:50:00Z",updated:"2026-03-24T09:55:00Z",url:"https://itrack.web.att.com/browse/SUP-12031",labels:["support","app:gddn-messaging"]},
 ];
 
 const AGENT_PROMPTS={
@@ -111,10 +117,11 @@ function AgentPromptViewer({phaseId}){const[open,setOpen]=useState(false);const 
 // LANDING PAGE
 // ═══════════════════════════════════════════════════════════════
 function LandingPage({onLaunch,activeSection,onNavigate}){
+  const EMPTY_APP_FORM={application_key:"",application_name:"",endpoint_url:"",api_variant:"core",tags:"",owner_team:"",version:""};
   const[contextIds,setContextIds]=useState([]);const[selectedApps,setSelectedApps]=useState([]);
   const[iv,setIv]=useState("");const[it,setIt]=useState("PID");const ref=useRef(null);
   const[storyKeys,setStoryKeys]=useState("GDDN-233252, BOBPM-325632");const[scheduleType,setScheduleType]=useState("sprint");const[scheduleValue,setScheduleValue]=useState("Sprint 26.3");
-  const[summaryLoading,setSummaryLoading]=useState(false);const[summaryError,setSummaryError]=useState("");const[generatedSummary,setGeneratedSummary]=useState(null);const[demoSummary,setDemoSummary]=useState(null);
+  const[summaryLoading,setSummaryLoading]=useState(false);const[summaryError,setSummaryError]=useState("");const[generatedSummary,setGeneratedSummary]=useState(null);const[demoSummary,setDemoSummary]=useState(null);const[summaryRequested,setSummaryRequested]=useState(false);
   const[artifactFreeText,setArtifactFreeText]=useState("");const[artifactJiraLinksText,setArtifactJiraLinksText]=useState("");
   const[artifactDocBlocks,setArtifactDocBlocks]=useState([{title:"",content:""}]);const[artifactFilePlaceholders,setArtifactFilePlaceholders]=useState([{name:"",notes:""}]);
 
@@ -123,6 +130,9 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
   const[activeEnvKey,setActiveEnvKey]=useState("");const[envDescriptor,setEnvDescriptor]=useState(null);const[envContent,setEnvContent]=useState("");
   const[envDirty,setEnvDirty]=useState(false);const[envLoading,setEnvLoading]=useState(false);const[envSaving,setEnvSaving]=useState(false);const[envMessage,setEnvMessage]=useState("");
   const[envReloadNonce,setEnvReloadNonce]=useState(0);
+  const[appCatalog,setAppCatalog]=useState([]);const[appCatalogLoading,setAppCatalogLoading]=useState(false);const[appCatalogError,setAppCatalogError]=useState("");
+  const[appDialogOpen,setAppDialogOpen]=useState(false);const[appDialogMode,setAppDialogMode]=useState("create");const[appDialogKey,setAppDialogKey]=useState("");
+  const[appForm,setAppForm]=useState(EMPTY_APP_FORM);const[appFormError,setAppFormError]=useState("");const[appFormSaving,setAppFormSaving]=useState(false);
   const[showNewAppForm,setShowNewAppForm]=useState(false);
   const[newApp,setNewApp]=useState({key:"",name:"",variant:"core",labEnv:"PERF",releaseCode:"current",yaml:""});
   const[newAppSaving,setNewAppSaving]=useState(false);const[newAppError,setNewAppError]=useState("");
@@ -135,13 +145,19 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
 
   const[tickets,setTickets]=useState([]);const[ticketLoading,setTicketLoading]=useState(false);const[ticketError,setTicketError]=useState("");
   const[ticketSearch,setTicketSearch]=useState("");const[ticketStatusFilter,setTicketStatusFilter]=useState("all");const[ticketTypeFilter,setTicketTypeFilter]=useState("all");
-  const[ticketForm,setTicketForm]=useState({applicationId:"",summary:"",description:"",issueType:"Task",projectKey:""});const[ticketSaving,setTicketSaving]=useState(false);const[ticketReloadNonce,setTicketReloadNonce]=useState(0);
+  const[ticketReporteeFilter,setTicketReporteeFilter]=useState("all");const[ticketOpenedFrom,setTicketOpenedFrom]=useState("");const[ticketOpenedTo,setTicketOpenedTo]=useState("");
+  const[selectedTicketKeys,setSelectedTicketKeys]=useState([]);
+  const[ticketUsingDemo,setTicketUsingDemo]=useState(false);const[ticketReloadNonce,setTicketReloadNonce]=useState(0);
 
-  useEffect(()=>{let mounted=true;const load=async()=>{setEnvRefsLoading(true);try{const res=await fetch("/api/env/configs");if(!res.ok)throw new Error("Unable to load environment references");const data=await res.json();if(!mounted)return;setEnvRefs((data&&Array.isArray(data.references)?data.references:[]));setEnvRefsError("");}catch(err){if(mounted)setEnvRefsError(err?.message||"Unable to load environment references");}finally{if(mounted)setEnvRefsLoading(false);}};load();return()=>{mounted=false;};},[]);
+  useEffect(()=>{let mounted=true;const load=async()=>{setEnvRefsLoading(true);try{const res=await fetch("/api/env/configs");if(!res.ok)throw new Error("Unable to load environment references");const data=await res.json();if(!mounted)return;setEnvRefs((data&&Array.isArray(data.references)?data.references:[]));setEnvRefsError("");}catch(err){if(mounted)setEnvRefsError(err?.message||"Unable to load environment references");}finally{if(mounted)setEnvRefsLoading(false);}};load();return()=>{mounted=false;};},[envReloadNonce]);
+  useEffect(()=>{let mounted=true;const load=async()=>{setAppCatalogLoading(true);setAppCatalogError("");try{const res=await fetch("/api/apps");if(!res.ok)throw new Error("Unable to load applications");const data=await res.json();if(!mounted)return;setAppCatalog(Array.isArray(data?.applications)?data.applications:[]);}catch(err){if(mounted){setAppCatalog([]);setAppCatalogError(err?.message||"Unable to load applications");}}finally{if(mounted)setAppCatalogLoading(false);}};load();return()=>{mounted=false;};},[envReloadNonce]);
   useEffect(()=>{let mounted=true;const load=async()=>{setHistoryLoading(true);try{const res=await fetch("/api/pipeline/runs");if(!res.ok)throw new Error("Unable to load run history");const data=await res.json();if(!mounted)return;setHistoryRuns(Array.isArray(data?.runs)?data.runs:[]);setHistoryError("");}catch(err){if(mounted){setHistoryRuns([]);setHistoryError(err?.message||"Unable to load run history");}}finally{if(mounted)setHistoryLoading(false);}};load();return()=>{mounted=false;};},[]);
-  useEffect(()=>{let mounted=true;const load=async()=>{setTicketLoading(true);setTicketError("");try{const query=new URLSearchParams({team_scope:"true",max_results:"100"});if(ticketStatusFilter!=="all")query.set("status",ticketStatusFilter);if(ticketTypeFilter!=="all")query.set("issue_type",ticketTypeFilter);const res=await fetch(`/api/jira/tickets?${query.toString()}`);if(!res.ok)throw new Error("Unable to load tickets");const data=await res.json();if(!mounted)return;setTickets(Array.isArray(data?.tickets)?data.tickets:[]);}catch(err){if(mounted){setTickets([]);setTicketError(err?.message||"Unable to load tickets");}}finally{if(mounted)setTicketLoading(false);}};load();return()=>{mounted=false;};},[ticketReloadNonce,ticketStatusFilter,ticketTypeFilter]);
-  useEffect(()=>{setGeneratedSummary(null);setDemoSummary(null);setSummaryError("");},[storyKeys,scheduleType,scheduleValue,selectedApps.join("|"),contextIds.map(c=>`${c.id}:${c.status}`).join("|")]);
+  useEffect(()=>{let mounted=true;const load=async()=>{setTicketLoading(true);setTicketError("");try{const query=new URLSearchParams({team_scope:"true",max_results:"100"});if(ticketStatusFilter!=="all")query.set("status",ticketStatusFilter);if(ticketTypeFilter!=="all")query.set("issue_type",ticketTypeFilter);if(ticketReporteeFilter!=="all")query.set("reportee",ticketReporteeFilter);if(ticketOpenedFrom)query.set("opened_from",ticketOpenedFrom);if(ticketOpenedTo)query.set("opened_to",ticketOpenedTo);const res=await fetch(`/api/jira/tickets?${query.toString()}`);if(!res.ok)throw new Error("Unable to load tickets");const data=await res.json();if(!mounted)return;const liveTickets=Array.isArray(data?.tickets)?data.tickets:[];if(liveTickets.length===0){setTickets(DEMO_TICKETS);setTicketUsingDemo(true);setTicketError("No live Jira tickets returned. Showing demo data.");}else{setTickets(liveTickets);setTicketUsingDemo(false);}}catch(err){if(mounted){setTickets(DEMO_TICKETS);setTicketUsingDemo(true);setTicketError((err?.message||"Unable to load tickets")+" Showing demo data.");}}finally{if(mounted)setTicketLoading(false);}};load();return()=>{mounted=false;};},[ticketReloadNonce,ticketStatusFilter,ticketTypeFilter,ticketReporteeFilter,ticketOpenedFrom,ticketOpenedTo]);
+  useEffect(()=>{setGeneratedSummary(null);setDemoSummary(null);setSummaryError("");setSummaryRequested(false);},[storyKeys,scheduleType,scheduleValue,selectedApps.join("|"),contextIds.map(c=>`${c.id}:${c.status}`).join("|")]);
 
+  const baseAppOptions=useMemo(()=>APPS.filter(app=>app.id!=="other"),[]);
+  const appOptions=useMemo(()=>{const map=new Map();baseAppOptions.forEach(app=>map.set(app.referenceKey,{...app,isManaged:true}));appCatalog.forEach(item=>{const existing=map.get(item.reference_key);map.set(item.reference_key,{id:item.id||item.reference_key.replace(/-/g,"_"),referenceKey:item.reference_key,name:item.application_name||existing?.name||item.reference_key,desc:existing?.desc||"Custom Application",tier:existing?.tier||"Other",protocol:existing?.protocol||"REST/JSON",icon:existing?.icon||"+",apiVariant:item.api_variant||existing?.apiVariant||"core",endpointUrl:item.endpoint_url||"",ownerTeam:item.owner_team||"",version:item.version||"",tags:item.tags||existing?.tags||[],isManaged:true});});return Array.from(map.values()).sort((a,b)=>a.name.localeCompare(b.name));},[baseAppOptions,appCatalog]);
+  const appScopedEnvRefs=useMemo(()=>envRefs.filter(ref=>selectedApps.some(id=>{const app=appOptions.find(a=>a.id===id);return app?.referenceKey&&app.referenceKey===ref.application_key;})),[envRefs,selectedApps,appOptions]);
   useEffect(()=>{if(ticketForm.applicationId)return;if(selectedApps.length===0)return;setTicketForm(prev=>({...prev,applicationId:selectedApps[0]}));},[selectedApps,ticketForm.applicationId]);
 
   const dynamicApps=useMemo(()=>{const staticKeys=new Set(APPS.map(a=>a.referenceKey));const seen=new Set();const extras=[];for(const ref of envRefs){if(!staticKeys.has(ref.application_key)&&!seen.has(ref.application_key)){seen.add(ref.application_key);const shortName=ref.application_name||ref.application_key;extras.push({id:ref.application_key,referenceKey:ref.application_key,name:shortName,desc:"",tier:"Other",protocol:"",icon:shortName.substring(0,2).toUpperCase(),isDynamic:true});}}return extras;},[envRefs]);
@@ -158,9 +174,10 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
   const add=()=>{const v=iv.trim().toUpperCase();if(!v)return;let t=it;if(v.startsWith("PID"))t="PID";else if(v.startsWith("E1"))t="E1";if(contextIds.some(c=>c.id===v)){setIv("");return;}setContextIds([...contextIds,{id:v,type:t,label:"",status:"pending"}]);setIv("");ref.current?.focus();};
   const rm=(id)=>setContextIds(contextIds.filter(c=>c.id!==id));
   const kd=(e)=>{if(e.key==="Enter"){e.preventDefault();add();}if(e.key==="Backspace"&&iv===""&&contextIds.length>0)rm(contextIds[contextIds.length-1].id);};
-  const lk=(i)=>{const u=[...contextIds];u[i]={...u[i],status:"searching"};setContextIds(u);setTimeout(()=>{const L={PID:["CTx Billing Mod","OPUS Mobile Upgrade","Order Mgmt"],E1:["SF/Mulesoft Migration","TLG Backend","GDDN Messaging"]};const p=L[contextIds[i]?.type]||L.PID;const u2=[...contextIds];u2[i]={...u2[i],status:"indexed",label:p[Math.floor(Math.random()*p.length)]};setContextIds(u2);const indexed=u2.filter(cx=>cx.status==="indexed");const selectedApp=APPS.find(app=>app.id===selectedApps[0]);const appName=selectedApp?.name||"(select app to target impact)";const contextList=indexed.map(cx=>cx.id);if(indexed.length>0){setDemoSummary({generated_at:new Date().toISOString(),selected_app_id:selectedApp?.id||"",selected_app_name:appName,project_goals:[`Validate sprint scope for ${storyKeys.split(",").map(k=>k.trim()).filter(Boolean).join(", ")||"selected stories"}.`,`Ground test-plan assumptions with searched contexts: ${contextList.join(", ")}.`],selected_app_impacts:[`Prioritize ${appName} entry-point transactions for load and stress scenarios.`,`Confirm upstream and downstream touchpoints connected to ${appName} in critical flows.`],cross_system_impacts:["Check middleware/back-end dependencies for latency amplification and timeout risks.","Verify connection pools, queue depth behavior, and shared platform capacity under peak load."],recommended_focus:["Start with highest-volume journeys and establish SLA targets before script generation.","Map each context ID to explicit test-case coverage and pass/fail criteria."],evidence:indexed.slice(0,5).map((cx,idx)=>({source:"demo:context-search",title:cx.label||`Context ${cx.id}`,reference:cx.id,url:"",excerpt:`Demo evidence derived from searched ${cx.type} ID ${cx.id}.`})),source_coverage:{jira_status:"demo",rag_status:"demo",jira_count:indexed.length,rag_count:indexed.length,warnings:["Demo preview generated from searched PID/E1 IDs. Click Generate Summary to use backend Jira + wiki retrieval."]}});}else{setDemoSummary(null);}},500+Math.random()*400);};
+  const lk=(i)=>{const u=[...contextIds];u[i]={...u[i],status:"searching"};setContextIds(u);setTimeout(()=>{const L={PID:["CTx Billing Mod","OPUS Mobile Upgrade","Order Mgmt"],E1:["SF/Mulesoft Migration","TLG Backend","GDDN Messaging"]};const p=L[contextIds[i]?.type]||L.PID;const u2=[...contextIds];u2[i]={...u2[i],status:"indexed",label:p[Math.floor(Math.random()*p.length)]};setContextIds(u2);const indexed=u2.filter(cx=>cx.status==="indexed");const selectedApp=appOptions.find(app=>app.id===selectedApps[0]);const appName=selectedApp?.name||"(select app to target impact)";const contextList=indexed.map(cx=>cx.id);if(indexed.length>0){setDemoSummary({generated_at:new Date().toISOString(),selected_app_id:selectedApp?.id||"",selected_app_name:appName,project_goals:[`Validate sprint scope for ${storyKeys.split(",").map(k=>k.trim()).filter(Boolean).join(", ")||"selected stories"}.`,`Ground test-plan assumptions with searched contexts: ${contextList.join(", ")}.`],selected_app_impacts:[`Prioritize ${appName} entry-point transactions for load and stress scenarios.`,`Confirm upstream and downstream touchpoints connected to ${appName} in critical flows.`],cross_system_impacts:["Check middleware/back-end dependencies for latency amplification and timeout risks.","Verify connection pools, queue depth behavior, and shared platform capacity under peak load."],recommended_focus:["Start with highest-volume journeys and establish SLA targets before script generation.","Map each context ID to explicit test-case coverage and pass/fail criteria."],evidence:indexed.slice(0,5).map((cx,idx)=>({source:"demo:context-search",title:cx.label||`Context ${cx.id}`,reference:cx.id,url:"",excerpt:`Demo evidence derived from searched ${cx.type} ID ${cx.id}.`})),source_coverage:{jira_status:"demo",rag_status:"demo",jira_count:indexed.length,rag_count:indexed.length,warnings:["Demo preview generated from searched PID/E1 IDs. Click Generate Summary to use backend Jira + wiki retrieval."]}});}else{setDemoSummary(null);}},500+Math.random()*400);};
   const toggleApp=(id)=>setSelectedApps(prev=>prev.includes(id)?[]:[id]);
   const canLaunch=contextIds.length>0&&selectedApps.length>0&&storyKeys.trim();
+  const primarySelectedApp=useMemo(()=>appOptions.find(app=>app.id===selectedApps[0])||null,[appOptions,selectedApps]);
   const searchedContextIds=useMemo(()=>contextIds.filter(c=>c.status==="indexed").map(c=>c.id),[contextIds]);
   const parsedArtifactJiraLinks=useMemo(()=>artifactJiraLinksText.split(/\r?\n|,/).map(v=>v.trim()).filter(Boolean),[artifactJiraLinksText]);
   const parsedArtifactDocBlocks=useMemo(()=>artifactDocBlocks.map(doc=>({title:(doc.title||"").trim(),content:(doc.content||"").trim()})).filter(doc=>doc.title||doc.content),[artifactDocBlocks]);
@@ -173,8 +190,40 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
   const updateFilePlaceholder=(idx,field,value)=>setArtifactFilePlaceholders(prev=>prev.map((item,i)=>i===idx?{...item,[field]:value}:item));
   const removeFilePlaceholder=(idx)=>setArtifactFilePlaceholders(prev=>prev.length===1?[{name:"",notes:""}]:prev.filter((_,i)=>i!==idx));
   const canGenerateSummary=searchedContextIds.length>0&&selectedApps.length===1&&storyKeys.trim()&&!summaryLoading;
-  const summaryPreview=generatedSummary||demoSummary;
-  const isDemoSummary=!generatedSummary&&!!demoSummary;
+  const defaultContextDemoSummary=useMemo(()=>{
+    const selectedApp=appOptions.find(app=>app.id===selectedApps[0]);
+    const appName=selectedApp?.name||"Selected Application";
+    const keys=storyKeys.split(",").map(k=>k.trim()).filter(Boolean);
+    const storyLabel=keys.length>0?keys.slice(0,3).join(", "):"TELECOM-0000";
+    return {
+      generated_at:new Date().toISOString(),
+      selected_app_id:selectedApp?.id||"demo-app",
+      selected_app_name:appName,
+      project_goals:[
+        `Validate performance readiness for ${storyLabel} in ${scheduleValue||"the selected cycle"}.`,
+        "Establish baseline SLA expectations before full pipeline execution.",
+      ],
+      selected_app_impacts:[
+        `Prioritize ${appName} critical user journeys in initial load and stress coverage.`,
+        "Confirm entry-point behavior and dependency latency under expected peak volume.",
+      ],
+      cross_system_impacts:[
+        "Track middleware and backend service dependencies for cascading latency risk.",
+        "Review shared resource constraints (connection pools, queue depth, autoscaling signals).",
+      ],
+      recommended_focus:[
+        "Start with highest-volume transactions and attach explicit p90/p95 targets.",
+        "Use searched PID/E1 IDs to replace this demo context with run-specific evidence.",
+      ],
+      evidence:[
+        {source:"demo:context-summary",title:`${appName} Baseline Checklist`,reference:"DEMO-CTX-001",url:"",excerpt:"Demo context shown until live Jira/wiki retrieval is generated."},
+        {source:"demo:dependency-map",title:"Cross-System Impact Seed",reference:"DEMO-CTX-002",url:"",excerpt:"Use Generate Summary to populate real evidence from Jira and enterprise knowledge."},
+      ],
+      source_coverage:{jira_status:"demo",rag_status:"demo",jira_count:1,rag_count:1,warnings:["Demo preview shown. Search PID/E1 IDs and click Generate Summary for live data."]},
+    };
+  },[appOptions,selectedApps,scheduleValue,storyKeys]);
+  const summaryPreview=summaryRequested?(generatedSummary||demoSummary||defaultContextDemoSummary):null;
+  const isDemoSummary=!generatedSummary&&!!summaryPreview;
   const summarySourceMode=useMemo(()=>{
     if(!summaryPreview)return "none";
     const coverage=summaryPreview.source_coverage||{};
@@ -194,13 +243,12 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
   const refreshTickets=()=>setTicketReloadNonce(n=>n+1);
   const handleEnvSelect=(key)=>setActiveEnvKey(key);
   const handleEnvSave=async()=>{const descriptor=envDescriptor||activeEnvRecord;if(!descriptor)return;setEnvSaving(true);setEnvMessage("");try{const res=await fetch(`/api/env/configs/${descriptor.application_key}/${descriptor.environment}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({content:envContent,api_variant:descriptor.api_variant,lab_environment:descriptor.lab_environment||"PERF",release_code:descriptor.release_code||"current",application_name:descriptor.application_name,updated_by:"dashboard-ui"})});if(!res.ok)throw new Error(await res.text());const data=await res.json();const nextDescriptor=data.descriptor||descriptor;setEnvDescriptor(nextDescriptor);setEnvContent(data.content||envContent);setEnvDirty(false);setEnvMessage("Saved successfully");setEnvRefs(prev=>{const key=envRefKey(nextDescriptor);const exists=prev.some(ref=>envRefKey(ref)===key);if(exists){return prev.map(ref=>envRefKey(ref)===key?nextDescriptor:ref);}return [...prev,nextDescriptor];});}catch(err){setEnvMessage(err?.message||"Failed to save config");}finally{setEnvSaving(false);}};
-  const handleTicketField=(field,value)=>setTicketForm(f=>({...f,[field]:value}));
-  const handleTicketSubmit=async(e)=>{e?.preventDefault();const app=APPS.find(a=>a.id===ticketForm.applicationId);const scope=app?.referenceKey||"";if(!scope){setTicketError("Choose an application before creating a ticket");return;}setTicketSaving(true);setTicketError("");try{const res=await fetch("/api/jira/tickets",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...ticketForm,application_key:scope})});if(!res.ok){const msg=await res.text();throw new Error(msg||"Failed to create ticket");}await res.json();setTicketForm(form=>({...form,summary:"",description:"",projectKey:""}));refreshTickets();}catch(err){setTicketError(err?.message||"Unable to create ticket");}finally{setTicketSaving(false);}};
   const navigateToAwaitingRun=(runId)=>{setSelectedRunId(runId);setSelectedRunStatus(null);setSelectedPhaseId("");setSelectedPhaseOutput(null);setRunStatusError("");setPhaseOutputError("");onNavigate("test-history");};
   const generateSummary=async()=>{
     if(!canGenerateSummary)return;
+    setSummaryRequested(true);
     if(selectedApps.length===0){setSummaryError("Select an application before generating summary.");return;}
-    const selectedApp=APPS.find(app=>app.id===selectedApps[0]);
+    const selectedApp=appOptions.find(app=>app.id===selectedApps[0]);
     if(!selectedApp){setSummaryError("Select exactly one application before generating summary.");return;}
     const keys=storyKeys.split(",").map(s=>s.trim()).filter(Boolean);
     if(keys.length===0){setSummaryError("Add at least one Jira story key before generating summary.");return;}
@@ -253,13 +301,33 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
   const formatDuration=(seconds)=>{const total=Math.max(0,Math.floor(Number(seconds)||0));const h=Math.floor(total/3600);const m=Math.floor((total%3600)/60);return h>0?`${h}h ${m}m`:`${m}m`;};
   const historyRows=useMemo(()=>{const mapped=(historyRuns||[]).map(run=>({id:run.run_id,date:(run.created_at||"").slice(0,10),sprint:"-",stories:Array.isArray(run.story_keys)?run.story_keys:[],apps:["-"],phase:Number(run.completed_phases||0),duration:formatDuration(run.duration_seconds),verdict:run.verdict||DA,status:(run.overall_status||"running")==="failed"?"failed":((run.overall_status||"running")==="completed"?"completed":"running"),currentPhase:run.current_phase||"",awaitingPhase:run.awaiting_approval_phase||"",source:"api"}));return mapped.length>0?mapped:[...PAST_RUNS.map(run=>({...run,currentPhase:"",awaitingPhase:"",source:"seed"}))];},[historyRuns]);
   const filteredRuns=useMemo(()=>{let r=[...historyRows];if(statusFilter!=="all")r=r.filter(x=>statusFilter==="completed"?x.status==="completed":x.status==="failed");if(appFilter)r=r.filter(x=>x.apps.some(a=>a.toLowerCase().includes(appFilter.toLowerCase()))||x.stories.some(s=>s.toLowerCase().includes(appFilter.toLowerCase())));r.sort((a,b)=>dateSort==="desc"?b.date.localeCompare(a.date):a.date.localeCompare(b.date));return r;},[historyRows,appFilter,dateSort,statusFilter]);
-  const filteredTickets=useMemo(()=>{const q=ticketSearch.trim().toLowerCase();if(!q)return tickets;return tickets.filter(t=>[t.key,t.summary,t.status,t.issue_type,t.assignee||"",(t.labels||[]).join(" ")].join(" ").toLowerCase().includes(q));},[tickets,ticketSearch]);
+  const ticketReportees=useMemo(()=>Array.from(new Set((tickets||[]).map(t=>t.reporter).filter(Boolean))).sort(),[tickets]);
+  const filteredTickets=useMemo(()=>{const q=ticketSearch.trim().toLowerCase();if(!q)return tickets;return tickets.filter(t=>[t.key,t.summary,t.status,t.issue_type,t.assignee||"",t.reporter||"",t.created||"",(t.labels||[]).join(" ")].join(" ").toLowerCase().includes(q));},[tickets,ticketSearch]);
+  const visibleTicketKeys=useMemo(()=>filteredTickets.map(t=>t.key),[filteredTickets]);
+
+  useEffect(()=>{
+    const visible=new Set(visibleTicketKeys);
+    setSelectedTicketKeys(prev=>prev.filter(key=>visible.has(key)));
+  },[visibleTicketKeys]);
+
+  const toggleTicketSelection=(ticketKey)=>setSelectedTicketKeys(prev=>prev.includes(ticketKey)?prev.filter(key=>key!==ticketKey):[...prev,ticketKey]);
+  const toggleSelectAllVisible=()=>setSelectedTicketKeys(prev=>{if(visibleTicketKeys.length===0)return [];const allSelected=visibleTicketKeys.every(key=>prev.includes(key));if(allSelected)return prev.filter(key=>!visibleTicketKeys.includes(key));const merged=new Set([...prev,...visibleTicketKeys]);return Array.from(merged);});
+  const openSelectedTickets=()=>{if(selectedTicketKeys.length===0)return;const selected=tickets.filter(t=>selectedTicketKeys.includes(t.key));selected.forEach(t=>{if(t?.url){window.open(t.url,"_blank","noopener,noreferrer");}});};
   const awaitingApprovalRuns=useMemo(()=>historyRows.filter(run=>run.source==="api"&&run.awaitingPhase),[historyRows]);
 
   useEffect(()=>{if(!selectedRunId){setSelectedRunStatus(null);setSelectedPhaseId("");setRunStatusError("");return;}const runSummary=historyRows.find(r=>r.id===selectedRunId);if(!runSummary||runSummary.source!=="api"){setSelectedRunStatus(null);setSelectedPhaseId("");setRunStatusError("Detailed phase data is available only for server-backed runs.");return;}let mounted=true;const load=async()=>{setRunStatusLoading(true);setRunStatusError("");try{const res=await fetch(`/api/pipeline/${selectedRunId}/status`);if(!res.ok)throw new Error("Unable to load run details");const data=await res.json();if(!mounted)return;setSelectedRunStatus(data);const currentPhase=data?.current_phase;const completedPhase=PHASES.find(phase=>data?.phase_results?.[phase.id]?.status==="completed")?.id;setSelectedPhaseId(currentPhase||completedPhase||PHASES[0].id);}catch(err){if(mounted){setSelectedRunStatus(null);setSelectedPhaseId("");setRunStatusError(err?.message||"Unable to load run details");}}finally{if(mounted)setRunStatusLoading(false);}};load();return()=>{mounted=false;};},[selectedRunId,historyRows]);
   useEffect(()=>{if(!selectedRunId||!selectedPhaseId){setSelectedPhaseOutput(null);setPhaseOutputError("");return;}if(!selectedRunStatus){setSelectedPhaseOutput(null);setPhaseOutputError("");return;}const phaseResult=selectedRunStatus?.phase_results?.[selectedPhaseId];if(!phaseResult||phaseResult.status==="pending"){setSelectedPhaseOutput(null);setPhaseOutputError("No output captured for this phase yet.");return;}let mounted=true;const load=async()=>{setPhaseOutputLoading(true);setPhaseOutputError("");try{const res=await fetch(`/api/pipeline/${selectedRunId}/phase/${selectedPhaseId}`);if(!res.ok)throw new Error("Unable to load phase output");const data=await res.json();if(!mounted)return;setSelectedPhaseOutput(data);}catch(err){if(mounted){setSelectedPhaseOutput(null);setPhaseOutputError(err?.message||"Unable to load phase output");}}finally{if(mounted)setPhaseOutputLoading(false);}};load();return()=>{mounted=false;};},[selectedRunId,selectedPhaseId,selectedRunStatus]);
 
-  const selectedAppNames=selectedApps.map(id=>APPS.find(a=>a.id===id)?.name||id);
+  const selectedAppNames=selectedApps.map(id=>appOptions.find(a=>a.id===id)?.name||id);
+
+  const parseTagText=(value)=>value.split(",").map(t=>t.trim()).filter(Boolean);
+  const formatError=async(res,fallback)=>{const text=await res.text().catch(()=>"");if(!text)return fallback;try{const parsed=JSON.parse(text);return parsed?.detail||fallback;}catch{return text;}};
+  const openAddAppDialog=()=>{setAppDialogMode("create");setAppDialogKey("");setAppForm(EMPTY_APP_FORM);setAppFormError("");setAppDialogOpen(true);};
+  const openEditAppDialog=()=>{const selected=appOptions.find(app=>app.id===selectedApps[0]);if(!selected)return;setAppDialogMode("edit");setAppDialogKey(selected.referenceKey);setAppForm({application_key:selected.referenceKey,application_name:selected.name||"",endpoint_url:selected.endpointUrl||"",api_variant:selected.apiVariant||"core",tags:(selected.tags||[]).join(", "),owner_team:selected.ownerTeam||"",version:selected.version||""});setAppFormError("");setAppDialogOpen(true);};
+  const closeAppDialog=()=>{if(appFormSaving)return;setAppDialogOpen(false);setAppFormError("");};
+  const handleAppFormChange=(field,value)=>setAppForm(prev=>({...prev,[field]:value}));
+  const submitAppForm=async()=>{const name=(appForm.application_name||"").trim();const key=(appForm.application_key||"").trim().toLowerCase();const endpoint=(appForm.endpoint_url||"").trim();if(!name||!endpoint){setAppFormError("Application Name and Endpoint URL are required.");return;}if(appDialogMode==="create"&&!/^[a-z0-9][a-z0-9-]*$/.test(key)){setAppFormError("Application Key / Slug must use lowercase letters, numbers, and hyphens.");return;}setAppFormSaving(true);setAppFormError("");try{if(appDialogMode==="create"){const res=await fetch("/api/apps",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({application_key:key,application_name:name,endpoint_url:endpoint,api_variant:(appForm.api_variant||"core").trim()||"core",tags:parseTagText(appForm.tags||""),owner_team:(appForm.owner_team||"").trim()||null,version:(appForm.version||"").trim()||null,updated_by:"dashboard-ui"})});if(!res.ok)throw new Error(await formatError(res,"Unable to create application"));const created=await res.json();setSelectedApps([created.id||key.replace(/-/g,"_")]);setEnvMessage("Application created and initial YAML saved.");}else{const res=await fetch(`/api/apps/${appDialogKey}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({application_name:name,endpoint_url:endpoint,api_variant:(appForm.api_variant||"core").trim()||"core",tags:parseTagText(appForm.tags||""),owner_team:(appForm.owner_team||"").trim()||null,version:(appForm.version||"").trim()||null,updated_by:"dashboard-ui"})});if(!res.ok)throw new Error(await formatError(res,"Unable to update application"));setEnvMessage("Application updated.");}setAppDialogOpen(false);setEnvReloadNonce(n=>n+1);}catch(err){setAppFormError(err?.message||"Unable to save application");}finally{setAppFormSaving(false);}};
+  const archiveSelectedApp=async()=>{const selected=appOptions.find(app=>app.id===selectedApps[0]);if(!selected)return;if(!window.confirm(`Archive ${selected.name}? It will be removed from active selector and YAML files moved to archive.`))return;setAppFormSaving(true);setAppFormError("");try{const res=await fetch(`/api/apps/${selected.referenceKey}`,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({updated_by:"dashboard-ui"})});if(!res.ok)throw new Error(await formatError(res,"Unable to archive application"));setSelectedApps([]);setEnvMessage(`Application ${selected.name} archived.`);setEnvReloadNonce(n=>n+1);}catch(err){setAppFormError(err?.message||"Unable to archive application");}finally{setAppFormSaving(false);}};
   const runHealth=useMemo(()=>{const total=historyRows.length;const completed=historyRows.filter(r=>r.status==="completed").length;const failed=historyRows.filter(r=>r.status==="failed").length;const running=historyRows.filter(r=>r.status==="running").length;const go=historyRows.filter(r=>r.verdict==="GO").length;const conditional=historyRows.filter(r=>r.verdict==="CONDITIONAL").length;const noGo=historyRows.filter(r=>r.verdict==="NO-GO").length;const avgDurationMinutes=Math.round((historyRuns.reduce((sum,run)=>sum+Number(run.duration_seconds||0),0)/Math.max(1,historyRuns.length))/60);return {total,completed,failed,running,go,conditional,noGo,avgDurationMinutes};},[historyRows,historyRuns]);
   const homeCards=[
     {label:"Total Runs",value:String(runHealth.total),accent:C.attBlue},
@@ -317,7 +385,7 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
         <div style={{marginBottom:20}}>
           <div style={{fontSize:14,fontWeight:800,marginBottom:2}}>Application Under Test <span style={{color:C.error,fontSize:12}}>*</span></div>
           <div style={{fontSize:12,color:C.textSecondary,marginBottom:12}}>Select one system for direct testing scope.</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{APPS.map(app=>{const sel=selectedApps.includes(app.id);const tcc=tc[app.tier]||C.textMuted;return (<div key={app.id} onClick={()=>toggleApp(app.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",background:sel?C.attBlueFaint:C.white,border:`2px solid ${sel?C.attBlue:C.border}`,transition:"all 0.15s"}}><div style={{width:32,height:32,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,background:sel?C.attBlue:C.bgMuted,color:sel?"white":C.textMuted}}>{app.icon}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:700,color:sel?C.textPrimary:C.textSecondary}}>{app.name}</div><div style={{display:"flex",gap:4,marginTop:2}}><span style={{padding:"1px 5px",borderRadius:3,fontSize:9,fontWeight:700,background:tcc+"14",color:tcc}}>{app.tier}</span><span style={{padding:"1px 5px",borderRadius:3,fontSize:9,background:C.bgMuted,color:C.textMuted}}>{app.protocol}</span></div></div><div style={{width:20,height:20,borderRadius:6,border:`2px solid ${sel?C.attBlue:C.border}`,background:sel?C.attBlue:"white",display:"flex",alignItems:"center",justifyContent:"center"}}>{sel&&<span style={{color:"white",fontSize:12,fontWeight:800}}>{"✓"}</span>}</div></div>);})}</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{appOptions.map(app=>{const sel=selectedApps.includes(app.id);const tcc=tc[app.tier]||C.textMuted;return (<div key={app.id} onClick={()=>toggleApp(app.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",background:sel?C.attBlueFaint:C.white,border:`2px solid ${sel?C.attBlue:C.border}`,transition:"all 0.15s"}}><div style={{width:32,height:32,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:800,background:sel?C.attBlue:C.bgMuted,color:sel?"white":C.textMuted}}>{app.icon}</div><div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:700,color:sel?C.textPrimary:C.textSecondary}}>{app.name}</div><div style={{display:"flex",gap:4,marginTop:2}}><span style={{padding:"1px 5px",borderRadius:3,fontSize:9,fontWeight:700,background:tcc+"14",color:tcc}}>{app.tier}</span><span style={{padding:"1px 5px",borderRadius:3,fontSize:9,background:C.bgMuted,color:C.textMuted}}>{app.protocol}</span></div></div><div style={{width:20,height:20,borderRadius:6,border:`2px solid ${sel?C.attBlue:C.border}`,background:sel?C.attBlue:"white",display:"flex",alignItems:"center",justifyContent:"center"}}>{sel&&<span style={{color:"white",fontSize:12,fontWeight:800}}>{"✓"}</span>}</div></div>);})}</div>
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:20}}>
@@ -374,17 +442,17 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
             <button onClick={generateSummary} disabled={!canGenerateSummary} style={{padding:"8px 14px",borderRadius:8,border:"none",background:canGenerateSummary?C.purple:C.bgMuted,color:canGenerateSummary?"white":C.textMuted,fontSize:12,fontWeight:800,cursor:canGenerateSummary?"pointer":"default"}}>{summaryLoading?"Generating...":"Generate Summary"}</button>
           </div>
           <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
-            <span style={{padding:"3px 8px",borderRadius:20,background:summarySourceMode==="live"?C.successBg:summarySourceMode==="demo"?C.warningBg:C.bgMuted,border:`1px solid ${summarySourceMode==="live"?C.successBorder:summarySourceMode==="demo"?C.warningBorder:C.border}`,fontSize:10,fontWeight:700,color:summarySourceMode==="live"?C.success:summarySourceMode==="demo"?C.warning:C.textMuted}}>{summarySourceMode==="live"?"Live Summary":summarySourceMode==="demo"?"Demo Fallback":"Waiting for Summary"}</span>
+            <span style={{padding:"3px 8px",borderRadius:20,background:summarySourceMode==="live"?C.successBg:summarySourceMode==="demo"?C.attBlueFaint:C.bgMuted,border:`1px solid ${summarySourceMode==="live"?C.successBorder:summarySourceMode==="demo"?C.attBlue+"45":C.border}`,fontSize:10,fontWeight:700,color:summarySourceMode==="live"?C.success:summarySourceMode==="demo"?C.attBlueDark:C.textMuted}}>{summarySourceMode==="live"?"Live Summary":summarySourceMode==="demo"?"Demo Fallback":"Waiting for Summary"}</span>
           </div>
           {!canGenerateSummary&&<div style={{fontSize:11,color:C.textMuted,marginBottom:8}}>{selectedApps.length===0?"Select an application first, then click Generate Summary.":"Generate Summary unlocks after at least one searched PID/E1 and one selected app."}</div>}
           {summaryError&&<div style={{padding:"8px 10px",borderRadius:8,background:C.errorBg,color:C.error,fontSize:12,marginBottom:8}}>{summaryError}</div>}
           {summaryPreview&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-              {isDemoSummary&&<span style={{padding:"3px 8px",borderRadius:20,background:C.warningBg,border:`1px solid ${C.warningBorder}`,fontSize:10,fontWeight:700,color:C.warning}}>Preview</span>}
+              {isDemoSummary&&<span style={{padding:"3px 8px",borderRadius:20,background:C.attBlueFaint,border:`1px solid ${C.attBlue}45`,fontSize:10,fontWeight:700,color:C.attBlueDark}}>Preview</span>}
               <span style={{padding:"3px 8px",borderRadius:20,background:C.attBlueFaint,border:`1px solid ${C.attBlue}45`,fontSize:10,fontWeight:700,color:C.attBlueDark}}>Jira: {summaryPreview?.source_coverage?.jira_status||"-"} ({summaryPreview?.source_coverage?.jira_count||0})</span>
               <span style={{padding:"3px 8px",borderRadius:20,background:C.purpleBg,border:`1px solid ${C.purple}35`,fontSize:10,fontWeight:700,color:C.purple}}>Wiki/RAG: {summaryPreview?.source_coverage?.rag_status||"-"} ({summaryPreview?.source_coverage?.rag_count||0})</span>
             </div>
-            {Array.isArray(summaryPreview?.source_coverage?.warnings)&&summaryPreview.source_coverage.warnings.length>0&&<div style={{padding:"8px 10px",borderRadius:8,background:C.warningBg,color:C.warning,fontSize:11}}>{summaryPreview.source_coverage.warnings.join(" ")}</div>}
+            {Array.isArray(summaryPreview?.source_coverage?.warnings)&&summaryPreview.source_coverage.warnings.length>0&&<div style={{padding:"8px 10px",borderRadius:8,background:summarySourceMode==="demo"?C.attBlueFaint:C.warningBg,color:summarySourceMode==="demo"?C.attBlueDark:C.warning,border:summarySourceMode==="demo"?`1px solid ${C.attBlue}45`:"none",fontSize:11}}>{summaryPreview.source_coverage.warnings.join(" ")}</div>}
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:10}}>
               <div style={{padding:10,borderRadius:8,border:`1px solid ${C.borderLight}`,background:C.bgMuted}}><div style={{fontSize:11,fontWeight:800,color:C.textSecondary,letterSpacing:"0.04em",textTransform:"uppercase",marginBottom:6}}>Project Goals</div><ul style={{paddingLeft:16,margin:0,display:"flex",flexDirection:"column",gap:4,fontSize:12,color:C.textPrimary}}>{(summaryPreview.project_goals||[]).map((item,idx)=><li key={idx}>{item}</li>)}</ul></div>
               <div style={{padding:10,borderRadius:8,border:`1px solid ${C.borderLight}`,background:C.bgMuted}}><div style={{fontSize:11,fontWeight:800,color:C.textSecondary,letterSpacing:"0.04em",textTransform:"uppercase",marginBottom:6}}>Selected App Impacts</div><ul style={{paddingLeft:16,margin:0,display:"flex",flexDirection:"column",gap:4,fontSize:12,color:C.textPrimary}}>{(summaryPreview.selected_app_impacts||[]).map((item,idx)=><li key={idx}>{item}</li>)}</ul></div>
@@ -397,7 +465,7 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
           </div>}
         </div>
 
-        <button onClick={()=>onLaunch({storyKeys,scheduleType,scheduleValue,contextIds,selectedApps,generatedSummary,userArtifacts})} disabled={!canLaunch} style={{width:"100%",padding:"16px 0",borderRadius:10,border:"none",background:canLaunch?C.attBlue:C.bgMuted,color:canLaunch?"white":C.textMuted,fontWeight:800,fontSize:16,cursor:canLaunch?"pointer":"default",boxShadow:canLaunch?`0 4px 12px ${C.attBlue}30`:"none",transition:"all 0.2s"}}>{canLaunch?`Launch Pipeline (${contextIds.length} ID${contextIds.length!==1?"s":""}, ${selectedApps.length} app selected)`:contextIds.length===0?"Add at least one Context ID":"Select one Application"}</button>
+        <button onClick={()=>onLaunch({storyKeys,scheduleType,scheduleValue,contextIds,selectedApps,selectedApp:primarySelectedApp,generatedSummary,userArtifacts})} disabled={!canLaunch} style={{width:"100%",padding:"16px 0",borderRadius:10,border:"none",background:canLaunch?C.attBlue:C.bgMuted,color:canLaunch?"white":C.textMuted,fontWeight:800,fontSize:16,cursor:canLaunch?"pointer":"default",boxShadow:canLaunch?`0 4px 12px ${C.attBlue}30`:"none",transition:"all 0.2s"}}>{canLaunch?`Launch Pipeline (${contextIds.length} ID${contextIds.length!==1?"s":""}, ${selectedApps.length} app selected)`:contextIds.length===0?"Add at least one Context ID":"Select one Application"}</button>
       </Card>
     </div>);
   }
@@ -427,6 +495,17 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
         </div>
       </Card>}
       <Card style={{padding:16}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,marginBottom:8,flexWrap:"wrap"}}>
+          <div style={{fontSize:12,fontWeight:700,color:C.textSecondary}}>Application Selector</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            <button onClick={openAddAppDialog} style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.attBlue}55`,background:C.attBlueFaint,color:C.attBlueDark,fontSize:12,fontWeight:800,cursor:"pointer"}}>Add App</button>
+            <button onClick={openEditAppDialog} disabled={selectedApps.length!==1||appCatalogLoading||appFormSaving} style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:selectedApps.length===1?C.white:C.bgMuted,color:selectedApps.length===1?C.textSecondary:C.textMuted,fontSize:12,fontWeight:700,cursor:selectedApps.length===1?"pointer":"default"}}>Edit App</button>
+            <button onClick={archiveSelectedApp} disabled={selectedApps.length!==1||appCatalogLoading||appFormSaving} style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.errorBorder}`,background:selectedApps.length===1?C.errorBg:C.bgMuted,color:selectedApps.length===1?C.error:C.textMuted,fontSize:12,fontWeight:700,cursor:selectedApps.length===1?"pointer":"default"}}>Delete App</button>
+          </div>
+        </div>
+        {appCatalogError&&<div style={{padding:"8px 12px",borderRadius:8,background:C.warningBg,color:C.warning,fontSize:12,marginBottom:10}}>{appCatalogError}</div>}
+        {appFormError&&!appDialogOpen&&<div style={{padding:"8px 12px",borderRadius:8,background:C.errorBg,color:C.error,fontSize:12,marginBottom:10}}>{appFormError}</div>}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{appOptions.map(app=>{const sel=selectedApps.includes(app.id);return (<button key={app.id} onClick={()=>toggleApp(app.id)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"8px 10px",borderRadius:8,border:`1px solid ${sel?C.attBlue:C.border}`,background:sel?C.attBlueFaint:C.white,color:sel?C.attBlueDark:C.textSecondary,fontSize:12,fontWeight:700,cursor:"pointer"}}><span>{app.name}</span><span style={{fontSize:10,fontWeight:800,color:sel?C.attBlueDark:C.textMuted}}>{app.tier||"Other"}</span></button>);})}</div>
         <div style={{fontSize:12,fontWeight:700,color:C.textSecondary,marginBottom:8}}>Application Selector</div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>{allEnvApps.map(app=>{const sel=selectedApps.includes(app.id);return (<button key={app.id} onClick={()=>toggleApp(app.id)} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderRadius:8,border:`1px solid ${sel?C.attBlue:C.border}`,background:sel?C.attBlueFaint:C.white,color:sel?C.attBlueDark:C.textSecondary,fontSize:12,fontWeight:700,cursor:"pointer"}}>{app.name}{app.isDynamic&&<span style={{marginLeft:"auto",padding:"1px 5px",borderRadius:3,fontSize:9,fontWeight:700,background:C.attBlueLight,color:C.attBlueDark}}>custom</span>}</button>);})}</div>
       </Card>
@@ -445,6 +524,31 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
         {envRefsError&&<div style={{padding:"8px 12px",borderRadius:8,background:C.errorBg,color:C.error,fontSize:12,marginBottom:12}}>{envRefsError}</div>}
         {selectedEnvRefs.length===0?<div style={{fontSize:12,color:C.textSecondary}}>No manifest entries match the selected filters yet.</div>:(<><div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:12}}>{selectedEnvRefs.map(ref=>{const key=envRefKey(ref);const active=key===activeEnvKey;return (<button key={key} onClick={()=>handleEnvSelect(key)} style={{padding:"6px 12px",borderRadius:20,border:`1px solid ${active?C.attBlue:C.border}`,background:active?C.attBlue:C.white,color:active?"white":C.textSecondary,fontSize:11,fontWeight:700,cursor:"pointer"}}>{ref.application_name} · {(ref.lab_environment||"PERF")} · {(ref.release_code||"current")}</button>);})}</div>{envDescriptor&&<div style={{display:"flex",flexWrap:"wrap",gap:12,fontSize:11,color:C.textSecondary,marginBottom:6}}><span>Env: <strong>{envDescriptor.environment}</strong></span><span>Lab: <strong>{envDescriptor.lab_environment||"PERF"}</strong></span><span>Release: <strong>{envDescriptor.release_code||"current"}</strong></span><span>Variant: <strong>{envDescriptor.api_variant}</strong></span>{envDirty&&<span style={{color:C.warning,fontWeight:700}}>Unsaved changes</span>}</div>}<textarea value={envContent} onChange={e=>{setEnvContent(e.target.value);setEnvDirty(true);setEnvMessage("");}} disabled={envLoading||!envDescriptor} placeholder={envLoading?"Loading YAML...":"Select a reference to view the YAML"} style={{width:"100%",minHeight:200,padding:12,borderRadius:10,border:`1px solid ${C.border}`,background:envLoading?C.bgMuted:C.white,fontFamily:C.fontMono,fontSize:12,lineHeight:1.6,outline:"none",opacity:envLoading||!envDescriptor?0.6:1}}/>{envMessage&&<div style={{marginTop:6,fontSize:11,color:envMessage.toLowerCase().includes("fail")?C.error:C.success}}>{envMessage}</div>}</>)}
       </Card>)}
+      {appDialogOpen&&<div style={{position:"fixed",inset:0,background:"rgba(26,26,46,0.35)",display:"flex",alignItems:"center",justifyContent:"center",padding:16,zIndex:9999}}>
+        <div style={{width:"min(620px,100%)",background:C.white,borderRadius:12,border:`1px solid ${C.border}`,boxShadow:"0 14px 40px rgba(0,0,0,0.18)",padding:18,display:"flex",flexDirection:"column",gap:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+            <div>
+              <div style={{fontSize:18,fontWeight:800,color:C.textPrimary}}>{appDialogMode==="create"?"Add App":"Edit App"}</div>
+              <div style={{fontSize:12,color:C.textSecondary}}>{appDialogMode==="create"?"Create an application and initialize PERF/current YAML reference.":"Update application details in manifest and YAML."}</div>
+            </div>
+            <button onClick={closeAppDialog} disabled={appFormSaving} style={{padding:"6px 10px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,color:C.textSecondary,fontSize:11,fontWeight:700,cursor:appFormSaving?"default":"pointer"}}>Close</button>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:10}}>
+            <label style={{display:"flex",flexDirection:"column",gap:6,fontSize:11,fontWeight:700,color:C.textSecondary}}>Application Name<input value={appForm.application_name} onChange={e=>handleAppFormChange("application_name",e.target.value)} placeholder="My Application" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.textPrimary}}/></label>
+            <label style={{display:"flex",flexDirection:"column",gap:6,fontSize:11,fontWeight:700,color:C.textSecondary}}>Application Key / Slug<input value={appForm.application_key} onChange={e=>handleAppFormChange("application_key",e.target.value.toLowerCase())} disabled={appDialogMode!=="create"} placeholder="my-application" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:appDialogMode!=="create"?C.textMuted:C.textPrimary,background:appDialogMode!=="create"?C.bgMuted:C.white}}/></label>
+            <label style={{display:"flex",flexDirection:"column",gap:6,fontSize:11,fontWeight:700,color:C.textSecondary}}>Endpoint URL<input value={appForm.endpoint_url} onChange={e=>handleAppFormChange("endpoint_url",e.target.value)} placeholder="https://service-perf.att.com" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.textPrimary}}/></label>
+            <label style={{display:"flex",flexDirection:"column",gap:6,fontSize:11,fontWeight:700,color:C.textSecondary}}>API Variant<input value={appForm.api_variant} onChange={e=>handleAppFormChange("api_variant",e.target.value)} placeholder="core" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.textPrimary}}/></label>
+            <label style={{display:"flex",flexDirection:"column",gap:6,fontSize:11,fontWeight:700,color:C.textSecondary}}>Tags (comma-separated)<input value={appForm.tags} onChange={e=>handleAppFormChange("tags",e.target.value)} placeholder="frontend, critical" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.textPrimary}}/></label>
+            <label style={{display:"flex",flexDirection:"column",gap:6,fontSize:11,fontWeight:700,color:C.textSecondary}}>Owner / Team<input value={appForm.owner_team} onChange={e=>handleAppFormChange("owner_team",e.target.value)} placeholder="Retail Performance Team" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.textPrimary}}/></label>
+            <label style={{display:"flex",flexDirection:"column",gap:6,fontSize:11,fontWeight:700,color:C.textSecondary}}>Version<input value={appForm.version} onChange={e=>handleAppFormChange("version",e.target.value)} placeholder="v1" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,color:C.textPrimary}}/></label>
+          </div>
+          {appFormError&&<div style={{padding:"8px 10px",borderRadius:8,background:C.errorBg,color:C.error,fontSize:12}}>{appFormError}</div>}
+          <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
+            <button onClick={closeAppDialog} disabled={appFormSaving} style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,color:C.textSecondary,fontSize:12,fontWeight:700,cursor:appFormSaving?"default":"pointer"}}>Cancel</button>
+            <button onClick={submitAppForm} disabled={appFormSaving} style={{padding:"7px 12px",borderRadius:8,border:"none",background:appFormSaving?C.bgMuted:C.attBlue,color:appFormSaving?C.textMuted:"white",fontSize:12,fontWeight:800,cursor:appFormSaving?"default":"pointer"}}>{appFormSaving?"Saving...":appDialogMode==="create"?"Create App":"Save Changes"}</button>
+          </div>
+        </div>
+      </div>}
     </div>);
   }
 
@@ -488,32 +592,27 @@ function LandingPage({onLaunch,activeSection,onNavigate}){
 
   if(activeSection==="open-tickets"){
     return (<div style={{maxWidth:1100,margin:"0 auto",padding:"32px 24px",display:"flex",flexDirection:"column",gap:14}}>
-      <div><div style={{fontSize:28,fontWeight:800,color:C.textPrimary,marginBottom:4}}>Open Tickets</div><div style={{fontSize:14,color:C.textSecondary}}>Searchable listing of tickets opened by the team, plus quick ticket creation.</div></div>
-      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 340px",gap:16,alignItems:"start"}}>
+      <div><div style={{fontSize:28,fontWeight:800,color:C.textPrimary,marginBottom:4}}>Tickets/Defects</div><div style={{fontSize:14,color:C.textSecondary}}>Searchable listing of Jira iTrack tickets and defects, with batch-open actions.</div></div>
+      <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr)",gap:16,alignItems:"start"}}>
         <Card style={{padding:12}}>
           <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:10,flexWrap:"wrap"}}>
             <input value={ticketSearch} onChange={e=>setTicketSearch(e.target.value)} placeholder="Search tickets..." style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,minWidth:220}}/>
             <select value={ticketStatusFilter} onChange={e=>setTicketStatusFilter(e.target.value)} style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12}}><option value="all">All Statuses</option><option value="To Do">To Do</option><option value="In Progress">In Progress</option><option value="Done">Done</option><option value="Blocked">Blocked</option></select>
             <select value={ticketTypeFilter} onChange={e=>setTicketTypeFilter(e.target.value)} style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12}}><option value="all">All Types</option><option value="Task">Task</option><option value="Story">Story</option><option value="Bug">Bug</option><option value="Incident">Incident</option></select>
+            <select value={ticketReporteeFilter} onChange={e=>setTicketReporteeFilter(e.target.value)} style={{padding:"7px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12}}><option value="all">All Reportees</option>{ticketReportees.map(name=>(<option key={name} value={name}>{name}</option>))}</select>
+            <label style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.textSecondary}}><span>Date Opened</span><input type="date" value={ticketOpenedFrom} onChange={e=>setTicketOpenedFrom(e.target.value)} style={{padding:"6px 8px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:11}}/></label>
+            <label style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.textSecondary}}><span>to</span><input type="date" value={ticketOpenedTo} onChange={e=>setTicketOpenedTo(e.target.value)} style={{padding:"6px 8px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:11}}/></label>
             <button onClick={refreshTickets} disabled={ticketLoading} style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,fontSize:12,fontWeight:700,cursor:ticketLoading?"default":"pointer"}}>{ticketLoading?"Refreshing...":"Refresh"}</button>
+            <button onClick={toggleSelectAllVisible} disabled={filteredTickets.length===0} style={{padding:"7px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:C.white,fontSize:12,fontWeight:700,cursor:filteredTickets.length===0?"default":"pointer"}}>{visibleTicketKeys.length>0&&visibleTicketKeys.every(key=>selectedTicketKeys.includes(key))?"Clear Visible":"Select Visible"}</button>
+            <button onClick={openSelectedTickets} disabled={selectedTicketKeys.length===0} style={{padding:"7px 12px",borderRadius:8,border:"none",background:selectedTicketKeys.length===0?C.bgMuted:C.attBlue,color:selectedTicketKeys.length===0?C.textMuted:"white",fontSize:12,fontWeight:800,cursor:selectedTicketKeys.length===0?"default":"pointer"}}>Open Selected ({selectedTicketKeys.length})</button>
           </div>
+          {ticketUsingDemo&&<div style={{padding:"8px 12px",borderRadius:8,background:C.attBlueFaint,color:C.attBlueDark,border:`1px solid ${C.attBlue}45`,fontSize:12,marginBottom:10}}>Demo data is currently displayed for this page.</div>}
           {ticketError&&<div style={{padding:"8px 12px",borderRadius:8,background:C.errorBg,color:C.error,fontSize:12,marginBottom:10}}>{ticketError}</div>}
           <div style={{maxHeight:520,overflowY:"auto",display:"flex",flexDirection:"column",gap:10}}>
             {ticketLoading&&<div style={{fontSize:12,color:C.textSecondary}}>Loading tickets...</div>}
             {!ticketLoading&&filteredTickets.length===0&&<div style={{fontSize:12,color:C.textSecondary}}>No tickets match your filters.</div>}
-            {!ticketLoading&&filteredTickets.map(t=>(<div key={t.key} style={{padding:"10px 12px",borderRadius:10,background:C.white,border:`1px solid ${C.border}`}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4}}><a href={t.url} target="_blank" rel="noreferrer" style={{fontSize:12,fontWeight:800,color:C.attBlue,textDecoration:"none"}}>{t.key}</a><span style={{fontSize:11,fontWeight:700,color:C.textSecondary}}>{t.status}</span></div><div style={{fontSize:12,fontWeight:700,color:C.textPrimary,marginBottom:4}}>{t.summary}</div><div style={{fontSize:11,color:C.textSecondary,marginBottom:4}}>{t.issue_type} · {t.assignee||"Unassigned"}</div><div style={{fontSize:10,color:C.textMuted}}>Updated {new Date(t.updated).toLocaleString()}</div></div>))}
+            {!ticketLoading&&filteredTickets.map(t=>{const checked=selectedTicketKeys.includes(t.key);const openedDate=t.created?new Date(t.created):null;return (<div key={t.key} style={{padding:"10px 12px",borderRadius:10,background:checked?C.attBlueFaint:C.white,border:`1px solid ${checked?C.attBlue:C.border}`}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:4,gap:8}}><div style={{display:"flex",alignItems:"center",gap:8}}><input type="checkbox" checked={checked} onChange={()=>toggleTicketSelection(t.key)} aria-label={`Select ${t.key}`}/><a href={t.url} target="_blank" rel="noreferrer" style={{fontSize:12,fontWeight:800,color:C.attBlue,textDecoration:"none"}}>{t.key}</a></div><span style={{fontSize:11,fontWeight:700,color:C.textSecondary}}>{t.status}</span></div><div style={{fontSize:12,fontWeight:700,color:C.textPrimary,marginBottom:4}}>{t.summary}</div><div style={{fontSize:11,color:C.textSecondary,marginBottom:4}}>{t.issue_type} · Reportee: {t.reporter||"Unknown"} · Assignee: {t.assignee||"Unassigned"}</div><div style={{fontSize:10,color:C.textMuted}}>Date Opened {openedDate?openedDate.toLocaleDateString():"-"} | Updated {new Date(t.updated).toLocaleString()}</div></div>);})}
           </div>
-        </Card>
-        <Card style={{padding:14}}>
-          <div style={{fontSize:14,fontWeight:800,marginBottom:10}}>Create Ticket</div>
-          <form onSubmit={handleTicketSubmit} style={{display:"flex",flexDirection:"column",gap:8}}>
-            <select value={ticketForm.applicationId} onChange={e=>handleTicketField("applicationId",e.target.value)} style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12}}><option value="">Select application...</option>{APPS.map(app=>(<option key={app.id} value={app.id}>{app.name}</option>))}</select>
-            <input value={ticketForm.summary} onChange={e=>handleTicketField("summary",e.target.value)} placeholder="Summary" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12}} required/>
-            <select value={ticketForm.issueType} onChange={e=>handleTicketField("issueType",e.target.value)} style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12}}>{["Task","Story","Bug","Incident"].map(opt=>(<option key={opt} value={opt}>{opt}</option>))}</select>
-            <input value={ticketForm.projectKey} onChange={e=>handleTicketField("projectKey",e.target.value)} placeholder="Project (optional)" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12}}/>
-            <textarea value={ticketForm.description} onChange={e=>handleTicketField("description",e.target.value)} placeholder="Description" style={{padding:"8px 10px",borderRadius:8,border:`1px solid ${C.border}`,fontSize:12,minHeight:120}} required/>
-            <button type="submit" disabled={ticketSaving||!ticketForm.applicationId||!ticketForm.summary.trim()||!ticketForm.description.trim()} style={{padding:"10px 0",borderRadius:8,border:"none",background:ticketSaving?C.bgMuted:C.attBlue,color:ticketSaving?C.textMuted:"white",fontWeight:800,fontSize:13,cursor:ticketSaving?"default":"pointer"}}>{ticketSaving?"Creating...":"Create Ticket"}</button>
-          </form>
         </Card>
       </div>
     </div>);
@@ -659,7 +758,7 @@ function App(){
         const data=await res.json().catch(()=>null);
         if(!res.ok) throw new Error(data?.detail||`Execute failed (${res.status})`);
         await syncRunStatus(activeRunId);
-        setLogs(prev=>[...prev,{ts:ts(),lv:"HITL",m:`Phase ${PHASES.find(pp=>pp.id===pid)?.num} results ready for HITL review.`}]);
+        setLogs(prev=>[...prev,{ts:ts(),lv:"HITL",m:`Phase ${PHASES.find(pp=>pp.id===pid)?.num} results ready for Prompt Review.`}]);
         setTab("details");
         return;
       }catch(err){
@@ -685,7 +784,7 @@ function App(){
     const t2=setTimeout(()=>{
       const demoReasoning=buildDemoReasoning(pid,promptEdit,currentPreCtx);
       setPs(p=>({...p,[pid]:{...p[pid],status:"results_ready",...sim.result,...demoReasoning,prompt_snapshot:promptEdit,pre_execution_context:currentPreCtx}}));
-      setLogs(pr=>[...pr,{ts:ts(),lv:"HITL",m:"Phase "+PHASES.find(pp=>pp.id===pid)?.num+" results ready for HITL review."}]);
+      setLogs(pr=>[...pr,{ts:ts(),lv:"HITL",m:"Phase "+PHASES.find(pp=>pp.id===pid)?.num+" results ready for Prompt Review."}]);
       setTab("details");
     },sim.duration);
     tr.current.push(t2);
@@ -746,8 +845,8 @@ function App(){
     setRunConfig(config);
     setPage("pipeline");
     const ids=config.contextIds.map(c=>c.id).join(", ");
-    const apps=config.selectedApps.map(id=>APPS.find(a=>a.id===id)?.name).join(", ");
-    const selectedApp=APPS.find(a=>a.id===config.selectedApps[0]);
+    const selectedApp=config.selectedApp||APPS.find(a=>a.id===config.selectedApps[0])||null;
+    const apps=(selectedApp?.name?[selectedApp.name]:config.selectedApps).join(", ");
     const summaryLog=(config.generatedSummary&&config.generatedSummary.selected_app_name)?`Summary ready for ${config.generatedSummary.selected_app_name}`:"No generated summary attached";
     const artifactCounts=config.userArtifacts?`Artifacts: notes=${config.userArtifacts.free_text?1:0}, jira_links=${(config.userArtifacts.jira_links||[]).length}, docs=${(config.userArtifacts.doc_blocks||[]).length}, file_placeholders=${(config.userArtifacts.file_placeholders||[]).length}`:"Artifacts: none";
 
@@ -860,7 +959,7 @@ function App(){
     <div style={{overflowY:"auto",padding:24,display:"flex",flexDirection:"column",gap:20}}>
       {po&&(<><div><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}><span style={{fontSize:12,fontWeight:800,color:C.textMuted}}>PHASE {po.num}</span><Badge status={rs?.status||"pending"}/></div><div style={{fontSize:22,fontWeight:800}}>{po.label}</div><div style={{fontSize:13,color:C.textSecondary,marginTop:2}}>{PHASE_DESCS[po.id]}</div></div>
         {(rs?.status==="prompt_review"||rs?.status==="executing"||rs?.status==="results_ready")&&(<Card style={{background:`linear-gradient(135deg,${C.purpleBg} 0%,#f0e8ff 100%)`,border:`2px solid ${C.purpleBorder}`}}>
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}><div style={{width:40,height:40,borderRadius:10,background:C.purple+"18",border:`2px solid ${C.purple}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:C.purple}}>{rs?.status==="prompt_review"?"✎":rs?.status==="executing"?"▶":"⏸"}</div><div><div style={{fontSize:16,fontWeight:800}}>{rs?.status==="prompt_review"?"Prompt Review":"HITL Review"}</div><div style={{fontSize:13,color:C.purple,fontWeight:600}}>Phase {po.num}: {po.label}</div></div></div>
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}><div style={{width:40,height:40,borderRadius:10,background:C.purple+"18",border:`2px solid ${C.purple}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,color:C.purple}}>{rs?.status==="prompt_review"?"✎":rs?.status==="executing"?"▶":"⏸"}</div><div><div style={{fontSize:16,fontWeight:800}}>Prompt Review</div><div style={{fontSize:13,color:C.purple,fontWeight:600}}>Phase {po.num}: {po.label}</div></div></div>
           <div style={{background:C.white,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:12}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:12,color:C.attBlue}}>{"✎"}</span><div><div style={{fontSize:12,fontWeight:700}}>{`${po.label} Agent Prompt (current run only)`}</div><div style={{fontSize:10,color:C.textMuted}}>Edits here apply only to this test run and do not modify default prompt files.</div></div></div><textarea value={phasePromptEdits[po.id]||""} onChange={e=>setPhasePromptEdits(p=>({...p,[po.id]:e.target.value}))} disabled={rs?.status==="executing"} placeholder="Edit prompt for this phase" style={{width:"100%",boxSizing:"border-box",minHeight:140,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:rs?.status==="executing"?C.bgMuted:C.white,fontFamily:C.fontMono,fontSize:12,lineHeight:1.6,resize:"vertical",outline:"none"}}/></div>
           <div style={{background:C.white,borderRadius:10,padding:"14px 16px",border:`1px solid ${C.border}`,marginBottom:12}}><div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><span style={{fontSize:12,color:C.attBlue}}>{"✎"}</span><div><div style={{fontSize:12,fontWeight:700}}>{`Additional Context for ${po.label}`}</div><div style={{fontSize:10,color:C.textMuted}}>{`Review ${po.label} prompt and add context before executing this phase.`}</div></div></div><textarea value={preCtx[po.id]||""} onChange={e=>setPreCtx(p=>({...p,[po.id]:e.target.value}))} disabled={rs?.status==="executing"} placeholder={'e.g., "Focus on TLG flows" or "Prioritize billing latency SLAs"'} style={{width:"100%",boxSizing:"border-box",minHeight:64,padding:"10px 12px",borderRadius:8,border:`1px solid ${C.border}`,background:rs?.status==="executing"?C.bgMuted:C.bgMuted,fontFamily:C.fontSans,fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none"}}/></div>
           {rs?.status!=="prompt_review"&&<pre style={{background:C.white,borderRadius:8,padding:16,fontFamily:C.fontMono,fontSize:12,lineHeight:1.7,whiteSpace:"pre-wrap",margin:"0 0 12px 0",border:`1px solid ${C.purpleBorder}`,maxHeight:200,overflowY:"auto"}}>{rs?.summary||"Phase is executing..."}</pre>}

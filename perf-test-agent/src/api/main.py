@@ -198,11 +198,61 @@ class UpdateEnvReferenceRequest(BaseModel):
     updated_by: str = "web-ui"
 
 
+class AppCatalogItem(BaseModel):
+    id: str
+    reference_key: str
+    application_name: str
+    api_variant: str
+    endpoint_url: str = ""
+    owner_team: str = ""
+    version: str = ""
+    tags: list[str] = []
+    is_active: bool = True
+    updated_by: str
+    last_updated: datetime
+    reference_count: int = 0
+
+
+class AppCatalogListResponse(BaseModel):
+    applications: list[AppCatalogItem]
+
+
+class CreateApplicationRequest(BaseModel):
+    application_key: str = Field(..., min_length=2)
+    application_name: str = Field(..., min_length=2)
+    endpoint_url: str = Field(..., min_length=3)
+    api_variant: str = "core"
+    tags: list[str] = []
+    owner_team: Optional[str] = None
+    version: Optional[str] = None
+    updated_by: str = "dashboard-ui"
+
+
+class UpdateApplicationRequest(BaseModel):
+    application_name: str = Field(..., min_length=2)
+    endpoint_url: str = Field(..., min_length=3)
+    api_variant: str = "core"
+    tags: list[str] = []
+    owner_team: Optional[str] = None
+    version: Optional[str] = None
+    updated_by: str = "dashboard-ui"
+
+
+class ArchiveApplicationRequest(BaseModel):
+    updated_by: str = "dashboard-ui"
+
+
+class ArchiveApplicationResponse(BaseModel):
+    archived_count: int
+
+
 class JiraTicket(BaseModel):
     key: str
     summary: str
     status: str
     issue_type: str
+    created: str
+    reporter: Optional[str] = None
     assignee: Optional[str] = None
     updated: str
     url: str
@@ -257,6 +307,23 @@ def _record_to_summary(
     )
 
 
+def _catalog_item_to_response(item: dict[str, Any]) -> AppCatalogItem:
+    return AppCatalogItem(
+        id=item["id"],
+        reference_key=item["reference_key"],
+        application_name=item["application_name"],
+        api_variant=item["api_variant"],
+        endpoint_url=item.get("endpoint_url", ""),
+        owner_team=item.get("owner_team", ""),
+        version=item.get("version", ""),
+        tags=item.get("tags", []),
+        is_active=item.get("is_active", True),
+        updated_by=item.get("updated_by", ""),
+        last_updated=item["last_updated"],
+        reference_count=item.get("reference_count", 0),
+    )
+
+
 def _application_label(application_key: str) -> str:
     return f"app:{application_key}".lower()
 
@@ -264,14 +331,18 @@ def _application_label(application_key: str) -> str:
 def _issue_to_ticket(issue: dict[str, Any], settings) -> JiraTicket:
     fields = issue.get("fields", {})
     assignee = fields.get("assignee") or {}
+    reporter = fields.get("reporter") or {}
     status = fields.get("status") or {}
     issue_type = fields.get("issuetype") or {}
-    base_url = settings.jira_url.rstrip("/")
+    # Force iTrack browse URLs so ticket links resolve to the expected ATT Jira host.
+    base_url = "https://itrack.web.att.com"
     return JiraTicket(
         key=issue.get("key", ""),
         summary=fields.get("summary", ""),
         status=status.get("name", "Unknown"),
         issue_type=issue_type.get("name", ""),
+        created=fields.get("created") or datetime.utcnow().isoformat(),
+        reporter=reporter.get("displayName"),
         assignee=assignee.get("displayName"),
         updated=fields.get("updated") or datetime.utcnow().isoformat(),
         url=f"{base_url}/browse/{issue.get('key', '')}",
@@ -830,6 +901,86 @@ async def get_phase_prompt(phase_id: str):
 
 # ── Environment Reference Endpoints ─────────────────────────────────
 
+@app.get("/api/apps", response_model=AppCatalogListResponse)
+async def list_applications(include_inactive: bool = False):
+    items = env_reference_store.list_applications(include_inactive=include_inactive)
+    return AppCatalogListResponse(applications=[_catalog_item_to_response(item) for item in items])
+
+
+@app.post("/api/apps", response_model=AppCatalogItem)
+async def create_application(req: CreateApplicationRequest):
+    key = req.application_key.strip().lower()
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", key):
+        raise HTTPException(400, "application_key must be lowercase slug format (letters, numbers, hyphen)")
+
+    try:
+        env_reference_store.register_application(
+            application_key=key,
+            application_name=req.application_name.strip(),
+            endpoint_url=req.endpoint_url.strip(),
+            api_variant=req.api_variant or "core",
+            tags=req.tags or [],
+            owner_team=req.owner_team,
+            version=req.version,
+            updated_by=req.updated_by,
+        )
+        items = env_reference_store.list_applications()
+        created = next((item for item in items if item["reference_key"] == key), None)
+        if not created:
+            raise RuntimeError(f"Created app '{key}' could not be loaded")
+        return _catalog_item_to_response(created)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except (ValidationError, yaml.YAMLError) as exc:
+        raise HTTPException(400, f"Invalid application payload: {exc}") from exc
+    except Exception as exc:  # pragma: no cover - unexpected failure path
+        log.error("application_create_failed", error=str(exc), application_key=key)
+        raise HTTPException(500, "Unable to create application") from exc
+
+
+@app.patch("/api/apps/{application_key}", response_model=AppCatalogItem)
+async def update_application(application_key: str, req: UpdateApplicationRequest):
+    key = application_key.strip().lower()
+    try:
+        env_reference_store.update_application(
+            application_key=key,
+            application_name=req.application_name.strip(),
+            endpoint_url=req.endpoint_url.strip(),
+            api_variant=req.api_variant or "core",
+            tags=req.tags or [],
+            owner_team=req.owner_team,
+            version=req.version,
+            updated_by=req.updated_by,
+        )
+        items = env_reference_store.list_applications()
+        updated = next((item for item in items if item["reference_key"] == key), None)
+        if not updated:
+            raise RuntimeError(f"Updated app '{key}' could not be loaded")
+        return _catalog_item_to_response(updated)
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except (ValidationError, yaml.YAMLError) as exc:
+        raise HTTPException(400, f"Invalid update payload: {exc}") from exc
+    except Exception as exc:  # pragma: no cover - unexpected failure path
+        log.error("application_update_failed", error=str(exc), application_key=key)
+        raise HTTPException(500, "Unable to update application") from exc
+
+
+@app.delete("/api/apps/{application_key}", response_model=ArchiveApplicationResponse)
+async def archive_application(application_key: str, req: ArchiveApplicationRequest):
+    key = application_key.strip().lower()
+    try:
+        archived_count = env_reference_store.archive_application(
+            application_key=key,
+            updated_by=req.updated_by,
+        )
+        return ArchiveApplicationResponse(archived_count=archived_count)
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except Exception as exc:  # pragma: no cover - unexpected failure path
+        log.error("application_archive_failed", error=str(exc), application_key=key)
+        raise HTTPException(500, "Unable to archive application") from exc
+
 @app.get("/api/env/configs", response_model=EnvReferenceListResponse)
 async def list_env_configs(
     application_key: Optional[str] = None,
@@ -918,6 +1069,9 @@ async def list_jira_tickets(
     team_scope: bool = False,
     status: Optional[str] = None,
     issue_type: Optional[str] = None,
+    reportee: Optional[str] = None,
+    opened_from: Optional[str] = None,
+    opened_to: Optional[str] = None,
     max_results: int = 25,
 ):
     if not team_scope and not application_key:
@@ -933,6 +1087,13 @@ async def list_jira_tickets(
         jql_parts.append(f'issuetype = "{issue_type}"')
     if status:
         jql_parts.append(f'status = "{status}"')
+    if reportee:
+        safe_reportee = _escape_jira_text(reportee)
+        jql_parts.append(f'reporter = "{safe_reportee}"')
+    if opened_from:
+        jql_parts.append(f'created >= "{opened_from}"')
+    if opened_to:
+        jql_parts.append(f'created <= "{opened_to}"')
     jql = " AND ".join(jql_parts) + " ORDER BY updated DESC"
 
     client = JiraClient()
