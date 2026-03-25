@@ -38,6 +38,7 @@ class EnvironmentReferenceRecord(BaseModel):
     endpoint_url: Optional[str] = None
     owner_team: Optional[str] = None
     version: Optional[str] = None
+    display_on_new_test: bool = True
     is_active: bool = True
     archived_at: Optional[datetime] = None
     last_updated: datetime = Field(default_factory=datetime.utcnow)
@@ -264,6 +265,7 @@ def list_applications(*, include_inactive: bool = False) -> list[dict[str, Any]]
                 "owner_team": latest.owner_team or "",
                 "version": latest.version or "",
                 "tags": latest.tags,
+                "display_on_new_test": latest.display_on_new_test,
                 "is_active": latest.is_active,
                 "updated_by": latest.updated_by,
                 "last_updated": latest.last_updated,
@@ -283,6 +285,7 @@ def register_application(
     tags: list[str],
     owner_team: Optional[str],
     version: Optional[str],
+    display_on_new_test: bool,
     updated_by: str,
     environment: str = "PERF",
     lab_environment: str = "PERF",
@@ -344,6 +347,7 @@ def register_application(
             record.owner_team = (owner_team or "").strip() or None
             record.version = (version or "").strip() or None
             record.tags = app_tags
+            record.display_on_new_test = bool(display_on_new_test)
             record.is_active = True
             record.archived_at = None
             record.updated_by = updated_by
@@ -363,6 +367,7 @@ def update_application(
     tags: list[str],
     owner_team: Optional[str],
     version: Optional[str],
+    display_on_new_test: Optional[bool],
     updated_by: str,
 ) -> list[EnvironmentReferenceRecord]:
     """Update metadata/YAML for all active references under an application key."""
@@ -397,6 +402,8 @@ def update_application(
         record.owner_team = (owner_team or "").strip() or None
         record.version = (version or "").strip() or None
         record.tags = app_tags
+        if display_on_new_test is not None:
+            record.display_on_new_test = bool(display_on_new_test)
         record.updated_by = updated_by
         record.last_updated = now
 

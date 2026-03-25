@@ -1,246 +1,534 @@
-version: "1.0.0"
+version: 1.0.0
 references:
-  - application_key: "opus-web"
-    application_name: "OPUS Legacy Retail"
-    api_variant: "core"
-    environment: "PERF"
-    path: "config/environment_references/opus-web/perf.yaml"
-    tags: ["frontend", "opus", "critical"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "salesforce-mulesoft-proxy"
-    application_name: "Salesforce / Mulesoft Proxy"
-    api_variant: "core"
-    environment: "PERF"
-    path: "config/environment_references/salesforce-mulesoft-proxy/perf.yaml"
-    tags: ["frontend", "salesforce", "aks", "critical"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "idp-mobile-api"
-    application_name: "IDP Mobile API"
-    api_variant: "core"
-    environment: "PERF"
-    path: "config/environment_references/idp-mobile-api/perf.yaml"
-    tags: ["frontend", "idp", "aks", "critical"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "csi-gateway"
-    application_name: "CSI Common Services Gateway"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/csi-gateway/perf.yaml"
-    tags: ["middleware", "csi", "critical"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "csi-gateway"
-    application_name: "CSI Common Services Gateway"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "T3A"
-    release_code: "N"
-    path: "config/environment_references/csi-gateway/t3a-n.yaml"
-    tags: ["middleware", "csi", "critical", "lab-t3a"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "csi-gateway"
-    application_name: "CSI Common Services Gateway"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "T4A"
-    release_code: "N-1"
-    path: "config/environment_references/csi-gateway/t4a-n-1.yaml"
-    tags: ["middleware", "csi", "critical", "lab-t4a"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "csi-gateway"
-    application_name: "CSI Common Services Gateway"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "T5A"
-    release_code: "N"
-    path: "config/environment_references/csi-gateway/t5a-n.yaml"
-    tags: ["middleware", "csi", "critical", "lab-t5a"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "gddn-messaging"
-    application_name: "GDDN Messaging"
-    api_variant: "core"
-    environment: "PERF"
-    path: "config/environment_references/gddn-messaging/perf.yaml"
-    tags: ["middleware", "gddn", "solace", "critical"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "tlg-backend"
-    application_name: "TLG Backend"
-    api_variant: "core"
-    environment: "PERF"
-    path: "config/environment_references/tlg-backend/perf.yaml"
-    tags: ["backend", "amdocs", "tlg", "critical"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "perf-app-gateway"
-    application_name: "Azure Application Gateway"
-    api_variant: "core"
-    environment: "PERF"
-    path: "config/environment_references/perf-app-gateway/perf.yaml"
-    tags: ["azure", "gateway", "critical"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "customer-graph"
-    application_name: "Customer Graph"
-    api_variant: "core"
-    environment: "PERF"
-    path: "config/environment_references/customer-graph/perf.yaml"
-    tags: ["periphery", "solr"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "order-graph"
-    application_name: "Order Graph"
-    api_variant: "core"
-    environment: "PERF"
-    path: "config/environment_references/order-graph/perf.yaml"
-    tags: ["periphery", "solr"]
-    last_updated: "2026-03-22T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "neo"
-    application_name: "NEO (Network Experience Orchestrator)"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/neo/perf.yaml"
-    tags: ["middleware", "neo", "orchestration", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "bsse"
-    application_name: "BSSe (Amdocs Business Support System Enhanced)"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/bsse/perf.yaml"
-    tags: ["backend", "amdocs", "bsse", "billing", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "identity-graph"
-    application_name: "Identity Graph (SOLr)"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/identity-graph/perf.yaml"
-    tags: ["periphery", "solr", "identity", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "bobpm"
-    application_name: "BOBPM (Business Order BPM)"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/bobpm/perf.yaml"
-    tags: ["middleware", "bpm", "order", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "fobpm"
-    application_name: "FOBPM (Fulfillment Order BPM)"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/fobpm/perf.yaml"
-    tags: ["middleware", "bpm", "fulfillment", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "csi-customer-care"
-    application_name: "CSI Customer Care"
-    api_variant: "customer-care"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/csi-customer-care/perf.yaml"
-    tags: ["middleware", "csi", "customer-care", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "csi-oam"
-    application_name: "CSI OAM (Operations, Administration & Maintenance)"
-    api_variant: "oam"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/csi-oam/perf.yaml"
-    tags: ["middleware", "csi", "oam"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "solr-db"
-    application_name: "SOLr DB Cluster"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/solr-db/perf.yaml"
-    tags: ["data", "solr", "search", "periphery"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "cassandra-db"
-    application_name: "Cassandra DB Cluster"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/cassandra-db/perf.yaml"
-    tags: ["data", "cassandra", "backend"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "kafka-mq"
-    application_name: "Kafka MQ Cluster"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/kafka-mq/perf.yaml"
-    tags: ["messaging", "kafka", "middleware", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "ibm-mq"
-    application_name: "IBM MQ Broker"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/ibm-mq/perf.yaml"
-    tags: ["messaging", "ibm-mq", "backend", "amdocs"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "mbiz"
-    application_name: "MBiz (Mobile Business Portal)"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/mbiz/perf.yaml"
-    tags: ["frontend", "mbiz", "b2b", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "edd"
-    application_name: "EDD (Enterprise Data Distribution)"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/edd/perf.yaml"
-    tags: ["middleware", "edd", "messaging", "kafka"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
-  - application_key: "egs"
-    application_name: "EGS (Enterprise Gateway Services)"
-    api_variant: "core"
-    environment: "PERF"
-    lab_environment: "PERF"
-    release_code: "current"
-    path: "config/environment_references/egs/perf.yaml"
-    tags: ["middleware", "egs", "gateway", "b2b", "critical"]
-    last_updated: "2026-03-23T00:00:00Z"
-    updated_by: "perf-engineering-team"
+- application_key: opus-web
+  application_name: OPUS Legacy Retail
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/opus-web/perf.yaml
+  tags:
+  - frontend
+  - opus
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: salesforce-mulesoft-proxy
+  application_name: Salesforce / Mulesoft Proxy
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/salesforce-mulesoft-proxy/perf.yaml
+  tags:
+  - frontend
+  - salesforce
+  - aks
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: idp-mobile-api
+  application_name: IDP Mobile API
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/idp-mobile-api/perf.yaml
+  tags:
+  - frontend
+  - idp
+  - aks
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: csi-gateway
+  application_name: CSI Common Services Gateway
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/csi-gateway/perf.yaml
+  tags:
+  - middleware
+  - csi
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: csi-gateway
+  application_name: CSI Common Services Gateway
+  api_variant: core
+  environment: PERF
+  lab_environment: T3A
+  release_code: N
+  path: config/environment_references/csi-gateway/t3a-n.yaml
+  tags:
+  - middleware
+  - csi
+  - critical
+  - lab-t3a
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: csi-gateway
+  application_name: CSI Common Services Gateway
+  api_variant: core
+  environment: PERF
+  lab_environment: T4A
+  release_code: N-1
+  path: config/environment_references/csi-gateway/t4a-n-1.yaml
+  tags:
+  - middleware
+  - csi
+  - critical
+  - lab-t4a
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: csi-gateway
+  application_name: CSI Common Services Gateway
+  api_variant: core
+  environment: PERF
+  lab_environment: T5A
+  release_code: N
+  path: config/environment_references/csi-gateway/t5a-n.yaml
+  tags:
+  - middleware
+  - csi
+  - critical
+  - lab-t5a
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: gddn-messaging
+  application_name: GDDN Messaging
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/gddn-messaging/perf.yaml
+  tags:
+  - middleware
+  - gddn
+  - solace
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: tlg-backend
+  application_name: TLG Backend
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/tlg-backend/perf.yaml
+  tags:
+  - backend
+  - amdocs
+  - tlg
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: perf-app-gateway
+  application_name: Azure Application Gateway
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/perf-app-gateway/perf.yaml
+  tags:
+  - azure
+  - gateway
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: customer-graph
+  application_name: Customer Graph
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/customer-graph/perf.yaml
+  tags:
+  - periphery
+  - solr
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: order-graph
+  application_name: Order Graph
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/order-graph/perf.yaml
+  tags:
+  - periphery
+  - solr
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-22T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: neo
+  application_name: NEO (Network Experience Orchestrator)
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/neo/perf.yaml
+  tags:
+  - middleware
+  - neo
+  - orchestration
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: bsse
+  application_name: BSSe (Amdocs Business Support System Enhanced)
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/bsse/perf.yaml
+  tags:
+  - backend
+  - amdocs
+  - bsse
+  - billing
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: identity-graph
+  application_name: Identity Graph (SOLr)
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/identity-graph/perf.yaml
+  tags:
+  - periphery
+  - solr
+  - identity
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: bobpm
+  application_name: BOBPM (Business Order BPM)
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/bobpm/perf.yaml
+  tags:
+  - middleware
+  - bpm
+  - order
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: fobpm
+  application_name: FOBPM (Fulfillment Order BPM)
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/fobpm/perf.yaml
+  tags:
+  - middleware
+  - bpm
+  - fulfillment
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: csi-customer-care
+  application_name: CSI Customer Care
+  api_variant: customer-care
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/csi-customer-care/perf.yaml
+  tags:
+  - middleware
+  - csi
+  - customer-care
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: csi-oam
+  application_name: CSI OAM (Operations, Administration & Maintenance)
+  api_variant: oam
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/csi-oam/perf.yaml
+  tags:
+  - middleware
+  - csi
+  - oam
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: solr-db
+  application_name: SOLr DB Cluster
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/solr-db/perf.yaml
+  tags:
+  - data
+  - solr
+  - search
+  - periphery
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: cassandra-db
+  application_name: Cassandra DB Cluster
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/cassandra-db/perf.yaml
+  tags:
+  - data
+  - cassandra
+  - backend
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: kafka-mq
+  application_name: Kafka MQ Cluster
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/kafka-mq/perf.yaml
+  tags:
+  - messaging
+  - kafka
+  - middleware
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: ibm-mq
+  application_name: IBM MQ Broker
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/ibm-mq/perf.yaml
+  tags:
+  - messaging
+  - ibm-mq
+  - backend
+  - amdocs
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: mbiz
+  application_name: MBiz (Mobile Business Portal)
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/mbiz/perf.yaml
+  tags:
+  - frontend
+  - mbiz
+  - b2b
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: edd
+  application_name: EDD (Enterprise Data Distribution)
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/edd/perf.yaml
+  tags:
+  - middleware
+  - edd
+  - messaging
+  - kafka
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: egs
+  application_name: EGS (Enterprise Gateway Services)
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/egs/perf.yaml
+  tags:
+  - middleware
+  - egs
+  - gateway
+  - b2b
+  - critical
+  endpoint_url: null
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-23T00:00:00Z'
+  updated_by: perf-engineering-team
+- application_key: zz-visibility-smoke
+  application_name: ZZ Visibility Smoke
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/archive/zz-visibility-smoke/20260325-145239/perf-current.yaml
+  tags:
+  - verification
+  - owner:QA
+  - version:v0
+  endpoint_url: https://zz-visibility-smoke.att.com
+  owner_team: QA
+  version: v0
+  display_on_new_test: false
+  is_active: false
+  archived_at: '2026-03-25T14:52:39.495335'
+  last_updated: '2026-03-25T14:52:39.495335'
+  updated_by: verification

@@ -18,8 +18,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Generic, Optional, Type, TypeVar
 
-from langchain.agents import AgentExecutor, create_react_agent
-from langchain.prompts import PromptTemplate
+try:
+    # LangChain >=1.0 moved classic ReAct agent APIs.
+    from langchain_classic.agents import AgentExecutor, create_react_agent
+except ImportError:  # pragma: no cover - compatibility fallback
+    from langchain.agents import AgentExecutor, create_react_agent
+
+try:
+    from langchain_core.prompts import PromptTemplate
+except ImportError:  # pragma: no cover - compatibility fallback
+    from langchain.prompts import PromptTemplate
 from langchain_core.tools import BaseTool
 from langchain_openai import AzureChatOpenAI
 from pydantic import BaseModel
