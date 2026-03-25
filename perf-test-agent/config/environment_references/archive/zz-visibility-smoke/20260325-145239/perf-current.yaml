@@ -1,0 +1,24 @@
+version: 1.0.0
+last_updated: '2026-03-25T14:52:39.452768'
+updated_by: verification
+environment_name: PERF
+lab_environment: PERF
+release_code: current
+application_key: zz-visibility-smoke
+application_display_name: ZZ Visibility Smoke
+api_variant: core
+applications:
+- app_name: ZZ Visibility Smoke
+  app_description: Runtime registered application
+  tags:
+  - verification
+  - owner:QA
+  - version:v0
+  config_fields:
+  - field_name: BASE_ENDPOINT_URL
+    expected_perf_value: https://zz-visibility-smoke.att.com
+    inspection_tool: http_probe
+    description: Primary endpoint URL for this application in PERF
+    known_qc_values: []
+    remediation_level: suggest_fix
+    remediation_command: null

@@ -171,6 +171,12 @@ cp .env.example .env
 # Start the web dashboard
 uvicorn src.api.main:app --reload --port 8000
 
+# Start the web dashboard using the workspace venv helper script
+bash scripts/run_local.sh
+
+# Smoke-test API startup health endpoint
+python -m pytest tests/test_health.py -q
+
 # Run pipeline via CLI
 python -m src.pipeline --story-key TELECOM-1234 --interactive
 

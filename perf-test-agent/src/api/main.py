@@ -19,9 +19,10 @@ import yaml
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel, Field, ValidationError
 
+from src.agents.story_analyzer import _artifacts_to_prompt_section
 from src.config.settings import get_settings
 from src.config.settings import LLMTask
 from src.integrations.azure_openai import get_llm
@@ -45,6 +46,10 @@ app = FastAPI(
     version="2.0.0",
     description="Agentic Performance Testing Pipeline — AT&T CTx CQE",
 )
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+WORKSPACE_ROOT = PROJECT_ROOT.parent
+DASHBOARD_HTML_PATH = WORKSPACE_ROOT / "perf_test_dashboard.html"
 
 # CORS for React frontend
 app.add_middleware(
@@ -106,6 +111,7 @@ class GenerateSummaryRequest(BaseModel):
     selected_app_id: str = Field(..., min_length=1)
     selected_app_name: str = Field(..., min_length=1)
     selected_app_reference_key: Optional[str] = None
+    user_artifacts: Optional[dict[str, Any]] = None
 
 
 class GenerateSummaryResponse(BaseModel):
@@ -118,6 +124,7 @@ class GenerateSummaryResponse(BaseModel):
     recommended_focus: list[str] = Field(default_factory=list)
     evidence: list[SummaryEvidence] = Field(default_factory=list)
     source_coverage: SummarySourceCoverage
+    context_used: dict[str, Any] = Field(default_factory=dict)
 
 
 class HITLDecisionRequest(BaseModel):
@@ -207,6 +214,7 @@ class AppCatalogItem(BaseModel):
     owner_team: str = ""
     version: str = ""
     tags: list[str] = []
+    display_on_new_test: bool = True
     is_active: bool = True
     updated_by: str
     last_updated: datetime
@@ -225,6 +233,7 @@ class CreateApplicationRequest(BaseModel):
     tags: list[str] = []
     owner_team: Optional[str] = None
     version: Optional[str] = None
+    display_on_new_test: bool = False
     updated_by: str = "dashboard-ui"
 
 
@@ -235,6 +244,7 @@ class UpdateApplicationRequest(BaseModel):
     tags: list[str] = []
     owner_team: Optional[str] = None
     version: Optional[str] = None
+    display_on_new_test: Optional[bool] = None
     updated_by: str = "dashboard-ui"
 
 
@@ -317,6 +327,7 @@ def _catalog_item_to_response(item: dict[str, Any]) -> AppCatalogItem:
         owner_team=item.get("owner_team", ""),
         version=item.get("version", ""),
         tags=item.get("tags", []),
+        display_on_new_test=item.get("display_on_new_test", True),
         is_active=item.get("is_active", True),
         updated_by=item.get("updated_by", ""),
         last_updated=item["last_updated"],
@@ -392,6 +403,7 @@ def _fallback_summary(
     req: GenerateSummaryRequest,
     jira_evidence: list[SummaryEvidence],
     rag_evidence: list[SummaryEvidence],
+    context_used: Optional[dict[str, Any]] = None,
 ) -> GenerateSummaryResponse:
     project_goals = [
         f"Validate performance readiness for {req.selected_app_name} within sprint scope {req.sprint_name or '-'}.",
@@ -426,6 +438,7 @@ def _fallback_summary(
             rag_count=len(rag_evidence),
             warnings=["Summary generated via deterministic fallback due to LLM response issue."],
         ),
+        context_used=context_used or {},
     )
 
 
@@ -922,6 +935,7 @@ async def create_application(req: CreateApplicationRequest):
             tags=req.tags or [],
             owner_team=req.owner_team,
             version=req.version,
+            display_on_new_test=req.display_on_new_test,
             updated_by=req.updated_by,
         )
         items = env_reference_store.list_applications()
@@ -950,6 +964,7 @@ async def update_application(application_key: str, req: UpdateApplicationRequest
             tags=req.tags or [],
             owner_team=req.owner_team,
             version=req.version,
+            display_on_new_test=req.display_on_new_test,
             updated_by=req.updated_by,
         )
         items = env_reference_store.list_applications()
@@ -1142,6 +1157,7 @@ async def create_jira_ticket(req: CreateJiraTicketRequest):
 async def generate_context_summary(req: GenerateSummaryRequest):
     story_keys = _normalize_list([_safe_story_key(k) for k in req.story_keys])
     context_ids = _normalize_list([_safe_context_id(cid) for cid in req.context_ids])
+    artifacts_section = _artifacts_to_prompt_section(req.user_artifacts)
 
     if not context_ids:
         raise HTTPException(400, "At least one searched PID/E1 context ID is required")
@@ -1257,6 +1273,18 @@ async def generate_context_summary(req: GenerateSummaryRequest):
 
     evidence = (jira_evidence + rag_evidence)[:8]
     evidence_payload = [e.model_dump() for e in evidence]
+    context_used = {
+        "request_payload": {
+            "story_keys": story_keys,
+            "sprint_name": req.sprint_name,
+            "context_ids": context_ids,
+            "selected_app_id": req.selected_app_id,
+            "selected_app_name": req.selected_app_name,
+            "selected_app_reference_key": req.selected_app_reference_key,
+            "user_artifacts": req.user_artifacts,
+        },
+        "evidence_considered": evidence_payload,
+    }
     prompt = (
         "You are an AT&T performance test planning assistant. "
         "Generate concise JSON only with keys: project_goals, selected_app_impacts, cross_system_impacts, recommended_focus. "
@@ -1266,6 +1294,7 @@ async def generate_context_summary(req: GenerateSummaryRequest):
         f"Story keys: {story_keys}\n"
         f"Context IDs: {context_ids}\n"
         f"Evidence: {json.dumps(evidence_payload, ensure_ascii=True)}"
+        f"{artifacts_section}"
     )
 
     try:
@@ -1286,6 +1315,7 @@ async def generate_context_summary(req: GenerateSummaryRequest):
             recommended_focus=_normalize_list(parsed.get("recommended_focus") or []),
             evidence=evidence,
             source_coverage=coverage,
+            context_used=context_used,
         )
         if not response.project_goals:
             response.project_goals = [
@@ -1306,13 +1336,19 @@ async def generate_context_summary(req: GenerateSummaryRequest):
         return response
     except Exception as exc:
         log.warning("summary_llm_fallback", error=str(exc))
-        fallback = _fallback_summary(req, jira_evidence, rag_evidence)
+        fallback = _fallback_summary(req, jira_evidence, rag_evidence, context_used=context_used)
         fallback.source_coverage = coverage
         fallback.source_coverage.warnings.append(f"LLM summary fallback used: {exc}")
         return fallback
 
 
 # ── WebSocket ─────────────────────────────────────────────────────────
+
+@app.get("/", response_model=None)
+async def root():
+    if DASHBOARD_HTML_PATH.exists():
+        return FileResponse(DASHBOARD_HTML_PATH)
+    return RedirectResponse(url="/docs", status_code=307)
 
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
