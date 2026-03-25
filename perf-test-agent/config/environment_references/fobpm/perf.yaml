@@ -1,0 +1,58 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "fobpm"
+application_display_name: "FOBPM (Fulfillment Order BPM)"
+api_variant: "core"
+applications:
+  - app_name: "fobpm"
+    app_description: "FOBPM — Fulfillment Order BPM engine handling provisioning workflows"
+    tags: ["middleware", "bpm", "fulfillment", "critical"]
+    config_fields:
+      - field_name: "FOBPM_BASE_URL"
+        expected_perf_value: "https://fobpm-perf.internal.att.com:8443"
+        inspection_tool: "http_probe"
+        description: "FOBPM REST API base URL"
+        known_qc_values:
+          - "https://fobpm-qc3.internal.att.com:8443"
+          - "https://fobpm-qc2.internal.att.com:8443"
+      - field_name: "FOBPM_HEALTH_ENDPOINT"
+        expected_perf_value: "https://fobpm-perf.internal.att.com:8443/fobpm/actuator/health"
+        inspection_tool: "http_probe"
+        description: "FOBPM health check endpoint"
+        known_qc_values:
+          - "https://fobpm-qc3.internal.att.com:8443/fobpm/actuator/health"
+      - field_name: "FOBPM_KAFKA_BOOTSTRAP"
+        expected_perf_value: "kafka-perf-01.att.com:9092,kafka-perf-02.att.com:9092"
+        inspection_tool: "http_probe"
+        description: "Kafka bootstrap servers for FOBPM fulfillment events"
+        known_qc_values:
+          - "kafka-qc-01.att.com:9092,kafka-qc-02.att.com:9092"
+      - field_name: "FOBPM_DB_CONNECTION"
+        expected_perf_value: "oracle-perf-scan.att.com:1521/FOBPM_PERF"
+        inspection_tool: "db_query"
+        description: "FOBPM Oracle database for process state"
+        known_qc_values:
+          - "oracle-qc-scan.att.com:1521/FOBPM_QC3"
+      - field_name: "FOBPM_REPLICA_COUNT"
+        expected_perf_value: "3"
+        inspection_tool: "kubernetes_api"
+        description: "AKS replica count for FOBPM pods"
+        known_qc_values:
+          - "1"
+          - "2"
+      - field_name: "FOBPM_NEO_ENDPOINT"
+        expected_perf_value: "https://neo-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "Downstream NEO endpoint used by FOBPM"
+        known_qc_values:
+          - "https://neo-qc3.internal.att.com:8443"
+      - field_name: "FOBPM_BOBPM_ENDPOINT"
+        expected_perf_value: "https://bobpm-perf.internal.att.com:8443"
+        inspection_tool: "azure_cli"
+        description: "BOBPM endpoint for upstream order handoff"
+        known_qc_values:
+          - "https://bobpm-qc3.internal.att.com:8443"

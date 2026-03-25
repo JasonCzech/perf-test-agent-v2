@@ -1,0 +1,46 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "edd"
+application_display_name: "EDD (Enterprise Data Distribution)"
+api_variant: "core"
+applications:
+  - app_name: "edd"
+    app_description: "EDD Enterprise Data Distribution — Kafka-backed data fan-out service for cross-domain event delivery"
+    tags: ["middleware", "edd", "messaging", "kafka"]
+    config_fields:
+      - field_name: "EDD_BASE_URL"
+        expected_perf_value: "https://edd-perf.internal.att.com:8443"
+        inspection_tool: "http_probe"
+        description: "EDD REST management API base URL"
+        known_qc_values:
+          - "https://edd-qc3.internal.att.com:8443"
+          - "https://edd-qc2.internal.att.com:8443"
+      - field_name: "EDD_HEALTH_ENDPOINT"
+        expected_perf_value: "https://edd-perf.internal.att.com:8443/edd/actuator/health"
+        inspection_tool: "http_probe"
+        description: "EDD health check endpoint"
+        known_qc_values:
+          - "https://edd-qc3.internal.att.com:8443/edd/actuator/health"
+      - field_name: "EDD_KAFKA_BOOTSTRAP"
+        expected_perf_value: "kafka-perf-01.att.com:9092,kafka-perf-02.att.com:9092,kafka-perf-03.att.com:9092"
+        inspection_tool: "http_probe"
+        description: "Kafka bootstrap servers for EDD event consumption"
+        known_qc_values:
+          - "kafka-qc-01.att.com:9092,kafka-qc-02.att.com:9092"
+      - field_name: "EDD_SOURCE_TOPICS"
+        expected_perf_value: "perf.order.events,perf.fulfillment.events,perf.billing.events"
+        inspection_tool: "http_probe"
+        description: "Kafka source topics EDD subscribes to"
+        known_qc_values:
+          - "qc3.order.events,qc3.fulfillment.events,qc3.billing.events"
+      - field_name: "EDD_REPLICA_COUNT"
+        expected_perf_value: "3"
+        inspection_tool: "kubernetes_api"
+        description: "AKS replica count for EDD pods"
+        known_qc_values:
+          - "1"
+          - "2"

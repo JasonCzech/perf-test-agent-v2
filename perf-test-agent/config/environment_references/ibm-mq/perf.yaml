@@ -1,0 +1,51 @@
+version: "2.0.0"
+last_updated: "2026-03-23T00:00:00Z"
+updated_by: "perf-engineering-team"
+environment_name: "PERF"
+lab_environment: "PERF"
+release_code: "current"
+application_key: "ibm-mq"
+application_display_name: "IBM MQ Broker"
+api_variant: "core"
+applications:
+  - app_name: "ibm-mq"
+    app_description: "IBM MQ broker used by BSSe and legacy Amdocs components for billing and provisioning messages"
+    tags: ["messaging", "ibm-mq", "backend", "amdocs"]
+    config_fields:
+      - field_name: "IBMMQ_HOST"
+        expected_perf_value: "ibmmq-perf.internal.att.com"
+        inspection_tool: "http_probe"
+        description: "IBM MQ broker hostname"
+        known_qc_values:
+          - "ibmmq-qc3.internal.att.com"
+          - "ibmmq-qc2.internal.att.com"
+      - field_name: "IBMMQ_PORT"
+        expected_perf_value: "1414"
+        inspection_tool: "http_probe"
+        description: "IBM MQ listener port"
+        known_qc_values: []
+      - field_name: "IBMMQ_QUEUE_MANAGER"
+        expected_perf_value: "PERFQM01"
+        inspection_tool: "http_probe"
+        description: "IBM MQ queue manager name"
+        known_qc_values:
+          - "QC3QM01"
+          - "QC2QM01"
+      - field_name: "IBMMQ_CHANNEL_BSSE"
+        expected_perf_value: "PERF.BSSE.CHANNEL"
+        inspection_tool: "http_probe"
+        description: "IBM MQ channel for BSSe billing messages"
+        known_qc_values:
+          - "QC3.BSSE.CHANNEL"
+      - field_name: "IBMMQ_QUEUE_BILLING"
+        expected_perf_value: "PERF.BILLING.IN"
+        inspection_tool: "http_probe"
+        description: "IBM MQ queue for inbound billing events"
+        known_qc_values:
+          - "QC3.BILLING.IN"
+      - field_name: "IBMMQ_QUEUE_PROVISIONING"
+        expected_perf_value: "PERF.PROVISION.IN"
+        inspection_tool: "http_probe"
+        description: "IBM MQ queue for provisioning requests"
+        known_qc_values:
+          - "QC3.PROVISION.IN"
