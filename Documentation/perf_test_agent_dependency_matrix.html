@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic HITL Dashboard — Dependency Matrix</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f0f2f5;
+    --text: #1a1a2e;
+    --text2: #5a6578;
+    --text3: #8c96a6;
+    --border: #e2e5ea;
+    --border2: #d0d5dd;
+    --navy: #1B3A5C;
+    --blue: #009FDB;
+    --med: #0568AE;
+    --crit-bg: #fde8e8; --crit-text: #b91c1c; --crit-border: #f5c4c4;
+    --req-bg: #e0f2fe; --req-text: #0369a1; --req-border: #b5d4f4;
+    --opt-bg: #fef3c7; --opt-text: #92400e; --opt-border: #fac775;
+    --row-hover: #f8fafc;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #242836;
+      --text: #e5e7eb;
+      --text2: #9ca3af;
+      --text3: #6b7280;
+      --border: #2d3140;
+      --border2: #3d4256;
+      --navy: #85b7eb;
+      --blue: #009FDB;
+      --med: #5ab0e8;
+      --crit-bg: #3b1515; --crit-text: #f09595; --crit-border: #5c2020;
+      --req-bg: #0c2d4a; --req-text: #85b7eb; --req-border: #163d5e;
+      --opt-bg: #3a2a08; --opt-text: #fac775; --opt-border: #5c4010;
+      --row-hover: #1e2230;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.4);
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  .container { max-width: 1280px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--navy);
+    letter-spacing: -0.3px;
+    margin-bottom: 4px;
+  }
+  .header-left .subtitle {
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .header-left .subtitle span {
+    display: inline-block;
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    margin-left: 6px;
+  }
+  .badge-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .badge.confidential {
+    background: var(--crit-bg);
+    color: var(--crit-text);
+    border: 0.5px solid var(--crit-border);
+  }
+  .badge.version {
+    background: var(--req-bg);
+    color: var(--req-text);
+    border: 0.5px solid var(--req-border);
+  }
+
+  .legend-bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+  }
+  .legend-bar .legend-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-right: 4px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  .dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: default;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+  }
+  .dot:hover { transform: scale(1.2); box-shadow: var(--shadow-lg); }
+  .dot.crit { background: var(--crit-bg); color: var(--crit-text); border: 1px solid var(--crit-border); }
+  .dot.req { background: var(--req-bg); color: var(--req-text); border: 1px solid var(--req-border); }
+  .dot.opt { background: var(--opt-bg); color: var(--opt-text); border: 1px solid var(--opt-border); }
+  .dot.empty { background: transparent; border: 1px solid var(--border); width: 10px; height: 10px; }
+
+  .matrix-wrap {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 960px;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--surface2);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    padding: 0;
+    border-bottom: 1px solid var(--border2);
+    text-align: center;
+    vertical-align: bottom;
+    height: 140px;
+  }
+  thead th:first-child {
+    text-align: left;
+    padding-left: 20px;
+    z-index: 11;
+    min-width: 180px;
+    vertical-align: middle;
+    height: auto;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text3);
+  }
+  .col-label {
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    padding: 12px 4px;
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.2px;
+  }
+
+  tbody tr { transition: background 0.1s ease; }
+  tbody tr:hover { background: var(--row-hover); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody td {
+    padding: 10px 8px;
+    border-bottom: 0.5px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+  }
+  tbody td:first-child {
+    text-align: left;
+    padding-left: 20px;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .phase-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--med);
+    margin-right: 6px;
+  }
+  .agent-name {
+    display: block;
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .section-row td {
+    background: var(--surface2) !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    color: var(--text3) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: left !important;
+    padding: 8px 20px !important;
+    border-bottom: 1px solid var(--border2) !important;
+  }
+  .section-row:hover { background: var(--surface2) !important; }
+
+  .notes-row td {
+    text-align: left !important;
+    padding: 14px 20px !important;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .notes-row td strong {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .tooltip-wrap { position: relative; display: inline-flex; }
+  .tooltip-wrap .tip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: var(--bg);
+    font-size: 11px;
+    font-weight: 400;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    max-width: 280px;
+    white-space: normal;
+    line-height: 1.4;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: var(--shadow-lg);
+  }
+  .tooltip-wrap .tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--text);
+  }
+  .tooltip-wrap:hover .tip { display: block; }
+
+  footer {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+  footer h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 10px;
+  }
+  footer p {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 6px;
+  }
+  footer p strong { font-weight: 500; color: var(--text); }
+
+  @media (max-width: 768px) {
+    body { padding: 16px 12px; }
+    header { flex-direction: column; }
+    .legend-bar { gap: 12px; padding: 10px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="header-left">
+      <h1>Agentic HITL Dashboard — dependency matrix</h1>
+      <div class="subtitle">Phase-by-phase external system and governance dependencies <span>CTx CQE Perf Eng</span></div>
+      <div class="badge-row">
+        <span class="badge version">March 2026</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="legend-bar">
+    <span class="legend-title">Legend</span>
+    <div class="legend-item"><span class="dot crit">C</span> Critical path — blocks phase</div>
+    <div class="legend-item"><span class="dot req">R</span> Required — actively used</div>
+    <div class="legend-item"><span class="dot opt">O</span> Optional / conditional</div>
+    <div class="legend-item"><span class="dot empty"></span> Not used</div>
+  </div>
+
+  <div class="matrix-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th><span class="col-label">Azure OpenAI</span></th>
+          <th><span class="col-label">Jira REST API</span></th>
+          <th><span class="col-label">Azure AI Search (RAG)</span></th>
+          <th><span class="col-label">Snowflake</span></th>
+          <th><span class="col-label">Dynatrace API v2</span></th>
+          <th><span class="col-label">LRE 26.3</span></th>
+          <th><span class="col-label">Jenkins</span></th>
+          <th><span class="col-label">Prometheus</span></th>
+          <th><span class="col-label">ELK / Elasticsearch</span></th>
+          <th><span class="col-label">SharePoint / MS Graph</span></th>
+          <th><span class="col-label">AKS / kubectl</span></th>
+          <th><span class="col-label">App Gateway</span></th>
+          <th><span class="col-label">Solace SEMP</span></th>
+          <th><span class="col-label">AI governance</span></th>
+          <th><span class="col-label">CSTEM coordination</span></th>
+          <th><span class="col-label">LRE slot reservation</span></th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="section-row"><td colspan="17">API / AI connectivity per phase</td></tr>
+
+        <tr>
+          <td><span class="phase-num">P1</span> Story analysis<span class="agent-name">StoryAnalyzerAgent</span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">GPT-4o COMPLEX_REASONING (8192 tok). All reasoning depends on this — agent cannot function without it.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">fetch_jira_story via REST /api/2/issue/{key} with expand=renderedFields. Primary input source for the entire pipeline.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">search_enterprise_knowledge, search_past_incidents (filtered to ServiceNow), search_architecture_docs. Read-only semantic search.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">get_performance_baselines — windowed query over EXECUTION_RESULTS, 10-run rolling average with trend detection.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">discover_services (topology mapping) + get_service_metrics (24hr p50/p90/p95, throughput, error rate).</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">Azure OpenAI tenant approval within AT&T's Azure environment. Prompt templates reviewed by ML/AI Standards Team.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+        </tr>
+
+        <tr>
+          <td><span class="phase-num">P2</span> Test planning<span class="agent-name">TestPlanGeneratorAgent</span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">GPT-4o COMPLEX_REASONING. Builds workload model, scenario design, risk register — all require deep reasoning.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">fetch_jira_story (re-reads for planning context) + create_jira_story (optional — can create test plan tracking ticket).</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">search_enterprise_knowledge — finds past test plans, architecture docs, and app-specific configuration guidance.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">get_performance_baselines — historical TPS and RT feed workload model VUser formula and scenario duration planning.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">get_service_metrics — 7-day production TPS (p50/p90) directly feeds VUser = TPS × (RT + think + pacing) calculation.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+        </tr>
+
+        <tr>
+          <td><span class="phase-num">P3</span> Env config & triage<span class="agent-name">EnvConfigAgent</span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">GPT-4o-mini EXTRACTION (4096 tok). Only phase using the cheaper model — task is config comparison, not deep reasoning.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">save_golden_config — writes validated config snapshot to GOLDEN_CONFIGS. Also writes to CONFIG_CHECK_HISTORY for audit trail.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot opt">O</span><span class="tip">Daily drift checks scheduled via Jenkins cron at 06:00 UTC after golden config is established. Not needed during initial validation.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">check_aks_deployment — validates env vars, replica counts, ConfigMaps against expected PERF values. Catches QC pointers in AKS config.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">check_app_gateway — validates Azure App Gateway backend pools and routing rules point to PERF, not QC backends.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot opt">O</span><span class="tip">Solace SEMP API for VPN name and queue config validation. Only needed when Solace/GDDN flows are in test scope.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">CSTEM must remediate any config mismatches found. This is often the longest wall-clock delay — agent detects in minutes, CSTEM fixes in hours/days.</span></span></td>
+          <td><span class="dot empty"></span></td>
+        </tr>
+
+        <tr>
+          <td><span class="phase-num">P4</span> Scripts & data<span class="agent-name">ScriptGeneratorAgent</span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">GPT-4o CODE_GENERATION (8192 tok). LLM reasons about what to generate; _build_vugen_action() and _build_jmeter_jmx() helpers build the code.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot opt">O</span><span class="tip">VuGen script upload for single-user dry-run validation. Requires live LRE connection — currently a placeholder in the codebase.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+        </tr>
+
+        <tr>
+          <td><span class="phase-num">P5</span> Execution & monitoring<span class="agent-name">ExecutionOrchestrator</span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">GPT-4o COMPLEX_REASONING. Real-time decision making during multi-hour execution — anomaly classification, breakpoint detection, halt decisions.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">create_jira_defect — auto-creates [PERF]-prefixed defects with perf-defect label for CRITICAL and ERROR anomalies detected during execution.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">get_dynatrace_metrics + check_active_problems — primary real-time monitoring source. Polled every 60s. Problem entities signal breakpoint.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">start_lre_test, check_lre_run_status, get_lre_results. Session-based auth (LWSSO_COOKIE_KEY). Polls every 30s with 5hr timeout.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">trigger_jenkins_job — fires JMeter test plans. Returns queue item ID from Location header. Required for all non-VuGen scripts.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">CPU, memory, JVM heap, GC pause, MQ depth, pod count via PromQL. Infrastructure health — catches resource exhaustion before it hits response times.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">search_error_logs — scans for OutOfMemoryError, Connection refused, Circuit breaker, 503, FATAL patterns. 5-min window per poll.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">Reserved LRE controller slot for LoadRunner tests. Shared resource across AT&T testing teams — must be scheduled in advance.</span></span></td>
+        </tr>
+
+        <tr>
+          <td><span class="phase-num">P6</span> Results & reporting<span class="agent-name">ResultsAnalyzerAgent</span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">GPT-4o COMPLEX_REASONING. Synthesizes quantitative metrics with qualitative risk assessment into GO/NO-GO/CONDITIONAL verdict.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">create_jira_defect — creates defects for SLA violations and regressions discovered during analysis (not caught by Phase 5 real-time detection).</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot req">R</span><span class="tip">search_enterprise_knowledge — retrieves context for analysis recommendations and comparison against prior test cycle findings.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">READ: get_performance_baselines (V_TRANSACTION_BASELINES for regression detection). WRITE: save_execution_results to EXECUTION_RESULTS — feeds future baselines.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">upload_to_sharepoint via MS Graph — publishes Word report to CTxCQE Reports library. MSAL client credentials auth.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+        </tr>
+
+        <tr>
+          <td><span class="phase-num">P7</span> Postmortem & feedback<span class="agent-name">PostmortemAgent</span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">GPT-4o COMPLEX_REASONING. Qualitative synthesis — reviews all 7 phases, extracts lessons, detects patterns from prior cycles.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">WRITE access via index_lessons_to_rag. Only phase that writes to RAG. Lessons become searchable by future P1/P2 runs. Closes the feedback loop.</span></span></td>
+          <td><span class="tooltip-wrap"><span class="dot crit">C</span><span class="tip">archive_to_snowflake — inserts to POSTMORTEM_ENTRIES + LESSONS_LEARNED tables. Feeds V_POSTMORTEM_INSIGHTS trend view.</span></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+          <td><span class="dot empty"></span></td>
+        </tr>
+
+        <tr class="section-row"><td colspan="17">Cross-cutting & pre-pipeline dependencies</td></tr>
+
+        <tr class="notes-row">
+          <td><span class="phase-num">ALL</span> BaseAgent framework</td>
+          <td colspan="16">
+            <strong>HITL approval gate</strong> between every phase (web dashboard or step-through API). <strong>PipelineState</strong> persisted to disk as pipeline_state.json between phases. <strong>FastAPI + WebSocket</strong> backend must be running for dashboard and real-time status. <strong>Azure AD authentication</strong> for all Azure services (OpenAI, AI Search, AKS, App Gateway, SharePoint).
+          </td>
+        </tr>
+
+        <tr class="notes-row">
+          <td><span class="phase-num">PRE</span> Setup & governance</td>
+          <td colspan="16">
+            <strong>AI governance:</strong> Azure OpenAI tenant approval within AT&T Azure environment; ML/AI Standards Team review of prompt templates and data handling practices.
+            <strong>Snowflake:</strong> PERF_TESTING database provisioned via ddl_complete.sql (15 tables + 4 views with clustering keys).
+            <strong>RAG index:</strong> Azure AI Search enterprise-knowledge index populated by Microsoft Graph connectors crawling SharePoint, PowerBI, ServiceNow, and Confluence.
+            <strong>Env references:</strong> Per-application YAML files authored and manifest.yaml populated for all 22 in-scope applications (26 entries including multi-lab configs).
+            <strong>App configs:</strong> Per-app .md files in templates/app_configs/ for Phase 2's read_app_config tool.
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <footer>
+    <h3>Key asymmetries</h3>
+    <p><strong>Phase 5 is the dependency bottleneck</strong> — 6 critical-path dependencies (Azure OpenAI, Dynatrace, LRE, Jenkins, Prometheus, LRE slot). Any one going down during the multi-hour execution window risks the entire test run.</p>
+    <p><strong>RAG access is asymmetric</strong> — Phases 1, 2, 6 read from Azure AI Search. Only Phase 7 writes. Write credentials aren't needed until the pipeline's final phase.</p>
+    <p><strong>Phase 3 owns infrastructure validation</strong> — the only phase touching AKS/kubectl, App Gateway, and Solace SEMP directly. All other phases interact with applications, not infrastructure.</p>
+    <p><strong>CSTEM coordination is a human dependency</strong> — Phase 3 detects misconfigurations in minutes; remediation by CSTEM can take hours or days depending on their queue. This is typically the longest wall-clock delay in the pipeline.</p>
+    <p><strong>Snowflake usage shifts across phases</strong> — Phases 1/2 read baselines, Phase 3 writes golden config, Phase 6 writes execution results (feeding future baselines), Phase 7 writes postmortem data. The same database serves both operational and analytical workloads.</p>
+  </footer>
+
+</div>
+
+</body>
+</html>
