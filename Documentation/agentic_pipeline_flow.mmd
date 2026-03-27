@@ -1,0 +1,63 @@
+flowchart TD
+    %% PERF-TEST-AGENT orchestration flow from src/pipeline.py
+
+    Start([Pipeline Trigger])
+    Start --> Entry{Entry Mode}
+
+    Entry -->|New Run| InitRun[initialize_run\n- create run_id\n- set current_phase\n- set PROMPT_REVIEW]
+    Entry -->|Resume| LoadState[load_state + resume\nfrom saved pipeline_state.json]
+
+    InitRun --> ExecLoop
+    LoadState --> ExecLoop
+
+    subgraph PhaseLoop[Phase Execution Loop (_execute_phases)]
+        direction TD
+
+        ExecLoop[Iterate PHASE_ORDER\n1 story_analysis\n2 test_planning\n3 env_triage\n4 script_data\n5 execution\n6 reporting\n7 postmortem]
+        SkipDone{Phase already COMPLETED?}
+        SetCurrent[Set current_phase]
+        RunAgent[agent.run(state)]
+        SaveState1[_save_state(state)]
+        Failed{Phase status == FAILED?}
+        HitlOn{HITL enabled?}
+        HitlGate[_hitl_gate\n(UI callback or auto-approve)]
+        Approved{Approved?}
+        MarkComplete[Set COMPLETED\nstore approval notes\n_save_state]
+        MarkRejected[Set REJECTED\nstore notes\n_save_state]
+        StopAfter{stop_after reached?}
+
+        ExecLoop --> SkipDone
+        SkipDone -->|Yes| StopAfter
+        SkipDone -->|No| SetCurrent --> RunAgent --> SaveState1 --> Failed
+
+        Failed -->|Yes| EndFailed([End: Pipeline stopped on FAILED phase])
+        Failed -->|No| HitlOn
+
+        HitlOn -->|No| StopAfter
+        HitlOn -->|Yes| HitlGate --> Approved
+
+        Approved -->|Yes| MarkComplete --> StopAfter
+        Approved -->|No| MarkRejected --> EndRejected([End: Pipeline stopped on REJECTED phase])
+
+        StopAfter -->|Yes| EndStopped([End: Stopped after requested phase])
+        StopAfter -->|No| NextPhase[Continue to next phase]
+        NextPhase --> ExecLoop
+    end
+
+    EndFailed --> PersistFinal[Final _save_state]
+    EndRejected --> PersistFinal
+    EndStopped --> PersistFinal
+    NextPhase -->|loop completes| PersistFinal
+
+    PersistFinal --> Done([Pipeline Complete])
+
+    subgraph InteractiveControls[Web UI / API Single-Phase Controls]
+        direction TD
+        PromptReview[mark_phase_for_modify\nstatus -> PROMPT_REVIEW]
+        ExecuteOne[execute_phase\nPROMPT_REVIEW -> RUNNING -> RESULTS_READY]
+        ApproveOne[approve_phase\napproved -> COMPLETED\nadvance -> next PROMPT_REVIEW]
+    end
+
+    PromptReview -. modifies current phase .-> ExecuteOne
+    ExecuteOne -. result reviewed in UI .-> ApproveOne
+    ApproveOne -. re-enters main phase order .-> ExecLoop
