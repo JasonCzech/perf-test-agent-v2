@@ -1,0 +1,77 @@
+%% Phase-by-phase Mermaid flowcharts for PERF-TEST-AGENT
+%% Source: perf-test-agent/src/pipeline.py and per-phase agents
+
+flowchart TD
+    P1Start([Phase 1 Start: story_analysis]) --> P1Inputs[Inputs:\n- jira_story_keys or sprint\n- context_ids\n- selected app metadata\n- generated summary / artifacts]
+    P1Inputs --> P1Agent[StoryAnalyzerAgent.run(state)]
+    P1Agent --> P1Outputs[Outputs written to state:\n- test_cases\n- sla_targets\n- risk_profiles\n- transaction_flows]
+    P1Outputs --> P1Ready[PhaseResult: RESULTS_READY]
+    P1Ready --> P1Gate{HITL Approval?}
+    P1Gate -->|Approve| P1Done([COMPLETED -> next phase])
+    P1Gate -->|Reject| P1Rework([REJECTED / mark_phase_for_modify])
+
+---
+
+flowchart TD
+    P2Start([Phase 2 Start: test_planning]) --> P2Inputs[Inputs:\n- test_cases\n- app configs / baselines\n- SLA context]
+    P2Inputs --> P2Agent[TestPlanGeneratorAgent.run(state)]
+    P2Agent --> P2Outputs[Outputs written to state:\n- test_plan\n- workload_model\n- test_scenarios\n- environment_requirements\n- bulk_data_requirements]
+    P2Outputs --> P2Ready[PhaseResult: RESULTS_READY]
+    P2Ready --> P2Gate{HITL Approval?}
+    P2Gate -->|Approve| P2Done([COMPLETED -> next phase])
+    P2Gate -->|Reject| P2Rework([REJECTED / prompt edits])
+
+---
+
+flowchart TD
+    P3Start([Phase 3 Start: env_triage]) --> P3Inputs[Inputs:\n- environment references\n- endpoint/config manifests\n- plan requirements]
+    P3Inputs --> P3Agent[EnvConfigAgent.run(state)]
+    P3Agent --> P3Outputs[Outputs written to state:\n- env_config_results\n- golden_config\n- config_mismatches\n- env_validation_passed]
+    P3Outputs --> P3Ready[PhaseResult: RESULTS_READY]
+    P3Ready --> P3Gate{HITL Approval?}
+    P3Gate -->|Approve| P3Done([COMPLETED -> next phase])
+    P3Gate -->|Reject| P3Rework([REJECTED / fix config mismatches])
+
+---
+
+flowchart TD
+    P4Start([Phase 4 Start: script_data]) --> P4Inputs[Inputs:\n- approved test_plan\n- protocol/harness constraints\n- bulk data requirements]
+    P4Inputs --> P4Agent[ScriptGeneratorAgent.run(state)]
+    P4Agent --> P4Outputs[Outputs written to state:\n- generated_scripts\n- bulk_data_status\n- script_validation_results]
+    P4Outputs --> P4Ready[PhaseResult: RESULTS_READY]
+    P4Ready --> P4Gate{HITL Approval?}
+    P4Gate -->|Approve| P4Done([COMPLETED -> next phase])
+    P4Gate -->|Reject| P4Rework([REJECTED / regenerate scripts])
+
+---
+
+flowchart TD
+    P5Start([Phase 5 Start: execution]) --> P5Inputs[Inputs:\n- generated scripts\n- env validation\n- SLA targets]
+    P5Inputs --> P5Agent[ExecutionOrchestratorAgent.run(state)]
+    P5Agent --> P5Outputs[Outputs written to state:\n- execution_runs\n- peak_point_results\n- breakpoint_results\n- stability_results\n- anomalies]
+    P5Outputs --> P5Ready[PhaseResult: RESULTS_READY]
+    P5Ready --> P5Gate{HITL Approval?}
+    P5Gate -->|Approve| P5Done([COMPLETED -> next phase])
+    P5Gate -->|Reject| P5Rework([REJECTED / tune scenario and rerun])
+
+---
+
+flowchart TD
+    P6Start([Phase 6 Start: reporting]) --> P6Inputs[Inputs:\n- execution data\n- anomaly stream\n- metrics integrations]
+    P6Inputs --> P6Agent[ResultsAnalyzerAgent.run(state)]
+    P6Agent --> P6Outputs[Outputs written to state:\n- report_path\n- sharepoint_url\n- jira_defect_keys]
+    P6Outputs --> P6Ready[PhaseResult: RESULTS_READY]
+    P6Ready --> P6Gate{HITL Approval?}
+    P6Gate -->|Approve| P6Done([COMPLETED -> next phase])
+    P6Gate -->|Reject| P6Rework([REJECTED / revise report])
+
+---
+
+flowchart TD
+    P7Start([Phase 7 Start: postmortem]) --> P7Inputs[Inputs:\n- prior phase results\n- failures/anomalies\n- operator notes]
+    P7Inputs --> P7Agent[PostmortemAgent.run(state)]
+    P7Agent --> P7Outputs[Outputs written to state:\n- postmortem_entries\n- lessons_learned\n- feedback_indexed]
+    P7Outputs --> P7Ready[PhaseResult: RESULTS_READY]
+    P7Ready --> P7Gate{HITL Approval?}
+    P7Gate -->|Approve| P7Done([COMPLETED / pipeline end])
+    P7Gate -->|Reject| P7Rework([REJECTED / update lessons])
