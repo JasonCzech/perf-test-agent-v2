@@ -231,6 +231,9 @@ class AppCatalogItem(BaseModel):
     endpoint_url: str = ""
     owner_team: str = ""
     version: str = ""
+    backend_systems: list[str] = []
+    mots_id: str = ""
+    additional_information: str = ""
     tags: list[str] = []
     display_on_new_test: bool = True
     is_active: bool = True
@@ -248,10 +251,16 @@ class CreateApplicationRequest(BaseModel):
     application_name: str = Field(..., min_length=2)
     endpoint_url: str = Field(..., min_length=3)
     api_variant: str = "core"
+    environment: str = Field(default="PERF", min_length=1)
+    lab_environment: str = Field(default="PERF", min_length=1)
+    release_code: str = Field(default="current", min_length=1)
     tags: list[str] = []
     owner_team: Optional[str] = None
     version: Optional[str] = None
-    display_on_new_test: bool = False
+    backend_systems: list[str] = []
+    mots_id: Optional[str] = None
+    additional_information: str = ""
+    display_on_new_test: Optional[bool] = None
     updated_by: str = "dashboard-ui"
 
 
@@ -262,6 +271,9 @@ class UpdateApplicationRequest(BaseModel):
     tags: list[str] = []
     owner_team: Optional[str] = None
     version: Optional[str] = None
+    backend_systems: list[str] = []
+    mots_id: Optional[str] = None
+    additional_information: str = ""
     display_on_new_test: Optional[bool] = None
     updated_by: str = "dashboard-ui"
 
@@ -344,6 +356,9 @@ def _catalog_item_to_response(item: dict[str, Any]) -> AppCatalogItem:
         endpoint_url=item.get("endpoint_url", ""),
         owner_team=item.get("owner_team", ""),
         version=item.get("version", ""),
+        backend_systems=item.get("backend_systems", []),
+        mots_id=item.get("mots_id", ""),
+        additional_information=item.get("additional_information", ""),
         tags=item.get("tags", []),
         display_on_new_test=item.get("display_on_new_test", True),
         is_active=item.get("is_active", True),
@@ -950,9 +965,15 @@ async def create_application(req: CreateApplicationRequest):
             application_name=req.application_name.strip(),
             endpoint_url=req.endpoint_url.strip(),
             api_variant=req.api_variant or "core",
+            environment=req.environment.strip(),
+            lab_environment=req.lab_environment.strip(),
+            release_code=req.release_code.strip(),
             tags=req.tags or [],
             owner_team=req.owner_team,
             version=req.version,
+            backend_systems=req.backend_systems or [],
+            mots_id=req.mots_id,
+            additional_information=req.additional_information or "",
             display_on_new_test=req.display_on_new_test,
             updated_by=req.updated_by,
         )
@@ -982,6 +1003,9 @@ async def update_application(application_key: str, req: UpdateApplicationRequest
             tags=req.tags or [],
             owner_team=req.owner_team,
             version=req.version,
+            backend_systems=req.backend_systems or [],
+            mots_id=req.mots_id,
+            additional_information=req.additional_information or "",
             display_on_new_test=req.display_on_new_test,
             updated_by=req.updated_by,
         )

@@ -39,7 +39,10 @@ class EnvironmentReferenceRecord(BaseModel):
     endpoint_url: Optional[str] = None
     owner_team: Optional[str] = None
     version: Optional[str] = None
-    display_on_new_test: bool = True
+    backend_systems: list[str] = Field(default_factory=list)
+    mots_id: Optional[str] = None
+    additional_information: str = ""
+    display_on_new_test: bool = False
     is_active: bool = True
     archived_at: Optional[datetime] = None
     last_updated: datetime = Field(default_factory=datetime.utcnow)
@@ -211,6 +214,48 @@ def _build_app_tags(tags: list[str], owner_team: Optional[str], version: Optiona
     return _normalize_tags(merged)
 
 
+def _default_display_on_new_test(tags: list[str]) -> bool:
+    return any((tag or "").strip().lower() == "frontend" for tag in tags)
+
+
+def _normalize_backend_systems(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    normalized: list[str] = []
+    for value in values:
+        next_value = (value or "").strip()
+        if not next_value:
+            continue
+        key = next_value.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(next_value)
+    return normalized
+
+
+def _sync_application_metadata(
+    model: EnvironmentReference,
+    *,
+    application_name: str,
+    app_tags: list[str],
+    endpoint_url: str,
+    backend_systems: list[str],
+    mots_id: Optional[str],
+    additional_information: str,
+) -> None:
+    normalized_backend_systems = _normalize_backend_systems(backend_systems)
+    if not model.applications:
+        model.applications = [ApplicationConfig(app_name=application_name, config_fields=[])]
+
+    app = model.applications[0]
+    app.app_name = application_name
+    app.tags = app_tags
+    app.backend_systems = normalized_backend_systems
+    app.mots_id = (mots_id or "").strip() or None
+    app.additional_information = additional_information.strip()
+    _upsert_endpoint_field(model, endpoint_url)
+
+
 def _to_repo_relative(path: Path) -> str:
     try:
         return str(path.relative_to(REPO_ROOT))
@@ -265,6 +310,9 @@ def list_applications(*, include_inactive: bool = False) -> list[dict[str, Any]]
                 "endpoint_url": latest.endpoint_url or "",
                 "owner_team": latest.owner_team or "",
                 "version": latest.version or "",
+                "backend_systems": latest.backend_systems,
+                "mots_id": latest.mots_id or "",
+                "additional_information": latest.additional_information,
                 "tags": latest.tags,
                 "display_on_new_test": latest.display_on_new_test,
                 "is_active": latest.is_active,
@@ -286,19 +334,25 @@ def register_application(
     tags: list[str],
     owner_team: Optional[str],
     version: Optional[str],
-    display_on_new_test: bool,
+    backend_systems: list[str],
+    mots_id: Optional[str],
+    additional_information: str,
+    display_on_new_test: Optional[bool],
     updated_by: str,
     environment: str = "PERF",
     lab_environment: str = "PERF",
     release_code: str = "current",
 ) -> EnvironmentReferenceRecord:
-    """Register a new application and create an initial PERF/current YAML reference."""
+    """Register a new application and create an initial manifest-backed YAML reference."""
     key = application_key.strip().lower()
     manifest = load_manifest()
     if any(r.application_key == key and r.is_active for r in manifest.references):
         raise ValueError(f"Application '{key}' already exists")
 
     app_tags = _build_app_tags(tags, owner_team, version)
+    normalized_backend_systems = _normalize_backend_systems(backend_systems)
+    clean_mots_id = (mots_id or "").strip() or None
+    clean_additional_information = additional_information.strip()
     model = EnvironmentReference(
         environment_name=environment.upper(),
         lab_environment=lab_environment.upper(),
@@ -312,6 +366,9 @@ def register_application(
                 app_name=application_name.strip(),
                 app_description="Runtime registered application",
                 tags=app_tags,
+                backend_systems=normalized_backend_systems,
+                mots_id=clean_mots_id,
+                additional_information=clean_additional_information,
                 config_fields=[
                     ConfigField(
                         field_name="BASE_ENDPOINT_URL",
@@ -337,6 +394,10 @@ def register_application(
 
     manifest = load_manifest()
     for record in manifest.references:
+        resolved_display_on_new_test = (
+            bool(display_on_new_test) if display_on_new_test is not None else _default_display_on_new_test(app_tags)
+        )
+
         if (
             record.application_key == key
             and record.environment.lower() == environment.lower()
@@ -347,8 +408,11 @@ def register_application(
             record.endpoint_url = endpoint_url.strip()
             record.owner_team = (owner_team or "").strip() or None
             record.version = (version or "").strip() or None
+            record.backend_systems = normalized_backend_systems
+            record.mots_id = clean_mots_id
+            record.additional_information = clean_additional_information
             record.tags = app_tags
-            record.display_on_new_test = bool(display_on_new_test)
+            record.display_on_new_test = resolved_display_on_new_test
             record.is_active = True
             record.archived_at = None
             record.updated_by = updated_by
@@ -368,6 +432,9 @@ def update_application(
     tags: list[str],
     owner_team: Optional[str],
     version: Optional[str],
+    backend_systems: list[str],
+    mots_id: Optional[str],
+    additional_information: str,
     display_on_new_test: Optional[bool],
     updated_by: str,
 ) -> list[EnvironmentReferenceRecord]:
@@ -379,6 +446,9 @@ def update_application(
         raise KeyError(f"Application '{key}' not found")
 
     app_tags = _build_app_tags(tags, owner_team, version)
+    normalized_backend_systems = _normalize_backend_systems(backend_systems)
+    clean_mots_id = (mots_id or "").strip() or None
+    clean_additional_information = additional_information.strip()
     now = datetime.utcnow()
     for record in targets:
         model = load_reference_model(record)
@@ -387,10 +457,15 @@ def update_application(
         model.api_variant = api_variant
         model.updated_by = updated_by
         model.last_updated = now
-        for app_cfg in model.applications:
-            app_cfg.app_name = application_name.strip()
-            app_cfg.tags = app_tags
-        _upsert_endpoint_field(model, endpoint_url.strip())
+        _sync_application_metadata(
+            model,
+            application_name=application_name.strip(),
+            app_tags=app_tags,
+            endpoint_url=endpoint_url.strip(),
+            backend_systems=normalized_backend_systems,
+            mots_id=clean_mots_id,
+            additional_information=clean_additional_information,
+        )
 
         payload = model.model_dump(mode="json")
         path = record.resolve_path()
@@ -402,6 +477,9 @@ def update_application(
         record.endpoint_url = endpoint_url.strip()
         record.owner_team = (owner_team or "").strip() or None
         record.version = (version or "").strip() or None
+        record.backend_systems = normalized_backend_systems
+        record.mots_id = clean_mots_id
+        record.additional_information = clean_additional_information
         record.tags = app_tags
         if display_on_new_test is not None:
             record.display_on_new_test = bool(display_on_new_test)
@@ -492,6 +570,11 @@ def save_reference(
     record.last_updated = now
     record.updated_by = updated_by
     record.tags = model.get_all_tags()
+    if model.applications:
+        primary_app = model.applications[0]
+        record.backend_systems = _normalize_backend_systems(primary_app.backend_systems)
+        record.mots_id = (primary_app.mots_id or "").strip() or None
+        record.additional_information = primary_app.additional_information.strip()
 
     save_manifest(manifest)
     return model

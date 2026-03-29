@@ -49,6 +49,9 @@ class ApplicationConfig(BaseModel):
     app_name: str
     app_description: str = ""
     tags: list[str] = []
+    backend_systems: list[str] = Field(default_factory=list)
+    mots_id: Optional[str] = None
+    additional_information: str = ""
     config_fields: list[ConfigField]
 
 
