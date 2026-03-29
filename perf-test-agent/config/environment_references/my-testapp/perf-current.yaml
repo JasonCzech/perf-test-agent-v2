@@ -1,0 +1,21 @@
+version: 1.0.0
+last_updated: '2026-03-27T20:00:00.634137'
+updated_by: dashboard-ui
+environment_name: PERF
+lab_environment: PERF
+release_code: current
+application_key: my-testapp
+application_display_name: testapp
+api_variant: core
+applications:
+- app_name: testapp
+  app_description: Runtime registered application
+  tags: []
+  config_fields:
+  - field_name: BASE_ENDPOINT_URL
+    expected_perf_value: https://service.my-testapp.att.com
+    inspection_tool: http_probe
+    description: Primary endpoint URL for this application in PERF
+    known_qc_values: []
+    remediation_level: suggest_fix
+    remediation_command: null

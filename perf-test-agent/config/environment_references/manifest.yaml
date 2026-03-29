@@ -532,3 +532,19 @@ references:
   archived_at: '2026-03-25T14:52:39.495335'
   last_updated: '2026-03-25T14:52:39.495335'
   updated_by: verification
+- application_key: my-testapp
+  application_name: testapp
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/my-testapp/perf-current.yaml
+  tags: []
+  endpoint_url: https://service.my-testapp.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: false
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-27T20:00:00.654767'
+  updated_by: dashboard-ui
