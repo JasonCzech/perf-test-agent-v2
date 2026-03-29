@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: perf-test-agent-config
+  namespace: perf-test-agent
+data:
+  HOST: "0.0.0.0"
+  PORT: "8000"
+  WEB_UI_PORT: "8000"
+  LOG_LEVEL: "INFO"
+  HITL_ENABLED: "true"
+  PIPELINE_RUN_DIR: "/app/perf-test-agent/runs"
+  PERF_TEST_AGENT_ROOT: "/app/perf-test-agent"
+  PERF_TEST_AGENT_WORKSPACE: "/app"
+  PERF_TEST_AGENT_DASHBOARD_HTML: "/app/perf_test_dashboard.html"
+  AZURE_OPENAI_API_VERSION: "2024-08-01-preview"
+  AZURE_OPENAI_DEPLOYMENT_GPT4O: "gpt-4o"
+  AZURE_OPENAI_DEPLOYMENT_GPT4O_MINI: "gpt-4o-mini"
+  AZURE_SEARCH_INDEX: "enterprise-knowledge"
+  AZURE_RESOURCE_GROUP: "rg-perf-testing"
+  AKS_CLUSTER_NAME: "aks-perf-cluster"
+  JIRA_PROJECT_KEY: "TELECOM"
+  SNOWFLAKE_DATABASE: "PERF_TESTING"
+  SNOWFLAKE_SCHEMA: "PUBLIC"
+  SNOWFLAKE_WAREHOUSE: "PERF_WH"
+  SNOWFLAKE_ROLE: "PERF_ENGINEER"
+  LRE_DOMAIN: "DEFAULT"
+  LRE_PROJECT: "PerfTesting"

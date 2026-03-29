@@ -14,8 +14,9 @@ import yaml
 from pydantic import BaseModel, Field
 
 from src.models.env_config import ApplicationConfig, ConfigField, EnvironmentReference, InspectionTool
+from src.runtime import get_repo_root
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = get_repo_root()
 CONFIG_ROOT = REPO_ROOT / "config"
 ENV_REF_ROOT = CONFIG_ROOT / "environment_references"
 MANIFEST_PATH = ENV_REF_ROOT / "manifest.yaml"

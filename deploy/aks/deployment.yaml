@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: perf-test-agent
+  namespace: perf-test-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: perf-test-agent
+  template:
+    metadata:
+      labels:
+        app: perf-test-agent
+    spec:
+      containers:
+        - name: perf-test-agent
+          image: perf-test-agent:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: perf-test-agent-config
+            - secretRef:
+                name: perf-test-agent-secrets
+          volumeMounts:
+            - name: runs
+              mountPath: /app/perf-test-agent/runs
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+      volumes:
+        - name: runs
+          persistentVolumeClaim:
+            claimName: perf-test-agent-runs

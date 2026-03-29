@@ -17,8 +17,8 @@ from src.agents.base_agent import BaseAgent
 from src.config.settings import LLMTask
 from src.models.pipeline_state import PipelinePhase, PipelineState
 from src.models.test_plan import TestPlan
-from src.tools.langchain_tools import (
 from src.prompts import load_prompt
+from src.tools.langchain_tools import (
     make_dynatrace_tools,
     make_jira_tools,
     make_rag_tools,

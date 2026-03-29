@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +37,7 @@ from src.models.pipeline_state import (
 )
 from src.pipeline import PipelineOrchestrator
 from src.prompts import PHASE_PROMPT_FILES, load_prompt
+from src.runtime import get_repo_root, get_workspace_root
 from src.utils.logging import get_logger
 from src.utils import env_reference_store
 
@@ -47,9 +49,25 @@ app = FastAPI(
     description="Agentic Performance Testing Pipeline — AT&T CTx CQE",
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-WORKSPACE_ROOT = PROJECT_ROOT.parent
-DASHBOARD_HTML_PATH = WORKSPACE_ROOT / "perf_test_dashboard.html"
+PROJECT_ROOT = get_repo_root()
+WORKSPACE_ROOT = get_workspace_root()
+
+
+def _resolve_dashboard_html_path() -> Path:
+    dashboard_override = os.getenv("PERF_TEST_AGENT_DASHBOARD_HTML")
+    override = Path(dashboard_override).expanduser().resolve() if dashboard_override else None
+    candidates = [
+        override,
+        WORKSPACE_ROOT / "perf_test_dashboard.html",
+        PROJECT_ROOT / "perf_test_dashboard.html",
+    ]
+    for candidate in candidates:
+        if candidate and candidate.exists():
+            return candidate
+    return WORKSPACE_ROOT / "perf_test_dashboard.html"
+
+
+DASHBOARD_HTML_PATH = _resolve_dashboard_html_path()
 
 # CORS for React frontend
 app.add_middleware(
