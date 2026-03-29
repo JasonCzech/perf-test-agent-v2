@@ -1,0 +1,4489 @@
+%PDF-1.4
+%ту╧╙
+1 0 obj
+<< /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> /F2 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> /F3 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique >> >> >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 7 /Kids [ 4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R ] >>
+endobj
+3 0 obj
+<< /Length 3147 >>
+stream
+BT
+0.000 0.624 0.859 rg
+/F2 12.00 Tf
+1 0 0 1 261.96 700.00 Tm
+(AT&T CTx CQE) Tj
+ET
+BT
+0.353 0.396 0.471 rg
+/F1 10.50 Tf
+1 0 0 1 204.88 682.00 Tm
+(Performance Engineering & Cybersecurity) Tj
+ET
+q
+0.000 0.624 0.859 RG
+1.80 w
+138.00 638.00 m 474.00 638.00 l S
+Q
+BT
+0.106 0.227 0.361 rg
+/F2 24.00 Tf
+1 0 0 1 147.84 644.00 Tm
+(Project Implementation Plan) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F2 20.00 Tf
+1 0 0 1 210.60 606.00 Tm
+(Perf Test Agent v2.0) Tj
+ET
+BT
+0.353 0.396 0.471 rg
+/F3 13.00 Tf
+1 0 0 1 182.63 582.00 Tm
+(Implementation and Live Integration Plan) Tj
+ET
+q
+0.933 0.953 0.980 rg
+0.800 0.824 0.855 RG
+0.80 w
+128.00 508.00 148.00 34.00 re B
+Q
+q
+0.933 0.953 0.980 rg
+0.800 0.824 0.855 RG
+0.80 w
+276.00 508.00 210.00 34.00 re B
+Q
+BT
+0.106 0.227 0.361 rg
+/F2 9.50 Tf
+1 0 0 1 138.00 520.00 Tm
+(Document Version) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.50 Tf
+1 0 0 1 286.00 520.00 Tm
+(2.1.0  |  March 29, 2026) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.80 w
+128.00 474.00 148.00 34.00 re B
+Q
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.80 w
+276.00 474.00 210.00 34.00 re B
+Q
+BT
+0.106 0.227 0.361 rg
+/F2 9.50 Tf
+1 0 0 1 138.00 486.00 Tm
+(Classification) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.50 Tf
+1 0 0 1 286.00 486.00 Tm
+(AT&T Internal  |  Confidential) Tj
+ET
+q
+0.933 0.953 0.980 rg
+0.800 0.824 0.855 RG
+0.80 w
+128.00 440.00 148.00 34.00 re B
+Q
+q
+0.933 0.953 0.980 rg
+0.800 0.824 0.855 RG
+0.80 w
+276.00 440.00 210.00 34.00 re B
+Q
+BT
+0.106 0.227 0.361 rg
+/F2 9.50 Tf
+1 0 0 1 138.00 452.00 Tm
+(Prepared By) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.50 Tf
+1 0 0 1 286.00 452.00 Tm
+(Codex working draft for CTx CQE Performance Engineering) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.80 w
+128.00 406.00 148.00 34.00 re B
+Q
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.80 w
+276.00 406.00 210.00 34.00 re B
+Q
+BT
+0.106 0.227 0.361 rg
+/F2 9.50 Tf
+1 0 0 1 138.00 418.00 Tm
+(Status) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.50 Tf
+1 0 0 1 286.00 418.00 Tm
+(DRAFT  |  Updated to reflect live integrations not yet implemented) Tj
+ET
+q
+0.933 0.953 0.980 rg
+0.800 0.824 0.855 RG
+0.80 w
+82.00 292.00 448.00 102.00 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 96.00 364.00 Tm
+(This revision supersedes the legacy status narrative.) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 96.00 349.00 Tm
+(All live-tool integrations should currently be treated as implementation targets, not) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 96.00 336.00 Tm
+(production-ready capabilities.) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 96.00 321.00 Tm
+(Code-level clients and agent/tool scaffolding exist for several systems, but credentials,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 96.00 308.00 Tm
+(network connectivity, schema hardening, end-to-end workflows, and operational sign-off) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 96.00 295.00 Tm
+(remain to be completed.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F2 11.50 Tf
+1 0 0 1 257.81 154.00 Tm
+(Primary Objective) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F1 10.50 Tf
+1 0 0 1 69.17 136.00 Tm
+(Deliver a phased, validated path from scaffolded code to production-grade enterprise integrations.) Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page
+   /Parent 2 0 R
+   /MediaBox [0 0 612 792]
+   /Resources 1 0 R
+   /Contents 3 0 R
+>>
+endobj
+5 0 obj
+<< /Length 10841 >>
+stream
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 758.00 m 558.00 758.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 764.00 Tm
+(AT&T CTx CQE  |  Performance Engineering & Cybersecurity) Tj
+ET
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 30.00 m 558.00 30.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 18.00 Tm
+(Perf Test Agent v2.0 Integration / Implementation Plan) Tj
+ET
+BT
+0.353 0.396 0.471 rg
+/F1 8.50 Tf
+1 0 0 1 548.00 18.00 Tm
+(2) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 734.00 Tm
+(1. Executive Summary) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 727.00 m 558.00 727.00 l S
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 711.00 Tm
+(This document provides a detailed implementation and integration plan for Perf Test Agent v2.0 based on) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 697.60 Tm
+(the current repository state on March 29, 2026. The plan intentionally updates the legacy implementation) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 684.20 Tm
+(narrative to reflect a stricter and more realistic position: while the codebase contains multiple integration) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 670.80 Tm
+(clients, LangChain tool wrappers, prompts, and phase models, the program should currently assume that) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 657.40 Tm
+(live integrations with enterprise systems have not yet been implemented for production use.) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 640.00 Tm
+(The path forward is therefore not a simple deployment exercise. It is an integration program consisting of) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 626.60 Tm
+(foundation hardening, service-account and network enablement, schema and artifact migration into) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 613.20 Tm
+(Snowflake, live-tool adapter completion, end-to-end non-production validation, human-in-the-loop) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 599.80 Tm
+(workflow refinement, and controlled rollout. The recommended sequence is six waves so the team can) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 586.40 Tm
+(prove value early without creating false confidence in unvalidated automation.) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 545.80 150.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 59.00 557.00 Tm
+(Goal) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+204.00 545.80 354.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 209.00 557.00 Tm
+(Target Outcome) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 513.40 150.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 533.80 Tm
+(Establish truthful current state) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+204.00 513.40 354.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 533.80 Tm
+(Replace legacy 'active' integration assumptions with scaffold-only status until) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 522.60 Tm
+(validated live connectivity exists.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 469.80 150.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 501.40 Tm
+(Enable production-grade) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 490.20 Tm
+(integrations) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+204.00 469.80 354.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 501.40 Tm
+(Complete secure, testable adapters for Jira/iTrack, Azure AI Search, Snowflake,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 490.20 Tm
+(Dynatrace, LRE, Jenkins, Prometheus, ELK, SharePoint/MS Graph, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 479.00 Tm
+(environment inspection tooling.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 437.40 150.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 457.80 Tm
+(Build an institutional corpus) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+204.00 437.40 354.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 457.80 Tm
+(Migrate existing scripts, test result documents, Jira/iTrack defects, reports, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 446.60 Tm
+(related artifacts into Snowflake so the agent can use durable historical context.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 405.00 150.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 425.40 Tm
+(Protect rollout quality) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+204.00 405.00 354.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 425.40 Tm
+(Gate each wave with explicit entry/exit criteria, auditability, HITL checkpoints,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 209.00 414.20 Tm
+(and rollback options.) Tj
+ET
+q
+0.933 0.953 0.980 rg
+0.800 0.824 0.855 RG
+0.80 w
+54.00 367.00 504.00 34.00 re B
+Q
+BT
+0.106 0.227 0.361 rg
+/F3 9.10 Tf
+1 0 0 1 64.00 385.00 Tm
+(Planning assumption used in this draft: implementation will proceed in lower environments first, then PERF, with) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F3 9.10 Tf
+1 0 0 1 64.00 374.00 Tm
+(enterprise IAM, network, and vendor dependencies resolved in parallel with application development.) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 353.00 Tm
+(2. Current-State Alignment) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 346.00 m 558.00 346.00 l S
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 330.00 Tm
+(The repository already includes meaningful scaffolding: phase agents, prompts, Pydantic models,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 316.60 Tm
+(integration clients, a FastAPI surface, a React dashboard, Snowflake DDL, and environment reference) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 303.20 Tm
+(assets. That is a strong starting point. The critical update is that these assets should be treated as) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 289.80 Tm
+(design-time accelerators rather than evidence of live operational capability.) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 249.20 106.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 59.00 260.40 Tm
+(Area) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+160.00 249.20 180.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 165.00 260.40 Tm
+(Observed State in Repo) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+340.00 249.20 218.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 345.00 260.40 Tm
+(Implementation Meaning) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 194.40 106.00 54.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 237.20 Tm
+(External clients) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+160.00 194.40 180.00 54.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 237.20 Tm
+(Jira, Azure AI Search, Snowflake,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 226.00 Tm
+(Dynatrace, LRE, Jenkins, Prometheus,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 214.80 Tm
+(ELK, and SharePoint client classes) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 203.60 Tm
+(exist.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+340.00 194.40 218.00 54.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 237.20 Tm
+(Reusable client scaffolding exists, but live) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 226.00 Tm
+(authentication, permissions, endpoint validation,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 214.80 Tm
+(and operational reliability still need completion) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 203.60 Tm
+(and proof.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 162.00 106.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 182.40 Tm
+(Phase 3 live checks) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+160.00 162.00 180.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 182.40 Tm
+(AKS and App Gateway tools explicitly) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 171.20 Tm
+(return 'tool_not_connected'.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+340.00 162.00 218.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 182.40 Tm
+(Environment triage live inspection is not) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 171.20 Tm
+(implemented yet.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 129.60 106.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 150.00 Tm
+(Phase 4 data setup) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+160.00 129.60 180.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 150.00 Tm
+(Bulk data provisioning tool returns) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 138.80 Tm
+('placeholder'.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+340.00 129.60 218.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 150.00 Tm
+(Test-data creation orchestration is not) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 138.80 Tm
+(implemented yet.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 97.20 106.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 117.60 Tm
+(Phase 6 reporting) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+160.00 97.20 180.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 117.60 Tm
+(Word report generation is placeholder) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 106.40 Tm
+(text output.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+340.00 97.20 218.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 117.60 Tm
+(Formal report generation and publishing workflow) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 106.40 Tm
+(is not implemented yet.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 64.80 106.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 85.20 Tm
+(Phase 7 knowledge) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 74.00 Tm
+(capture) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+160.00 64.80 180.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 85.20 Tm
+(RAG lesson indexing returns) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 74.00 Tm
+(placeholder success text.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+340.00 64.80 218.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 85.20 Tm
+(Knowledge-base writeback is not implemented) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 74.00 Tm
+(yet.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page
+   /Parent 2 0 R
+   /MediaBox [0 0 612 792]
+   /Resources 1 0 R
+   /Contents 5 0 R
+>>
+endobj
+7 0 obj
+<< /Length 9993 >>
+stream
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 758.00 m 558.00 758.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 764.00 Tm
+(AT&T CTx CQE  |  Performance Engineering & Cybersecurity) Tj
+ET
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 30.00 m 558.00 30.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 18.00 Tm
+(Perf Test Agent v2.0 Integration / Implementation Plan) Tj
+ET
+BT
+0.353 0.396 0.471 rg
+/F1 8.50 Tf
+1 0 0 1 548.00 18.00 Tm
+(3) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 694.40 106.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 726.00 Tm
+(Operational status) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+160.00 694.40 180.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 726.00 Tm
+(No evidence in repo of validated) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 714.80 Tm
+(end-to-end runs against live enterprise) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 165.00 703.60 Tm
+(tools.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+340.00 694.40 218.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 726.00 Tm
+(Program should assume live integrations are) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 345.00 714.80 Tm
+(pending until test evidence is produced.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 686.40 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 686.40 Tm
+(The legacy documentation should not be used as the source of truth for integration readiness.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 671.20 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 671.20 Tm
+(Every integration must pass both technical validation and operational ownership review before it is) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 658.00 Tm
+(labeled active.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 642.80 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 642.80 Tm
+(Snowflake should become the durable system of record for migrated historical artifacts as well as future) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 629.60 Tm
+(run outputs.) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 610.40 Tm
+(3. Delivery Principles) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 603.40 m 558.00 603.40 l S
+Q
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 587.40 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 587.40 Tm
+(Implement live integrations behind explicit feature flags and environment-aware configuration so) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 574.20 Tm
+(scaffolded code can coexist with validated production pathways.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 559.00 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 559.00 Tm
+(Favor small vertical slices: one end-to-end path working in a lower environment is more valuable than) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 545.80 Tm
+(many nominally complete adapters with no execution proof.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 530.60 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 530.60 Tm
+(Treat security, IAM, audit logging, data classification, and retention as first-class implementation) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 517.40 Tm
+(tasks, not follow-up work.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 502.20 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 502.20 Tm
+(Persist every important artifact: prompts, tool calls, inputs, outputs, run metadata, defects, reports, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 489.00 Tm
+(postmortem entries.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 473.80 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 473.80 Tm
+(Keep HITL gates in place until measurable trust thresholds are met for each phase and each live) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 460.60 Tm
+(integration.) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 441.40 Tm
+(4. Workstream Plan) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 434.40 m 558.00 434.40 l S
+Q
+BT
+0.020 0.408 0.682 rg
+/F2 12.70 Tf
+1 0 0 1 54.00 418.40 Tm
+(4.1 Workstream A: Platform Foundation and Controls) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 402.40 Tm
+(Before any live-tool cutover, the team should harden the runtime and operating model. This includes) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 389.00 Tm
+(completing environment variable validation, secrets management, per-environment configuration overlays,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 375.60 Tm
+(structured audit events, correlation IDs across phases, retry/timeout policy standardization, feature flags) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 362.20 Tm
+(for each integration, and a clear execution mode model distinguishing local development, integration test,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 348.80 Tm
+(PERF, and production-style runs.) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 308.20 108.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 59.00 319.40 Tm
+(Task) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+162.00 308.20 230.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 167.00 319.40 Tm
+(Key Actions) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+392.00 308.20 166.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 397.00 319.40 Tm
+(Primary Deliverables) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 264.60 108.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 296.20 Tm
+(Configuration) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 285.00 Tm
+(hardening) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+162.00 264.60 230.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 296.20 Tm
+(Add startup validation for required settings by) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 285.00 Tm
+(phase and integration; fail fast on incomplete) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 273.80 Tm
+(config.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+392.00 264.60 166.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 397.00 296.20 Tm
+(Validated settings contract and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 397.00 285.00 Tm
+(deployment readiness checklist.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 221.00 108.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 252.60 Tm
+(Secrets and identity) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+162.00 221.00 230.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 252.60 Tm
+(Move credentials to approved secret stores, define) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 241.40 Tm
+(service accounts, rotate tokens, and document) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 230.20 Tm
+(least-privilege scopes.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+392.00 221.00 166.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 397.00 252.60 Tm
+(Per-system credential matrix and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 397.00 241.40 Tm
+(secret injection pattern.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 188.60 108.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 209.00 Tm
+(Feature gating) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+162.00 188.60 230.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 209.00 Tm
+(Introduce flags for read-only mode, create/update) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 197.80 Tm
+(mode, and mock/live mode per integration.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+392.00 188.60 166.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 397.00 209.00 Tm
+(Controlled rollout switchboard with) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 397.00 197.80 Tm
+(safe defaults.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 145.00 108.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 176.60 Tm
+(Observability) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+162.00 145.00 230.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 176.60 Tm
+(Standardize logging, latency metrics, error) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 165.40 Tm
+(taxonomy, and trace IDs across client wrappers and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 167.00 154.20 Tm
+(agents.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+392.00 145.00 166.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 397.00 176.60 Tm
+(Runbook-ready telemetry and triage) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 397.00 165.40 Tm
+(dashboard inputs.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F2 12.70 Tf
+1 0 0 1 54.00 137.00 Tm
+(4.2 Workstream B: Core Pipeline Hardening) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 121.00 Tm
+(The agent phases should be stabilized as application workflows rather than prompt experiments. The team) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 107.60 Tm
+(should formalize state contracts between phases, add recovery behavior for partial failures, persist) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 94.20 Tm
+(intermediate artifacts consistently, and create deterministic test fixtures for every phase. This work) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 80.80 Tm
+(reduces risk before enterprise systems are introduced.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 63.40 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 63.40 Tm
+(Add regression tests for `PipelineState` transitions and per-phase output parsing.) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page
+   /Parent 2 0 R
+   /MediaBox [0 0 612 792]
+   /Resources 1 0 R
+   /Contents 7 0 R
+>>
+endobj
+9 0 obj
+<< /Length 16086 >>
+stream
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 758.00 m 558.00 758.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 764.00 Tm
+(AT&T CTx CQE  |  Performance Engineering & Cybersecurity) Tj
+ET
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 30.00 m 558.00 30.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 18.00 Tm
+(Perf Test Agent v2.0 Integration / Implementation Plan) Tj
+ET
+BT
+0.353 0.396 0.471 rg
+/F1 8.50 Tf
+1 0 0 1 548.00 18.00 Tm
+(4) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 738.00 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 738.00 Tm
+(Capture agent prompts, tool inputs, tool outputs, and approval events in a structured artifact store.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 722.80 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 722.80 Tm
+(Normalize run directories and retention rules so executions are auditable and reproducible.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 707.60 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 707.60 Tm
+(Refine dashboard messaging to clearly distinguish simulated, scaffolded, and validated live actions.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F2 12.70 Tf
+1 0 0 1 54.00 692.40 Tm
+(4.3 Workstream C: Live Enterprise Integrations) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 676.40 Tm
+(This workstream completes and validates each external integration. The common pattern is: confirm) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 663.00 Tm
+(ownership and access, finalize data contracts, implement resilient adapter behavior, add) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 649.60 Tm
+(lower-environment smoke tests, capture evidence, and only then enable agent tool usage beyond mock or) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 636.20 Tm
+(read-only mode.) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 596.40 86.00 22.40 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 8.60 Tf
+1 0 0 1 59.00 606.80 Tm
+(Integration) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 596.40 126.00 22.40 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 8.60 Tf
+1 0 0 1 145.00 606.80 Tm
+(Current Interpretation) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 596.40 170.00 22.40 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 8.60 Tf
+1 0 0 1 271.00 606.80 Tm
+(Implementation Focus) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 596.40 122.00 22.40 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 8.60 Tf
+1 0 0 1 441.00 606.80 Tm
+(Exit Criteria) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 544.80 86.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 584.40 Tm
+(Jira / iTrack) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 544.80 126.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 584.40 Tm
+(Client and tools exist;) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 574.00 Tm
+(production create/update) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 563.60 Tm
+(readiness unproven.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 544.80 170.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 584.40 Tm
+(Validate fields, issue types, linking) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 574.00 Tm
+(model, comments, transitions, rate) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 563.60 Tm
+(limits, and service-account permissions.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 544.80 122.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 584.40 Tm
+(Read and write flows) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 574.00 Tm
+(succeed in non-prod and are) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 563.60 Tm
+(approved by Jira/iTrack) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 553.20 Tm
+(owners.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 503.60 86.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 532.80 Tm
+(Azure AI Search) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 522.40 Tm
+(RAG) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 503.60 126.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 532.80 Tm
+(Retriever exists; corpus) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 522.40 Tm
+(completeness and live query) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 512.00 Tm
+(validation pending.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 503.60 170.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 532.80 Tm
+(Define index schema, chunking rules,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 522.40 Tm
+(source metadata, filters, and refresh) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 512.00 Tm
+(cadence.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 503.60 122.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 532.80 Tm
+(Search results are relevant,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 522.40 Tm
+(attributable, and tied to) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 512.00 Tm
+(governed source feeds.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 452.00 86.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 491.60 Tm
+(Snowflake) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 452.00 126.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 491.60 Tm
+(Connector and DDL exist;) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 481.20 Tm
+(broader corpus model and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 470.80 Tm
+(migration pipeline pending.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 452.00 170.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 491.60 Tm
+(Finalize schemas for baselines, raw) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 481.20 Tm
+(artifacts, curated dimensions, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 470.80 Tm
+(lineage metadata.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 452.00 122.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 491.60 Tm
+(Historical artifacts and new) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 481.20 Tm
+(execution outputs land) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 470.80 Tm
+(reliably with queryable) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 460.40 Tm
+(lineage.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 410.80 86.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 440.00 Tm
+(Dynatrace) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 410.80 126.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 440.00 Tm
+(Client exists; metric) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 429.60 Tm
+(selectors and entity mapping) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 419.20 Tm
+(need validation.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 410.80 170.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 440.00 Tm
+(Confirm management zones, service IDs,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 429.60 Tm
+(token scopes, thresholds, and alert) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 419.20 Tm
+(interpretation.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 410.80 122.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 440.00 Tm
+(Known services return) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 429.60 Tm
+(correct metrics and problem) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 419.20 Tm
+(events for test windows.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 359.20 86.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 398.80 Tm
+(LRE / JMeter /) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 388.40 Tm
+(Jenkins) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 359.20 126.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 398.80 Tm
+(Adapters exist in pieces;) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 388.40 Tm
+(live orchestration not yet) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 378.00 Tm
+(proven.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 359.20 170.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 398.80 Tm
+(Complete script packaging, job) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 388.40 Tm
+(parameters, run polling, timeout) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 378.00 Tm
+(handling, and result normalization.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 359.20 122.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 398.80 Tm
+(Automated test execution) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 388.40 Tm
+(completes and returns) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 378.00 Tm
+(normalized results for at) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 367.60 Tm
+(least one validated flow.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 307.60 86.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 347.20 Tm
+(Prometheus / ELK) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 307.60 126.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 347.20 Tm
+(Monitoring clients exist;) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 336.80 Tm
+(production query catalog not) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 326.40 Tm
+(finalized.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 307.60 170.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 347.20 Tm
+(Define approved queries, labels, index) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 336.80 Tm
+(patterns, and anomaly rules aligned to) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 326.40 Tm
+(environments.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 307.60 122.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 347.20 Tm
+(Monitoring returns stable) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 336.80 Tm
+(data during controlled) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 326.40 Tm
+(executions with known alert) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 316.00 Tm
+(behavior.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 256.00 86.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 295.60 Tm
+(SharePoint / MS) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 285.20 Tm
+(Graph) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 256.00 126.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 295.60 Tm
+(Upload client exists; auth) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 285.20 Tm
+(and destination contracts) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 274.80 Tm
+(unvalidated.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 256.00 170.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 295.60 Tm
+(Confirm tenant auth, site/drive IDs,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 285.20 Tm
+(document paths, naming, and retention.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 256.00 122.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 295.60 Tm
+(Reports publish) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 285.20 Tm
+(successfully with correct) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 274.80 Tm
+(metadata and access) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 264.40 Tm
+(controls.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 214.80 86.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 244.00 Tm
+(AKS / App) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 233.60 Tm
+(Gateway / infra) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 223.20 Tm
+(checks) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 214.80 126.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 244.00 Tm
+(Phase 3 checks are) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 233.60 Tm
+(explicitly not connected.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 214.80 170.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 244.00 Tm
+(Implement real inspection adapters for) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 233.60 Tm
+(deployments, config maps, replicas, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 223.20 Tm
+(gateway routing.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 214.80 122.00 41.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 244.00 Tm
+(Golden config validation) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 233.60 Tm
+(runs live and detects) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 223.20 Tm
+(deliberate drift.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 163.20 86.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 202.80 Tm
+(Solace / IBM MQ /) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 59.00 192.40 Tm
+(Amdocs endpoints) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+140.00 163.20 126.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 202.80 Tm
+(Modeled in prompts and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 192.40 Tm
+(references; adapter coverage) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 145.00 182.00 Tm
+(incomplete.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+266.00 163.20 170.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 202.80 Tm
+(Implement or finalize protocol-specific) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 192.40 Tm
+(checks, queue/topic inspection, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 271.00 182.00 Tm
+(endpoint verification.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+436.00 163.20 122.00 51.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 202.80 Tm
+(Environment triage and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 192.40 Tm
+(execution support cover all) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 182.00 Tm
+(in-scope dependency) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.60 Tf
+1 0 0 1 441.00 171.60 Tm
+(classes.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F2 12.70 Tf
+1 0 0 1 54.00 155.20 Tm
+(4.4 Workstream D: Snowflake Corpus Migration) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 139.20 Tm
+(A new migration step should be added explicitly to the implementation sequence so the system can learn) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 125.80 Tm
+(from what already exists. The migration objective is to move historical performance artifacts into) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 112.40 Tm
+(Snowflake in a way that preserves provenance, supports retrieval, and feeds both reporting and future) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 99.00 Tm
+(model context. This is broader than execution baselines alone.) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 58.40 110.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 59.00 69.60 Tm
+(Artifact Class) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+164.00 58.40 160.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 169.00 69.60 Tm
+(Examples to Migrate) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+324.00 58.40 234.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 329.00 69.60 Tm
+(Recommended Snowflake Landing Pattern) Tj
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page
+   /Parent 2 0 R
+   /MediaBox [0 0 612 792]
+   /Resources 1 0 R
+   /Contents 9 0 R
+>>
+endobj
+11 0 obj
+<< /Length 10558 >>
+stream
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 758.00 m 558.00 758.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 764.00 Tm
+(AT&T CTx CQE  |  Performance Engineering & Cybersecurity) Tj
+ET
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 30.00 m 558.00 30.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 18.00 Tm
+(Perf Test Agent v2.0 Integration / Implementation Plan) Tj
+ET
+BT
+0.353 0.396 0.471 rg
+/F1 8.50 Tf
+1 0 0 1 548.00 18.00 Tm
+(5) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 705.60 110.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 726.00 Tm
+(Scripts) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+164.00 705.60 160.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 726.00 Tm
+(VuGen projects, JMeter JMX plans,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 714.80 Tm
+(helper utilities, parameter files.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+324.00 705.60 234.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 726.00 Tm
+(Raw file registry plus curated script dimension with) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 714.80 Tm
+(application, protocol, author, and date metadata.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 662.00 110.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 693.60 Tm
+(Test result documents) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+164.00 662.00 160.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 693.60 Tm
+(Word reports, PDFs, spreadsheets,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 682.40 Tm
+(dashboards exported to files.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+324.00 662.00 234.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 693.60 Tm
+(Raw document table with extracted text, structured) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 682.40 Tm
+(summary table, and lineage back to source path or) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 671.20 Tm
+(SharePoint location.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 629.60 110.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 650.00 Tm
+(Jira / iTrack defects) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+164.00 629.60 160.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 650.00 Tm
+(Historical perf defects, linked) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 638.80 Tm
+(stories, comments, resolution notes.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+324.00 629.60 234.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 650.00 Tm
+(Defect fact table plus linkage tables for systems,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 638.80 Tm
+(releases, runs, and remediation themes.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 586.00 110.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 617.60 Tm
+(Run outputs) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+164.00 586.00 160.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 617.60 Tm
+(CSV extracts, transaction) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 606.40 Tm
+(summaries, throughput/error tables,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 595.20 Tm
+(screenshots.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+324.00 586.00 234.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 617.60 Tm
+(Execution fact tables with run IDs and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 606.40 Tm
+(transaction-level measures.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 542.40 110.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 574.00 Tm
+(Knowledge artifacts) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+164.00 542.40 160.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 574.00 Tm
+(Postmortems, lessons learned,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 562.80 Tm
+(architecture notes, environment) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 169.00 551.60 Tm
+(references.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+324.00 542.40 234.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 574.00 Tm
+(Corpus tables with source metadata and optional) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 329.00 562.80 Tm
+(downstream Azure AI Search indexing.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 534.40 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 534.40 Tm
+(Create a raw ingestion zone in Snowflake first so nothing is lost during early migration.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 519.20 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 519.20 Tm
+(Add metadata columns for source system, original location, checksum, artifact date, owning team,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 506.00 Tm
+(application, environment, confidentiality, and ingestion batch ID.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 490.80 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 490.80 Tm
+(Build a curation pass that extracts searchable text, normalizes key fields, and maps artifacts to runs,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 477.60 Tm
+(systems, stories, defects, and releases.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 462.40 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 462.40 Tm
+(Publish a corpus quality scorecard covering completeness, duplicate rate, extraction quality, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 449.20 Tm
+(search usefulness.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F2 12.70 Tf
+1 0 0 1 54.00 434.00 Tm
+(4.5 Workstream E: Reporting, Publishing, and Knowledge Writeback) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 418.00 Tm
+(Reporting should be treated as a product surface. Replace placeholder Word generation with a) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 404.60 Tm
+(template-driven reporting service, standardize executive and engineering sections, and align SharePoint) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 391.20 Tm
+(publication with naming, foldering, and retention policies. Likewise, lesson indexing should write to) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 377.80 Tm
+(governed stores first and only then surface to retrieval systems.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 360.40 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 360.40 Tm
+(Implement a formal report renderer with reusable styles aligned to the existing document suite.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 345.20 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 345.20 Tm
+(Separate report generation from publication so validation can occur before documents are distributed.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 330.00 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 330.00 Tm
+(Record SharePoint publication events, URLs, and access outcomes in pipeline state and Snowflake.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 314.80 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 314.80 Tm
+(Treat RAG writeback as a governed ingest pipeline with approval, dedupe, and metadata enrichment.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F2 12.70 Tf
+1 0 0 1 54.00 299.60 Tm
+(4.6 Workstream F: Validation, Rollout, and Support) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 283.60 Tm
+(Each wave should end with evidence, not only code completion. Required evidence includes smoke tests,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 270.20 Tm
+(live integration test logs, dashboard screenshots or output captures, defect records for failed scenarios,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 256.80 Tm
+(runbooks, rollback steps, and owner sign-off. Start with a single representative transaction family, then) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 243.40 Tm
+(expand coverage incrementally.) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 202.80 164.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 59.00 214.00 Tm
+(Validation Layer) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+218.00 202.80 340.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 223.00 214.00 Tm
+(Required Evidence) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 181.60 164.00 21.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 190.80 Tm
+(Unit and contract) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+218.00 181.60 340.00 21.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 223.00 190.80 Tm
+(Client adapter tests, payload validation, parser tests, and error-path coverage.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 149.20 164.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 169.60 Tm
+(Integration) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+218.00 149.20 340.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 223.00 169.60 Tm
+(Authenticated calls against lower environments, rate-limit behavior, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 223.00 158.40 Tm
+(negative test results.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 128.00 164.00 21.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 137.20 Tm
+(Scenario) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+218.00 128.00 340.00 21.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 223.00 137.20 Tm
+(One end-to-end pipeline run with HITL gates and persisted artifacts.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 95.60 164.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 116.00 Tm
+(Operational readiness) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+218.00 95.60 340.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 223.00 116.00 Tm
+(Runbook, owner mapping, alert response path, rollback instructions, and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 223.00 104.80 Tm
+(support handoff.) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 83.60 Tm
+(5. Recommended Delivery Sequence) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 76.60 m 558.00 76.60 l S
+Q
+endstream
+endobj
+12 0 obj
+<< /Type /Page
+   /Parent 2 0 R
+   /MediaBox [0 0 612 792]
+   /Resources 1 0 R
+   /Contents 11 0 R
+>>
+endobj
+13 0 obj
+<< /Length 14329 >>
+stream
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 758.00 m 558.00 758.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 764.00 Tm
+(AT&T CTx CQE  |  Performance Engineering & Cybersecurity) Tj
+ET
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 30.00 m 558.00 30.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 18.00 Tm
+(Perf Test Agent v2.0 Integration / Implementation Plan) Tj
+ET
+BT
+0.353 0.396 0.471 rg
+/F1 8.50 Tf
+1 0 0 1 548.00 18.00 Tm
+(6) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 714.80 70.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 59.00 726.00 Tm
+(Wave) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+124.00 714.80 250.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 129.00 726.00 Tm
+(Scope) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+374.00 714.80 184.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 379.00 726.00 Tm
+(Primary Outcome) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 682.40 70.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 702.80 Tm
+(Wave 1) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+124.00 682.40 250.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 702.80 Tm
+(Foundation, feature flags, settings validation, audit) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 691.60 Tm
+(logging, and Snowflake schema finalization.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+374.00 682.40 184.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 702.80 Tm
+(Safe base to connect live systems) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 691.60 Tm
+(without uncontrolled behavior.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 650.00 70.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 670.40 Tm
+(Wave 2) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+124.00 650.00 250.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 670.40 Tm
+(Snowflake corpus migration MVP plus Azure AI Search /) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 659.20 Tm
+(RAG read path validation.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+374.00 650.00 184.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 670.40 Tm
+(Historical knowledge becomes queryable) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 659.20 Tm
+(and useful to planning phases.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 617.60 70.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 638.00 Tm
+(Wave 3) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+124.00 617.60 250.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 638.00 Tm
+(Jira/iTrack, Dynatrace, Prometheus, and ELK live read) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 626.80 Tm
+(validation; dashboard status clarity.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+374.00 617.60 184.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 638.00 Tm
+(Phases 1, 2, and monitoring inputs) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 626.80 Tm
+(become trustworthy.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 585.20 70.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 605.60 Tm
+(Wave 4) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+124.00 585.20 250.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 605.60 Tm
+(AKS/App Gateway live checks, test-data provisioning,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 594.40 Tm
+(and execution adapters for Jenkins/LRE/JMeter.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+374.00 585.20 184.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 605.60 Tm
+(Phases 3 through 5 can operate in) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 594.40 Tm
+(controlled lower-environment slices.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 552.80 70.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 573.20 Tm
+(Wave 5) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+124.00 552.80 250.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 573.20 Tm
+(Formal reporting, SharePoint publish, and governed) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 562.00 Tm
+(postmortem / lesson writeback.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+374.00 552.80 184.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 573.20 Tm
+(Phases 6 and 7 move from placeholder to) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 562.00 Tm
+(operationally useful.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 520.40 70.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 540.80 Tm
+(Wave 6) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+124.00 520.40 250.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 540.80 Tm
+(PERF cutover rehearsal, support model, rollback drills,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 129.00 529.60 Tm
+(and phased expansion of application coverage.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+374.00 520.40 184.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 540.80 Tm
+(Production-style operating model with) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 379.00 529.60 Tm
+(evidence-backed trust.) Tj
+ET
+q
+0.933 0.953 0.980 rg
+0.800 0.824 0.855 RG
+0.80 w
+54.00 482.40 504.00 34.00 re B
+Q
+BT
+0.106 0.227 0.361 rg
+/F3 9.10 Tf
+1 0 0 1 64.00 500.40 Tm
+(If staffing is constrained, do not parallelize too aggressively. The highest-value path is Snowflake corpus + RAG +) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F3 9.10 Tf
+1 0 0 1 64.00 489.40 Tm
+(Jira read path + one validated execution slice.) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 468.40 Tm
+(6. Phase-by-Phase Implementation Updates) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 461.40 m 558.00 461.40 l S
+Q
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 422.80 62.00 22.60 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 8.70 Tf
+1 0 0 1 59.00 433.40 Tm
+(Phase) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+116.00 422.80 160.00 22.60 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 8.70 Tf
+1 0 0 1 121.00 433.40 Tm
+(Legacy Expectation) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+276.00 422.80 282.00 22.60 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 8.70 Tf
+1 0 0 1 281.00 433.40 Tm
+(Updated Implementation Guidance) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 381.00 62.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 410.80 Tm
+(1. Story) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 400.20 Tm
+(Analysis) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+116.00 381.00 160.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 410.80 Tm
+(Assumed ready access to Jira, RAG,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 400.20 Tm
+(Snowflake, and Dynatrace.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+276.00 381.00 282.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 410.80 Tm
+(Keep phase operational in read-mostly mode first. Validate story) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 400.20 Tm
+(fetch, corpus retrieval, baseline queries, and service discovery) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 389.60 Tm
+(independently before combining them.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 349.80 62.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 369.00 Tm
+(2. Test) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 358.40 Tm
+(Planning) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+116.00 349.80 160.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 369.00 Tm
+(Assumed calibrated workload) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 358.40 Tm
+(generation and Jira artifact creation.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+276.00 349.80 282.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 369.00 Tm
+(Use curated templates and historical corpus first. Enable Jira write) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 358.40 Tm
+(actions only after field mappings and governance are approved.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 308.00 62.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 337.80 Tm
+(3. Env) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 327.20 Tm
+(Triage) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+116.00 308.00 160.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 337.80 Tm
+(Assumed live AKS/App Gateway) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 327.20 Tm
+(inspection and golden-config) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 316.60 Tm
+(persistence.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+276.00 308.00 282.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 337.80 Tm
+(Treat this phase as not live yet. Implement real infra inspection) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 327.20 Tm
+(adapters, then prove drift detection with injected mismatches.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 266.20 62.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 296.00 Tm
+(4. Script and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 285.40 Tm
+(Data) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+116.00 266.20 160.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 296.00 Tm
+(Assumed generated scripts plus) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 285.40 Tm
+(automated data provisioning.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+276.00 266.20 282.00 41.80 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 296.00 Tm
+(Script generation scaffolding exists, but automated bulk data setup) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 285.40 Tm
+(remains placeholder. Prioritize one supported provisioning path per) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 274.80 Tm
+(system family.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 235.00 62.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 254.20 Tm
+(5. Execution) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+116.00 235.00 160.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 254.20 Tm
+(Assumed live LRE/Jenkins execution) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 243.60 Tm
+(with monitoring.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+276.00 235.00 282.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 254.20 Tm
+(Build one reliable execution path end to end. Normalize run IDs,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 243.60 Tm
+(timing, and result payloads before widening scenario coverage.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 203.80 62.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 223.00 Tm
+(6. Reporting) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+116.00 203.80 160.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 223.00 Tm
+(Assumed formatted Word output and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 212.40 Tm
+(SharePoint publication.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+276.00 203.80 282.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 223.00 Tm
+(Replace placeholder report generation and validate document) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 212.40 Tm
+(lifecycle separately from pipeline reasoning.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 172.60 62.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 191.80 Tm
+(7.) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 59.00 181.20 Tm
+(Postmortem) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+116.00 172.60 160.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 191.80 Tm
+(Assumed Snowflake archival and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 121.00 181.20 Tm
+(searchable lesson indexing.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+276.00 172.60 282.00 31.20 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 191.80 Tm
+(Archive structured data first; enable RAG writeback only after) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 8.70 Tf
+1 0 0 1 281.00 181.20 Tm
+(governance, dedupe, and source attribution controls are in place.) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 160.60 Tm
+(7. Risk Register) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 153.60 m 558.00 153.60 l S
+Q
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 114.40 168.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 59.00 125.60 Tm
+(Risk) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+222.00 114.40 132.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 227.00 125.60 Tm
+(Impact) Tj
+ET
+q
+0.106 0.227 0.361 rg
+0.800 0.824 0.855 RG
+0.60 w
+354.00 114.40 204.00 23.20 re B
+Q
+BT
+1.000 1.000 1.000 rg
+/F2 9.10 Tf
+1 0 0 1 359.00 125.60 Tm
+(Mitigation) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 70.80 168.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 102.40 Tm
+(Treating scaffolded clients as) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 91.20 Tm
+(production-ready integrations) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+222.00 70.80 132.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 102.40 Tm
+(False readiness signal,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 91.20 Tm
+(failed demos, and loss of) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 80.00 Tm
+(trust.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+354.00 70.80 204.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 102.40 Tm
+(Use explicit readiness states: scaffolded,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 91.20 Tm
+(connected, validated, operational.) Tj
+ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page
+   /Parent 2 0 R
+   /MediaBox [0 0 612 792]
+   /Resources 1 0 R
+   /Contents 13 0 R
+>>
+endobj
+15 0 obj
+<< /Length 7675 >>
+stream
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 758.00 m 558.00 758.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 764.00 Tm
+(AT&T CTx CQE  |  Performance Engineering & Cybersecurity) Tj
+ET
+q
+0.800 0.824 0.855 RG
+0.80 w
+54.00 30.00 m 558.00 30.00 l S
+Q
+BT
+0.353 0.396 0.471 rg
+/F3 8.50 Tf
+1 0 0 1 54.00 18.00 Tm
+(Perf Test Agent v2.0 Integration / Implementation Plan) Tj
+ET
+BT
+0.353 0.396 0.471 rg
+/F1 8.50 Tf
+1 0 0 1 548.00 18.00 Tm
+(7) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 705.60 168.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 726.00 Tm
+(IAM and network approvals lag) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 714.80 Tm
+(implementation) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+222.00 705.60 132.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 726.00 Tm
+(Blocked schedules and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 714.80 Tm
+(partially testable code.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+354.00 705.60 204.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 726.00 Tm
+(Track access dependencies as first-class) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 714.80 Tm
+(milestones with named owners.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 673.20 168.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 693.60 Tm
+(Historical artifacts are not migrated) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 682.40 Tm
+(early) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+222.00 673.20 132.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 693.60 Tm
+(Weak RAG quality and poor) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 682.40 Tm
+(baseline accuracy.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+354.00 673.20 204.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 693.60 Tm
+(Start Snowflake corpus migration in Wave 2) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 682.40 Tm
+(and measure coverage weekly.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 629.60 168.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 661.20 Tm
+(Schema drift across tools and reports) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+222.00 629.60 132.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 661.20 Tm
+(Broken parsers, inconsistent) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 650.00 Tm
+(analytics, and report) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 638.80 Tm
+(defects.) Tj
+ET
+q
+1.000 1.000 1.000 rg
+0.800 0.824 0.855 RG
+0.60 w
+354.00 629.60 204.00 43.60 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 661.20 Tm
+(Define versioned contracts and add contract) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 650.00 Tm
+(tests for each adapter.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+54.00 597.20 168.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 617.60 Tm
+(Over-automation before HITL) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 59.00 606.40 Tm
+(workflows mature) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+222.00 597.20 132.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 617.60 Tm
+(Operational risk and) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 227.00 606.40 Tm
+(hard-to-debug outcomes.) Tj
+ET
+q
+0.957 0.965 0.973 rg
+0.800 0.824 0.855 RG
+0.60 w
+354.00 597.20 204.00 32.40 re B
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 617.60 Tm
+(Keep approval gates and clear simulation/live) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 9.10 Tf
+1 0 0 1 359.00 606.40 Tm
+(labels until trust metrics are met.) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 585.20 Tm
+(8. Exit Criteria) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 578.20 m 558.00 578.20 l S
+Q
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 562.20 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 562.20 Tm
+(At least one representative pipeline path completes end to end in a lower environment using live reads) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 549.00 Tm
+(and the approved execution path.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 533.80 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 533.80 Tm
+(Snowflake contains migrated historical artifacts and current run outputs with lineage back to their) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 520.60 Tm
+(original sources.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 505.40 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 505.40 Tm
+(Each live integration has a named owner, credential model, smoke test, runbook, and operational) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 492.20 Tm
+(sign-off.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 477.00 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 477.00 Tm
+(Dashboard and artifacts clearly distinguish simulated behavior from validated live actions.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 461.80 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 461.80 Tm
+(Reporting and postmortem outputs are publishable, attributable, and retained under the agreed) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 448.60 Tm
+(governance model.) Tj
+ET
+BT
+0.106 0.227 0.361 rg
+/F2 17.00 Tf
+1 0 0 1 54.00 429.40 Tm
+(9. Additional Information Requested) Tj
+ET
+q
+0.020 0.408 0.682 RG
+1.50 w
+54.00 422.40 m 558.00 422.40 l S
+Q
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 406.40 Tm
+(This draft is complete enough to guide implementation sequencing now, but the next revision would be) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.30 Tf
+1 0 0 1 54.00 393.00 Tm
+(materially stronger with a few project-specific inputs from the team.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 375.60 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 375.60 Tm
+(Priority order of integrations for the first live slice, especially whether Jira, Snowflake corpus migration,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 362.40 Tm
+(or execution tooling should go first.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 347.20 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 347.20 Tm
+(Known enterprise constraints: approved service accounts, lower-environment endpoints, network) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 334.00 Tm
+(segments, and any vendor or firewall blockers.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 318.80 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 318.80 Tm
+(Preferred Snowflake information model if one already exists for raw files, curated facts, and searchable) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 305.60 Tm
+(corpus text.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 290.40 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 290.40 Tm
+(The authoritative list of legacy artifact sources to migrate: repositories, SharePoint libraries,) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 277.20 Tm
+(Jira/iTrack projects, result folders, and report archives.) Tj
+ET
+BT
+0.020 0.408 0.682 rg
+/F1 11.10 Tf
+1 0 0 1 56.00 262.00 Tm
+(Х) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 262.00 Tm
+(Target audience for the generated reports so formatting, summary depth, and publication workflow can) Tj
+ET
+BT
+0.102 0.102 0.180 rg
+/F1 10.10 Tf
+1 0 0 1 68.00 248.80 Tm
+(be tuned appropriately.) Tj
+ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page
+   /Parent 2 0 R
+   /MediaBox [0 0 612 792]
+   /Resources 1 0 R
+   /Contents 15 0 R
+>>
+endobj
+17 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+18 0 obj
+<< /Title (Perf Test Agent v2.0 Implementation and Live Integration Plan) /Author (OpenAI Codex) /Producer (Custom Python PDF generator) /CreationDate (D:20260329000000) >>
+endobj
+xref
+0 19
+0000000000 65535 f 
+0000000015 00000 n 
+0000000238 00000 n 
+0000000337 00000 n 
+0000003536 00000 n 
+0000003652 00000 n 
+0000014546 00000 n 
+0000014662 00000 n 
+0000024707 00000 n 
+0000024823 00000 n 
+0000040962 00000 n 
+0000041079 00000 n 
+0000051691 00000 n 
+0000051809 00000 n 
+0000066192 00000 n 
+0000066310 00000 n 
+0000074038 00000 n 
+0000074156 00000 n 
+0000074206 00000 n 
+trailer
+<< /Size 19 /Root 17 0 R /Info 18 0 R >>
+startxref
+74395
+%%EOF

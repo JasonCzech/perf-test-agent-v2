@@ -1,24 +1,41 @@
-version: "2.0.0"
-last_updated: "2026-03-22T00:00:00Z"
-updated_by: "perf-engineering-team"
-environment_name: "PERF"
-application_key: "idp-mobile-api"
-application_display_name: "IDP Mobile API"
-api_variant: "core"
+version: 2.0.0
+last_updated: '2026-03-29T18:08:37.087245'
+updated_by: dashboard-ui
+environment_name: PERF
+lab_environment: PERF
+release_code: current
+application_key: idp-mobile-api
+application_display_name: IDP Integrated Digital Platform
+api_variant: core
 applications:
-  - app_name: "idp-mobile-api"
-    app_description: "IDP Mobile/Direct-to-Consumer Platform"
-    tags: ["frontend", "idp", "aks", "critical"]
-    config_fields:
-      - field_name: "CSI_ENDPOINT"
-        expected_perf_value: "https://csi-perf.internal.att.com:8443"
-        inspection_tool: "azure_cli"
-        description: "CSI gateway for backend routing"
-        known_qc_values:
-          - "https://csi-qc3.internal.att.com:8443"
-      - field_name: "IDENTITY_GRAPH_URL"
-        expected_perf_value: "https://identity-graph-perf.internal.att.com:8983/solr"
-        inspection_tool: "azure_cli"
-        description: "Identity Graph SOLr endpoint"
-        known_qc_values:
-          - "https://identity-graph-qc3.internal.att.com:8983/solr"
+- app_name: IDP Integrated Digital Platform
+  app_description: IDP Mobile/Direct-to-Consumer Platform
+  tags:
+  - frontend
+  - idp
+  - aks
+  - critical
+  config_fields:
+  - field_name: CSI_ENDPOINT
+    expected_perf_value: https://csi-perf.internal.att.com:8443
+    inspection_tool: azure_cli
+    description: CSI gateway for backend routing
+    known_qc_values:
+    - https://csi-qc3.internal.att.com:8443
+    remediation_level: suggest_fix
+    remediation_command: null
+  - field_name: IDENTITY_GRAPH_URL
+    expected_perf_value: https://identity-graph-perf.internal.att.com:8983/solr
+    inspection_tool: azure_cli
+    description: Identity Graph SOLr endpoint
+    known_qc_values:
+    - https://identity-graph-qc3.internal.att.com:8983/solr
+    remediation_level: suggest_fix
+    remediation_command: null
+  - field_name: BASE_ENDPOINT_URL
+    expected_perf_value: https://idp-perf.att.com
+    inspection_tool: http_probe
+    description: Primary endpoint URL for this application in PERF
+    known_qc_values: []
+    remediation_level: suggest_fix
+    remediation_command: null

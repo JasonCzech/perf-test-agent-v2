@@ -1,0 +1,22 @@
+version: 1.0.0
+last_updated: '2026-03-29T18:12:32.789824'
+updated_by: dashboard-ui
+environment_name: PERF
+lab_environment: PERF
+release_code: current
+application_key: cas-perf
+application_display_name: CAS/iCAS - Credit Approval System
+api_variant: core
+applications:
+- app_name: CAS/iCAS - Credit Approval System
+  app_description: Runtime registered application
+  tags:
+  - backend
+  config_fields:
+  - field_name: BASE_ENDPOINT_URL
+    expected_perf_value: https://cas-perf.att.com
+    inspection_tool: http_probe
+    description: Primary endpoint URL for this application in PERF
+    known_qc_values: []
+    remediation_level: suggest_fix
+    remediation_command: null

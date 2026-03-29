@@ -1,46 +1,68 @@
-version: "2.0.0"
-last_updated: "2026-03-23T00:00:00Z"
-updated_by: "perf-engineering-team"
-environment_name: "PERF"
-lab_environment: "PERF"
-release_code: "current"
-application_key: "mbiz"
-application_display_name: "MBiz (Mobile Business Portal)"
-api_variant: "core"
+version: 2.0.0
+last_updated: '2026-03-29T18:07:39.526958'
+updated_by: dashboard-ui
+environment_name: PERF
+lab_environment: PERF
+release_code: current
+application_key: mbiz
+application_display_name: MBiz (Mobile Business Portal)
+api_variant: core
 applications:
-  - app_name: "mbiz"
-    app_description: "MBiz Mobile Business Portal — B2B portal for enterprise mobility account management"
-    tags: ["frontend", "mbiz", "b2b", "critical"]
-    config_fields:
-      - field_name: "MBIZ_BASE_URL"
-        expected_perf_value: "https://mbiz-perf.internal.att.com:8443"
-        inspection_tool: "http_probe"
-        description: "MBiz portal base URL"
-        known_qc_values:
-          - "https://mbiz-qc3.internal.att.com:8443"
-          - "https://mbiz-qc2.internal.att.com:8443"
-      - field_name: "MBIZ_HEALTH_ENDPOINT"
-        expected_perf_value: "https://mbiz-perf.internal.att.com:8443/mbiz/actuator/health"
-        inspection_tool: "http_probe"
-        description: "MBiz health check endpoint"
-        known_qc_values:
-          - "https://mbiz-qc3.internal.att.com:8443/mbiz/actuator/health"
-      - field_name: "MBIZ_CSI_ENDPOINT"
-        expected_perf_value: "https://csi-perf.internal.att.com:9443"
-        inspection_tool: "azure_cli"
-        description: "CSI Gateway endpoint for MBiz API calls"
-        known_qc_values:
-          - "https://csi-qc3.internal.att.com:9443"
-      - field_name: "MBIZ_IDP_ENDPOINT"
-        expected_perf_value: "https://idp-perf.internal.att.com:8443"
-        inspection_tool: "azure_cli"
-        description: "IDP endpoint for MBiz authentication"
-        known_qc_values:
-          - "https://idp-qc3.internal.att.com:8443"
-      - field_name: "MBIZ_REPLICA_COUNT"
-        expected_perf_value: "3"
-        inspection_tool: "kubernetes_api"
-        description: "AKS replica count for MBiz pods"
-        known_qc_values:
-          - "1"
-          - "2"
+- app_name: MBiz (Mobile Business Portal)
+  app_description: "MBiz Mobile Business Portal \u2014 B2B portal for enterprise mobility\
+    \ account management"
+  tags:
+  - backend
+  - mbiz
+  - b2b
+  - critical
+  config_fields:
+  - field_name: MBIZ_BASE_URL
+    expected_perf_value: https://mbiz-perf.internal.att.com:8443
+    inspection_tool: http_probe
+    description: MBiz portal base URL
+    known_qc_values:
+    - https://mbiz-qc3.internal.att.com:8443
+    - https://mbiz-qc2.internal.att.com:8443
+    remediation_level: suggest_fix
+    remediation_command: null
+  - field_name: MBIZ_HEALTH_ENDPOINT
+    expected_perf_value: https://mbiz-perf.internal.att.com:8443/mbiz/actuator/health
+    inspection_tool: http_probe
+    description: MBiz health check endpoint
+    known_qc_values:
+    - https://mbiz-qc3.internal.att.com:8443/mbiz/actuator/health
+    remediation_level: suggest_fix
+    remediation_command: null
+  - field_name: MBIZ_CSI_ENDPOINT
+    expected_perf_value: https://csi-perf.internal.att.com:9443
+    inspection_tool: azure_cli
+    description: CSI Gateway endpoint for MBiz API calls
+    known_qc_values:
+    - https://csi-qc3.internal.att.com:9443
+    remediation_level: suggest_fix
+    remediation_command: null
+  - field_name: MBIZ_IDP_ENDPOINT
+    expected_perf_value: https://idp-perf.internal.att.com:8443
+    inspection_tool: azure_cli
+    description: IDP endpoint for MBiz authentication
+    known_qc_values:
+    - https://idp-qc3.internal.att.com:8443
+    remediation_level: suggest_fix
+    remediation_command: null
+  - field_name: MBIZ_REPLICA_COUNT
+    expected_perf_value: '3'
+    inspection_tool: kubernetes_api
+    description: AKS replica count for MBiz pods
+    known_qc_values:
+    - '1'
+    - '2'
+    remediation_level: suggest_fix
+    remediation_command: null
+  - field_name: BASE_ENDPOINT_URL
+    expected_perf_value: https://mbiz-perf.att.com
+    inspection_tool: http_probe
+    description: Primary endpoint URL for this application in PERF
+    known_qc_values: []
+    remediation_level: suggest_fix
+    remediation_command: null
