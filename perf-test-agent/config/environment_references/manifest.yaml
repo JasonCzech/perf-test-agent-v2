@@ -1,4 +1,3 @@
----
 version: 1.0.0
 references:
 - application_key: opus-web
@@ -12,12 +11,12 @@ references:
   - frontend
   - opus
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: true
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-22T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: salesforce-mulesoft-proxy
@@ -32,16 +31,16 @@ references:
   - salesforce
   - aks
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: true
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-22T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: idp-mobile-api
-  application_name: IDP Mobile API
+  application_name: IDP Integrated Digital Platform
   api_variant: core
   environment: PERF
   lab_environment: PERF
@@ -52,14 +51,14 @@ references:
   - idp
   - aks
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
-  display_on_new_test: true
+  endpoint_url: https://idp-perf.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: false
   is_active: true
-  archived_at: 
-  last_updated: '2026-03-22T00:00:00Z'
-  updated_by: perf-engineering-team
+  archived_at: null
+  last_updated: '2026-03-29T18:08:37.087245'
+  updated_by: dashboard-ui
 - application_key: csi-gateway
   application_name: CSI Common Services Gateway
   api_variant: core
@@ -71,14 +70,15 @@ references:
   - middleware
   - csi
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
-  display_on_new_test: false
+  - lab-t3a
+  endpoint_url: https://csi-perf.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: true
   is_active: true
-  archived_at: 
-  last_updated: '2026-03-22T00:00:00Z'
-  updated_by: perf-engineering-team
+  archived_at: null
+  last_updated: '2026-03-29T18:05:14.949226'
+  updated_by: dashboard-ui
 - application_key: csi-gateway
   application_name: CSI Common Services Gateway
   api_variant: core
@@ -91,14 +91,14 @@ references:
   - csi
   - critical
   - lab-t3a
-  endpoint_url: 
-  owner_team: 
-  version: 
-  display_on_new_test: false
+  endpoint_url: https://csi-perf.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: true
   is_active: true
-  archived_at: 
-  last_updated: '2026-03-23T00:00:00Z'
-  updated_by: perf-engineering-team
+  archived_at: null
+  last_updated: '2026-03-29T18:05:14.949226'
+  updated_by: dashboard-ui
 - application_key: csi-gateway
   application_name: CSI Common Services Gateway
   api_variant: core
@@ -110,15 +110,15 @@ references:
   - middleware
   - csi
   - critical
-  - lab-t4a
-  endpoint_url: 
-  owner_team: 
-  version: 
-  display_on_new_test: false
+  - lab-t3a
+  endpoint_url: https://csi-perf.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: true
   is_active: true
-  archived_at: 
-  last_updated: '2026-03-23T00:00:00Z'
-  updated_by: perf-engineering-team
+  archived_at: null
+  last_updated: '2026-03-29T18:05:14.949226'
+  updated_by: dashboard-ui
 - application_key: csi-gateway
   application_name: CSI Common Services Gateway
   api_variant: core
@@ -130,15 +130,15 @@ references:
   - middleware
   - csi
   - critical
-  - lab-t5a
-  endpoint_url: 
-  owner_team: 
-  version: 
-  display_on_new_test: false
+  - lab-t3a
+  endpoint_url: https://csi-perf.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: true
   is_active: true
-  archived_at: 
-  last_updated: '2026-03-23T00:00:00Z'
-  updated_by: perf-engineering-team
+  archived_at: null
+  last_updated: '2026-03-29T18:05:14.949226'
+  updated_by: dashboard-ui
 - application_key: gddn-messaging
   application_name: GDDN Messaging
   api_variant: core
@@ -151,14 +151,14 @@ references:
   - gddn
   - solace
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
-  display_on_new_test: false
+  endpoint_url: https://gddn-perf.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: true
   is_active: true
-  archived_at: 
-  last_updated: '2026-03-22T00:00:00Z'
-  updated_by: perf-engineering-team
+  archived_at: null
+  last_updated: '2026-03-29T18:06:09.786062'
+  updated_by: dashboard-ui
 - application_key: tlg-backend
   application_name: TLG Backend
   api_variant: core
@@ -171,12 +171,12 @@ references:
   - amdocs
   - tlg
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-22T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: perf-app-gateway
@@ -190,12 +190,12 @@ references:
   - azure
   - gateway
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-22T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: customer-graph
@@ -208,12 +208,12 @@ references:
   tags:
   - periphery
   - solr
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-22T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: order-graph
@@ -226,12 +226,12 @@ references:
   tags:
   - periphery
   - solr
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-22T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: neo
@@ -246,12 +246,12 @@ references:
   - neo
   - orchestration
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: bsse
@@ -267,12 +267,12 @@ references:
   - bsse
   - billing
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: identity-graph
@@ -287,12 +287,12 @@ references:
   - solr
   - identity
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: bobpm
@@ -307,12 +307,12 @@ references:
   - bpm
   - order
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: fobpm
@@ -327,12 +327,12 @@ references:
   - bpm
   - fulfillment
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: csi-customer-care
@@ -347,12 +347,12 @@ references:
   - csi
   - customer-care
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: csi-oam
@@ -366,12 +366,12 @@ references:
   - middleware
   - csi
   - oam
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: solr-db
@@ -386,12 +386,12 @@ references:
   - solr
   - search
   - periphery
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: cassandra-db
@@ -405,12 +405,12 @@ references:
   - data
   - cassandra
   - backend
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: kafka-mq
@@ -425,12 +425,12 @@ references:
   - kafka
   - middleware
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: ibm-mq
@@ -445,12 +445,12 @@ references:
   - ibm-mq
   - backend
   - amdocs
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: mbiz
@@ -461,18 +461,18 @@ references:
   release_code: current
   path: config/environment_references/mbiz/perf.yaml
   tags:
-  - frontend
+  - backend
   - mbiz
   - b2b
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
-  display_on_new_test: true
+  endpoint_url: https://mbiz-perf.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: false
   is_active: true
-  archived_at: 
-  last_updated: '2026-03-23T00:00:00Z'
-  updated_by: perf-engineering-team
+  archived_at: null
+  last_updated: '2026-03-29T18:07:39.526958'
+  updated_by: dashboard-ui
 - application_key: edd
   application_name: EDD (Enterprise Data Distribution)
   api_variant: core
@@ -485,12 +485,12 @@ references:
   - edd
   - messaging
   - kafka
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: egs
@@ -506,12 +506,12 @@ references:
   - gateway
   - b2b
   - critical
-  endpoint_url: 
-  owner_team: 
-  version: 
+  endpoint_url: null
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-23T00:00:00Z'
   updated_by: perf-engineering-team
 - application_key: zz-visibility-smoke
@@ -542,10 +542,27 @@ references:
   path: config/environment_references/my-testapp/perf-current.yaml
   tags: []
   endpoint_url: https://service.my-testapp.att.com
-  owner_team: 
-  version: 
+  owner_team: null
+  version: null
   display_on_new_test: false
   is_active: true
-  archived_at: 
+  archived_at: null
   last_updated: '2026-03-27T20:00:00.654767'
+  updated_by: dashboard-ui
+- application_key: cas-perf
+  application_name: CAS/iCAS - Credit Approval System
+  api_variant: core
+  environment: PERF
+  lab_environment: PERF
+  release_code: current
+  path: config/environment_references/cas-perf/perf-current.yaml
+  tags:
+  - backend
+  endpoint_url: https://cas-perf.att.com
+  owner_team: null
+  version: null
+  display_on_new_test: true
+  is_active: true
+  archived_at: null
+  last_updated: '2026-03-29T18:12:32.789824'
   updated_by: dashboard-ui
