@@ -317,7 +317,7 @@ class PipelineOrchestrator:
         # Save final state
         self._save_state(state)
 
-        log.info("pipeline_complete", run_id=run_id, current_phase=state.current_phase.value)
+        log.info("pipeline_complete", run_id=state.run_id, current_phase=state.current_phase.value)
         return state
 
     async def resume(
@@ -466,6 +466,11 @@ async def main():
         print(f"  {status_icon} {phase_name}: {result.status.value}")
 
 
-if __name__ == "__main__":
+def cli() -> None:
     import asyncio
+
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    cli()

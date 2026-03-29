@@ -6,11 +6,13 @@ build-backend = "setuptools.build_meta"
 name = "perf-test-agent"
 version = "2.0.0"
 description = "Agentic Performance Testing Framework for AT&T CTx CQE"
+readme = "README.md"
 requires-python = ">=3.11"
 
 dependencies = [
     # === LangChain / LLM ===
     "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
     "langchain-openai>=0.2.0",
     "langchain-community>=0.3.0",
     "openai>=1.40.0",
@@ -57,6 +59,20 @@ dev = [
     "ruff>=0.5.0",
     "mypy>=1.10.0",
 ]
+
+[project.scripts]
+perf-test-agent-api = "src.api.__main__:main"
+perf-test-agent-pipeline = "src.pipeline:cli"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+src = ["prompts/*.txt"]
 
 [tool.ruff]
 target-version = "py311"

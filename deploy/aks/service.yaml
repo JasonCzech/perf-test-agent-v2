@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: perf-test-agent
+  namespace: perf-test-agent
+spec:
+  selector:
+    app: perf-test-agent
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  type: ClusterIP

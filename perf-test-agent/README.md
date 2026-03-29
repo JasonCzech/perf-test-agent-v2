@@ -171,6 +171,9 @@ cp .env.example .env
 # Start the web dashboard
 uvicorn src.api.main:app --reload --port 8000
 
+# Start the packaged API entrypoint
+perf-test-agent-api
+
 # Start the web dashboard using the workspace venv helper script
 bash scripts/run_local.sh
 
@@ -192,6 +195,37 @@ python -m src.pipeline --resume ./runs/run-20260322-153020-abc123/pipeline_state
 # Resume starting from a specific phase
 python -m src.pipeline --resume ./runs/.../pipeline_state.json --start-from script_data
 ```
+
+## AKS Deployment Package
+
+The repository now includes a production container image definition and AKS manifests:
+
+- `Dockerfile` at the repository root builds a deployable image for the FastAPI service.
+- `deploy/aks/` contains a `Deployment`, `Service`, `ConfigMap`, PVC, and `kustomization.yaml`.
+- `deploy/aks/secret.example.yaml` is a template for the required runtime secrets.
+
+### Build the Image
+
+Run this from the repository root:
+
+```bash
+docker build -t perf-test-agent:latest .
+```
+
+Push the image to your Azure Container Registry and update `deploy/aks/deployment.yaml` with the fully qualified image name.
+
+### Deploy to AKS
+
+```bash
+cp deploy/aks/secret.example.yaml deploy/aks/secret.yaml
+# edit deploy/aks/secret.yaml with real secret values
+
+kubectl apply -f deploy/aks/namespace.yaml
+kubectl apply -f deploy/aks/secret.yaml
+kubectl apply -k deploy/aks
+```
+
+The service listens on port `8000` in the container and exposes port `80` inside the cluster. Add your own `Ingress` or Azure Application Gateway configuration on top of the provided `Service`.
 
 ## API Endpoints
 

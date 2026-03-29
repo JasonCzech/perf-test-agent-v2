@@ -18,8 +18,8 @@ from src.agents.base_agent import BaseAgent
 from src.config.settings import LLMTask
 from src.models.execution import ExecutionOutput
 from src.models.pipeline_state import PipelinePhase, PipelineState
-from src.tools.langchain_tools import (
 from src.prompts import load_prompt
+from src.tools.langchain_tools import (
     make_dynatrace_tools,
     make_execution_tools,
     make_jira_tools,

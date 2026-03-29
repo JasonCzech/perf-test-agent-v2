@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +37,7 @@ from src.models.pipeline_state import (
 )
 from src.pipeline import PipelineOrchestrator
 from src.prompts import PHASE_PROMPT_FILES, load_prompt
+from src.runtime import get_repo_root, get_workspace_root
 from src.utils.logging import get_logger
 from src.utils import env_reference_store
 
@@ -47,9 +49,25 @@ app = FastAPI(
     description="Agentic Performance Testing Pipeline — AT&T CTx CQE",
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-WORKSPACE_ROOT = PROJECT_ROOT.parent
-DASHBOARD_HTML_PATH = WORKSPACE_ROOT / "perf_test_dashboard.html"
+PROJECT_ROOT = get_repo_root()
+WORKSPACE_ROOT = get_workspace_root()
+
+
+def _resolve_dashboard_html_path() -> Path:
+    dashboard_override = os.getenv("PERF_TEST_AGENT_DASHBOARD_HTML")
+    override = Path(dashboard_override).expanduser().resolve() if dashboard_override else None
+    candidates = [
+        override,
+        WORKSPACE_ROOT / "perf_test_dashboard.html",
+        PROJECT_ROOT / "perf_test_dashboard.html",
+    ]
+    for candidate in candidates:
+        if candidate and candidate.exists():
+            return candidate
+    return WORKSPACE_ROOT / "perf_test_dashboard.html"
+
+
+DASHBOARD_HTML_PATH = _resolve_dashboard_html_path()
 
 # CORS for React frontend
 app.add_middleware(
@@ -213,6 +231,9 @@ class AppCatalogItem(BaseModel):
     endpoint_url: str = ""
     owner_team: str = ""
     version: str = ""
+    backend_systems: list[str] = []
+    mots_id: str = ""
+    additional_information: str = ""
     tags: list[str] = []
     display_on_new_test: bool = True
     is_active: bool = True
@@ -230,10 +251,16 @@ class CreateApplicationRequest(BaseModel):
     application_name: str = Field(..., min_length=2)
     endpoint_url: str = Field(..., min_length=3)
     api_variant: str = "core"
+    environment: str = Field(default="PERF", min_length=1)
+    lab_environment: str = Field(default="PERF", min_length=1)
+    release_code: str = Field(default="current", min_length=1)
     tags: list[str] = []
     owner_team: Optional[str] = None
     version: Optional[str] = None
-    display_on_new_test: bool = False
+    backend_systems: list[str] = []
+    mots_id: Optional[str] = None
+    additional_information: str = ""
+    display_on_new_test: Optional[bool] = None
     updated_by: str = "dashboard-ui"
 
 
@@ -244,6 +271,9 @@ class UpdateApplicationRequest(BaseModel):
     tags: list[str] = []
     owner_team: Optional[str] = None
     version: Optional[str] = None
+    backend_systems: list[str] = []
+    mots_id: Optional[str] = None
+    additional_information: str = ""
     display_on_new_test: Optional[bool] = None
     updated_by: str = "dashboard-ui"
 
@@ -326,6 +356,9 @@ def _catalog_item_to_response(item: dict[str, Any]) -> AppCatalogItem:
         endpoint_url=item.get("endpoint_url", ""),
         owner_team=item.get("owner_team", ""),
         version=item.get("version", ""),
+        backend_systems=item.get("backend_systems", []),
+        mots_id=item.get("mots_id", ""),
+        additional_information=item.get("additional_information", ""),
         tags=item.get("tags", []),
         display_on_new_test=item.get("display_on_new_test", True),
         is_active=item.get("is_active", True),
@@ -932,9 +965,15 @@ async def create_application(req: CreateApplicationRequest):
             application_name=req.application_name.strip(),
             endpoint_url=req.endpoint_url.strip(),
             api_variant=req.api_variant or "core",
+            environment=req.environment.strip(),
+            lab_environment=req.lab_environment.strip(),
+            release_code=req.release_code.strip(),
             tags=req.tags or [],
             owner_team=req.owner_team,
             version=req.version,
+            backend_systems=req.backend_systems or [],
+            mots_id=req.mots_id,
+            additional_information=req.additional_information or "",
             display_on_new_test=req.display_on_new_test,
             updated_by=req.updated_by,
         )
@@ -964,6 +1003,9 @@ async def update_application(application_key: str, req: UpdateApplicationRequest
             tags=req.tags or [],
             owner_team=req.owner_team,
             version=req.version,
+            backend_systems=req.backend_systems or [],
+            mots_id=req.mots_id,
+            additional_information=req.additional_information or "",
             display_on_new_test=req.display_on_new_test,
             updated_by=req.updated_by,
         )

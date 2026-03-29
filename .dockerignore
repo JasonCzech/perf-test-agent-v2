@@ -1,0 +1,16 @@
+.git
+.gitignore
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+.venv
+Documentation
+perf-test-agent/.pytest_cache
+perf-test-agent/.ruff_cache
+perf-test-agent/__pycache__
+perf-test-agent/tests/__pycache__
+perf-test-agent/src/**/__pycache__
+perf-test-agent/runs
