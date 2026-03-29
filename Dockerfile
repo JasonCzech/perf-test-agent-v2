@@ -17,6 +17,12 @@ COPY perf_test_dashboard.html /app/perf_test_dashboard.html
 RUN python -m pip install --upgrade pip && \
     pip install .
 
+RUN groupadd --gid 1000 appuser && \
+    useradd --uid 1000 --gid 1000 --no-create-home appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
 EXPOSE 8000
 
 CMD ["perf-test-agent-api"]

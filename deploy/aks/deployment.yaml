@@ -13,10 +13,17 @@ spec:
       labels:
         app: perf-test-agent
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
       containers:
         - name: perf-test-agent
           image: perf-test-agent:latest
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
           ports:
             - containerPort: 8000
               name: http
