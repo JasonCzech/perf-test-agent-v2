@@ -88,6 +88,35 @@ class AnalysisReport(BaseModel):
     go_no_go: str = "pending"  # go | no_go | conditional | pending
 
 
+class AnalysisReportEvaluation(BaseModel):
+    """Evaluator output for an AnalysisReport candidate."""
+    score: float = Field(ge=0.0, le=1.0, description="Overall quality score for this iteration")
+    pass_threshold: bool = Field(description="Whether this iteration meets evaluator quality threshold")
+    strengths: list[str] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    actionable_feedback: list[str] = Field(
+        default_factory=list,
+        description="Specific instructions to improve the next optimization iteration"
+    )
+    stop_reason_hint: str = Field(
+        default="",
+        description="Optional evaluator hint for stopping optimization"
+    )
+
+
+class ResultsAnalysisOptimizationIteration(BaseModel):
+    """Captured data for one optimization iteration of Results Analysis."""
+    iteration: int = Field(ge=1)
+    score: float = Field(ge=0.0, le=1.0)
+    score_delta: float = 0.0
+    accepted_as_best: bool = False
+    stop_reason: str = ""
+    feedback: list[str] = Field(default_factory=list)
+    strengths: list[str] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    generated_summary: str = ""
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Phase 7: Postmortem & Feedback
 # ═══════════════════════════════════════════════════════════════════════

@@ -9,7 +9,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -103,6 +102,14 @@ class Settings(BaseSettings):
     pipeline_run_dir: Path = Path("./runs")
     web_ui_port: int = 8000
     hitl_enabled: bool = True
+    story_analysis_optimizer_enabled: bool = True
+    story_analysis_optimizer_max_iterations: int = 5
+    story_analysis_optimizer_score_threshold: float = 0.8
+    story_analysis_optimizer_min_improvement_delta: float = 0.02
+    results_analysis_optimizer_enabled: bool = True
+    results_analysis_optimizer_max_iterations: int = 5
+    results_analysis_optimizer_score_threshold: float = 0.85
+    results_analysis_optimizer_min_improvement_delta: float = 0.02
 
     def get_llm_deployment(self, task: LLMTask) -> str:
         """Return the appropriate Azure OpenAI deployment for a given task.
