@@ -21,11 +21,13 @@ PROMPTS_DIR = Path(__file__).parent
 
 PHASE_PROMPT_FILES = {
     "story_analysis": "phase1_story_analyzer.txt",
+    "story_analysis_evaluator": "phase1_story_analyzer_evaluator.txt",
     "test_planning": "phase2_test_plan_generator.txt",
     "env_triage": "phase3_env_config_checker.txt",
     "script_data": "phase4_script_generator.txt",
     "execution": "phase5_execution_orchestrator.txt",
     "reporting": "phase6_results_analyzer.txt",
+    "results_analysis_evaluator": "phase6_results_analyzer_evaluator.txt",
     "postmortem": "phase7_postmortem.txt",
 }
 

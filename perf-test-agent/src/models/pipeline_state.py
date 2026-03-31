@@ -157,6 +157,8 @@ class PipelineState(BaseModel):
     sla_targets: list[SLATarget] = []
     risk_profiles: list[dict[str, Any]] = []
     transaction_flows: list[dict[str, Any]] = []
+    story_analysis_optimization_history: list[dict[str, Any]] = []
+    story_analysis_optimization_meta: dict[str, Any] = {}
 
     # ── Phase 2: Test Planning outputs ────────────────────────────────
     test_plan: Optional[dict[str, Any]] = None  # Full TestPlan model
@@ -187,6 +189,8 @@ class PipelineState(BaseModel):
     report_path: Optional[str] = None
     sharepoint_url: Optional[str] = None
     jira_defect_keys: list[str] = []
+    results_analysis_optimization_history: list[dict[str, Any]] = []
+    results_analysis_optimization_meta: dict[str, Any] = {}
 
     # ── Phase 7: Postmortem outputs ───────────────────────────────────
     postmortem_entries: list[dict[str, Any]] = []
